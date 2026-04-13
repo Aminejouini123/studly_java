@@ -32,7 +32,7 @@ public class Sign_upController {
     @FXML
     public void initialize() {
         sign_button_id.setOnAction(e -> handleSignUp());
-        return_login_id.setOnAction(e -> navigateTo("/auth_page.fxml", "Login – Studly"));
+        return_login_id.setOnAction(e -> navigateTo("/getion_user/auth_page.fxml", "Login – Studly"));
     }
 
     private void handleSignUp() {
@@ -98,7 +98,7 @@ public class Sign_upController {
             userService.ajouter(newUser);
             showAlert(Alert.AlertType.INFORMATION, "Account Created",
                 "Your account was created successfully! You can now log in.");
-            navigateTo("/auth_page.fxml", "Login – Studly");
+            navigateTo("/getion_user/auth_page.fxml", "Login – Studly");
         } catch (SQLException ex) {
             showAlert(Alert.AlertType.ERROR, "Database Error",
                 "Could not create account: " + ex.getMessage());

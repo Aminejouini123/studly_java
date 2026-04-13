@@ -25,7 +25,7 @@ public class LoginPage {
     @FXML
     public void initialize() {
         login_button.setOnAction(e -> handleLogin());
-        sign_up_id.setOnAction(e -> navigateTo("/signUp_page.fxml", "Sign Up – Studly"));
+        sign_up_id.setOnAction(e -> navigateTo("/getion_user/signUp_page.fxml", "Sign Up – Studly"));
         reset_mdp_id.setOnAction(e ->
             showAlert(Alert.AlertType.INFORMATION, "Reset Password",
                 "Password reset is not yet implemented.")
