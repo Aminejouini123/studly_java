@@ -1,0 +1,111 @@
+/* auth.css */
+.root-pane {
+    -fx-background-color: linear-gradient(to bottom right, #004fb0, #002e7a, #001f5c);
+    -fx-font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+.login-card {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-background-radius: 20;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+    /* Soft shadow for the card */
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 30, 0, 0, 10);
+}
+
+.login-title {
+    -fx-text-fill: white;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.input-label {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.text-input-modern {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-padding: 10 15;
+    -fx-text-fill: #333333;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: #aaaaaa;
+}
+
+.text-input-modern:focused {
+    -fx-border-color: #66b3ff;
+    -fx-border-radius: 8;
+    -fx-border-width: 2;
+    -fx-background-radius: 8;
+    -fx-background-insets: 2;
+}
+
+.forgot-password-link {
+    -fx-text-fill: white;
+    -fx-underline: false;
+    -fx-font-size: 12px;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.forgot-password-link:hover {
+    -fx-text-fill: #99ccff;
+    -fx-underline: true;
+}
+
+.signin-button {
+    -fx-background-color: #052659;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 12 25;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.signin-button:hover {
+    -fx-background-color: #021636;
+}
+
+.continue-with-text {
+    -fx-text-fill: rgba(255, 255, 255, 0.8);
+    -fx-font-size: 12px;
+}
+
+.social-button {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-pref-width: 60px;
+    -fx-pref-height: 40px;
+    -fx-alignment: center;
+    -fx-content-display: center;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.social-button:hover {
+    -fx-background-color: #e6e6e6;
+}
+
+.signup-link {
+    -fx-text-fill: white;
+    -fx-underline: false;
+    -fx-font-size: 13px;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.signup-link:hover {
+    -fx-text-fill: #99ccff;
+    -fx-underline: true;
+}
