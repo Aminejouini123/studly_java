@@ -75,4 +75,34 @@ public class ExamService implements IService<Exam> {
         }
         return list;
     }
+
+    public List<Exam> recupererParCours(int courseId) throws SQLException {
+        String sql = "select * from `exam` where course_id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, courseId);
+        ResultSet rs = ps.executeQuery();
+        List<Exam> list = new ArrayList<>();
+        while (rs.next()) {
+            Exam entity = new Exam();
+            entity.setId(rs.getInt("id"));
+            entity.setTitle(rs.getString("title"));
+            entity.setDate(rs.getDate("date"));
+            entity.setDuration(rs.getInt("duration"));
+            entity.setGrade(rs.getDouble("grade"));
+            entity.setDifficulty(rs.getString("difficulty"));
+            entity.setStatus(rs.getString("status"));
+            entity.setFile(rs.getString("file"));
+            entity.setLink(rs.getString("link"));
+            entity.setCourse_id(rs.getInt("course_id"));
+            list.add(entity);
+        }
+        return list;
+    }
+
+    public void supprimerParCours(int courseId) throws SQLException {
+        String sql = "delete from `exam` where course_id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, courseId);
+        ps.executeUpdate();
+    }
 }

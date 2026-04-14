@@ -14,7 +14,7 @@
 <?import javafx.scene.shape.Rectangle?>
 
 <!-- Using the exact same styling classes and background as the auth page -->
-<AnchorPane prefHeight="700.0" prefWidth="1000.0" styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Sign_upController">
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Sign_upController">
     <children>
         <!-- Background decorative elements matching auth page -->
         <Circle fill="#2464d1" layoutX="120.0" layoutY="120.0" opacity="0.4" radius="150.0" />

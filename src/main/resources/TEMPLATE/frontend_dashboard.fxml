@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<StackPane prefHeight="800.0" prefWidth="1100.0" styleClass="root" stylesheets="@frontend_style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.FrontendController">
+<StackPane prefHeight="800.0" prefWidth="1100.0" styleClass="root" stylesheets="@frontend_style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.FrontendController">
    
    <!-- Main interface (z-index 1) -->
 
@@ -33,9 +33,9 @@
                <!-- Navigation Links -->
                <HBox alignment="CENTER_LEFT" spacing="25.0">
                   <children>
-                     <Label styleClass="nav-link-active" text="Dashboard" />
+                     <Label onMouseClicked="#goToDashboard" styleClass="nav-link-active" text="Dashboard" />
                      <Label styleClass="nav-link" text="Planing" />
-                     <Label styleClass="nav-link" text="Coursses" />
+                     <Label onMouseClicked="#goToCourses" styleClass="nav-link" text="Coursses" />
                      <Label styleClass="nav-link" text="Groups" />
                      <Label styleClass="nav-link" text="Tasks" />
                   </children>

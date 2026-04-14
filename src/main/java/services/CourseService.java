@@ -57,6 +57,13 @@ public class CourseService implements IService<Course> {
 
     @Override
     public void supprimer(int id) throws SQLException {
+        // 1. Cascade delete exams linked to this course
+        new ExamService().supprimerParCours(id);
+
+        // 2. Cascade delete activities linked to this course
+        new ActivityService().supprimerParCours(id);
+
+        // 3. Delete the course itself
         String sql = "delete from `course` where id = ?";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setInt(1, id);
