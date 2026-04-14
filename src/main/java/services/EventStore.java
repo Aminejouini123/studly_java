@@ -66,6 +66,9 @@ public class EventStore {
                 return;
             }
         }
+
+        // If the event is missing from the in-memory list, keep it visible instead of dropping it.
+        events.add(updatedEvent);
     }
 
     public void deleteEvent(Event event) {

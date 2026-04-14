@@ -2,6 +2,7 @@ package controllers.gestiondetemps;
 
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -9,9 +10,11 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -21,6 +24,7 @@ import javafx.scene.layout.VBox;
 import models.Event;
 import services.EventStore;
 
+import java.net.URL;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -157,7 +161,13 @@ public class EventListController {
         Label sessionsLabel = new Label(event.getReminder_minutes() + " Sessions Plan");
         sessionsLabel.getStyleClass().add("event-sessions");
 
-        HBox actionsRow = new HBox(12);
+        FlowPane actionsRow = new FlowPane();
+        actionsRow.setHgap(8);
+        actionsRow.setVgap(8);
+        Button motivationButton = new Button("Motivation");
+        motivationButton.getStyleClass().add("event-motivation-button");
+        motivationButton.setOnAction(actionEvent -> showMotivationDialog(event));
+
         Button editButton = new Button("Modifier event");
         editButton.getStyleClass().add("event-edit-button");
         editButton.setOnAction(actionEvent -> showEditDialog(event));
@@ -166,7 +176,7 @@ public class EventListController {
         deleteButton.getStyleClass().add("event-delete-button");
         deleteButton.setOnAction(actionEvent -> deleteEvent(event));
 
-        actionsRow.getChildren().addAll(editButton, deleteButton);
+        actionsRow.getChildren().addAll(motivationButton, editButton, deleteButton);
 
         card.getChildren().addAll(header, descriptionLabel, pillsRow, sessionsLabel, actionsRow);
         return card;
@@ -182,30 +192,57 @@ public class EventListController {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Modifier event");
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.getDialogPane().getStyleClass().add("event-dialog");
+
+        URL dialogStylesheet = getClass().getResource("/Gestion de temps/event_dialog.css");
+        if (dialogStylesheet != null) {
+            dialog.getDialogPane().getStylesheets().add(dialogStylesheet.toExternalForm());
+        }
 
         GridPane form = new GridPane();
         form.setHgap(10);
-        form.setVgap(12);
-        form.setPadding(new Insets(15));
+        form.setVgap(14);
+        form.setPadding(new Insets(18));
+        form.getStyleClass().add("event-dialog-grid");
 
         TextField titleField = new TextField(event.getTitle());
+        titleField.getStyleClass().add("event-dialog-field");
+
         TextArea descriptionArea = new TextArea(event.getDescription());
         descriptionArea.setPrefRowCount(3);
+        descriptionArea.getStyleClass().addAll("event-dialog-field", "event-dialog-area");
+
         TextField locationField = new TextField(event.getLocation());
+        locationField.getStyleClass().add("event-dialog-field");
+
         ComboBox<String> priorityBox = new ComboBox<>();
         priorityBox.getItems().addAll("Haute", "Moyenne", "Basse");
         priorityBox.setValue(defaultValue(event.getPriority(), "Moyenne"));
-        DatePicker datePicker = new DatePicker(event.getDate() == null ? java.time.LocalDate.now() : event.getDate().toLocalDate());
+        priorityBox.getStyleClass().addAll("event-dialog-field", "event-dialog-combo");
 
-        form.add(new Label("Titre"), 0, 0);
+        DatePicker datePicker = new DatePicker(event.getDate() == null ? java.time.LocalDate.now() : event.getDate().toLocalDate());
+        datePicker.getStyleClass().addAll("event-dialog-field", "event-dialog-date");
+
+        Label titleLabel = new Label("Titre");
+        Label descriptionLabel = new Label("Description");
+        Label locationLabel = new Label("Lieu");
+        Label priorityLabel = new Label("Priorite");
+        Label dateLabel = new Label("Date");
+        titleLabel.getStyleClass().add("event-dialog-label");
+        descriptionLabel.getStyleClass().add("event-dialog-label");
+        locationLabel.getStyleClass().add("event-dialog-label");
+        priorityLabel.getStyleClass().add("event-dialog-label");
+        dateLabel.getStyleClass().add("event-dialog-label");
+
+        form.add(titleLabel, 0, 0);
         form.add(titleField, 1, 0);
-        form.add(new Label("Description"), 0, 1);
+        form.add(descriptionLabel, 0, 1);
         form.add(descriptionArea, 1, 1);
-        form.add(new Label("Lieu"), 0, 2);
+        form.add(locationLabel, 0, 2);
         form.add(locationField, 1, 2);
-        form.add(new Label("Priorite"), 0, 3);
+        form.add(priorityLabel, 0, 3);
         form.add(priorityBox, 1, 3);
-        form.add(new Label("Date"), 0, 4);
+        form.add(dateLabel, 0, 4);
         form.add(datePicker, 1, 4);
 
         dialog.getDialogPane().setContent(form);
@@ -213,12 +250,39 @@ public class EventListController {
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             Event updatedEvent = copyEvent(event);
-            updatedEvent.setTitle(titleField.getText().trim());
-            updatedEvent.setDescription(descriptionArea.getText().trim());
-            updatedEvent.setLocation(locationField.getText().trim());
-            updatedEvent.setPriority(priorityBox.getValue());
-            updatedEvent.setDate(Date.valueOf(datePicker.getValue()));
+            updatedEvent.setTitle(defaultValue(titleField.getText().trim(), event.getTitle()));
+            updatedEvent.setDescription(defaultValue(descriptionArea.getText().trim(), event.getDescription()));
+            updatedEvent.setLocation(defaultValue(locationField.getText().trim(), event.getLocation()));
+            updatedEvent.setPriority(priorityBox.getValue() == null ? event.getPriority() : priorityBox.getValue());
+            updatedEvent.setDate(datePicker.getValue() == null ? event.getDate() : Date.valueOf(datePicker.getValue()));
+
             EventStore.getInstance().updateEvent(updatedEvent);
+        }
+    }
+
+    private void showMotivationDialog(Event event) {
+        try {
+            URL resource = getClass().getResource("/Gestion de temps/motivation_setup.fxml");
+            if (resource == null) {
+                throw new IllegalStateException("Missing FXML resource: /Gestion de temps/motivation_setup.fxml");
+            }
+
+            FXMLLoader loader = new FXMLLoader(resource);
+            AnchorPane content = loader.load();
+            MotivationSetupController controller = loader.getController();
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.setTitle("Motivation");
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(content);
+            stage.setScene(scene);
+
+            controller.configure(event, stage::close);
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Unable to load motivation dialog.", e);
         }
     }
 

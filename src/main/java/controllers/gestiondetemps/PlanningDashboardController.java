@@ -3,8 +3,11 @@ package controllers.gestiondetemps;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import models.Event;
@@ -110,9 +113,17 @@ public class PlanningDashboardController {
         sessions.getStyleClass().add("planning-event-sessions");
 
         HBox header = new HBox(12);
-        header.getChildren().addAll(title, date);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        header.getChildren().addAll(title, spacer, date);
 
-        card.getChildren().addAll(header, description, metaRow, sessions);
+        HBox actionsRow = new HBox(12);
+        Button motivationButton = new Button("Motivation");
+        motivationButton.getStyleClass().add("planning-motivation-button");
+        motivationButton.setOnAction(actionEvent -> showMotivationForm(event));
+
+        actionsRow.getChildren().add(motivationButton);
+        card.getChildren().addAll(header, description, metaRow, sessions, actionsRow);
         return new HBox(card);
     }
 
@@ -140,6 +151,23 @@ public class PlanningDashboardController {
             planningContentHost.getChildren().setAll(content);
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load FXML resource: " + resourcePath, e);
+        }
+    }
+
+    private void showMotivationForm(Event event) {
+        try {
+            URL resource = getClass().getResource("/Gestion de temps/motivation_setup.fxml");
+            if (resource == null) {
+                throw new IllegalStateException("Missing FXML resource: /Gestion de temps/motivation_setup.fxml");
+            }
+
+            FXMLLoader loader = new FXMLLoader(resource);
+            Node content = loader.load();
+            MotivationSetupController controller = loader.getController();
+            controller.configure(event, this::showOverview);
+            planningContentHost.getChildren().setAll(content);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to load FXML resource: /Gestion de temps/motivation_setup.fxml", e);
         }
     }
 

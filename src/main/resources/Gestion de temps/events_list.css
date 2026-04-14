@@ -1,11 +1,11 @@
 .root {
-    -fx-background-color: transparent;
+    -fx-background-color: linear-gradient(to bottom right, rgba(240, 247, 255, 0.9), rgba(251, 253, 255, 0.92));
     -fx-font-family: "Segoe UI", Arial, sans-serif;
 }
 
 .events-title {
-    -fx-text-fill: #111827;
-    -fx-font-size: 24px;
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 28px;
     -fx-font-weight: 800;
 }
 
@@ -34,11 +34,16 @@
 
 .events-search-field,
 .events-sort-box {
-    -fx-background-color: white;
-    -fx-background-radius: 12;
-    -fx-border-color: #D7E2EF;
-    -fx-border-radius: 12;
-    -fx-padding: 10 14;
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f7fbff);
+    -fx-background-radius: 14;
+    -fx-border-color: #d7e2ef;
+    -fx-border-radius: 14;
+    -fx-padding: 11 14;
+}
+
+.events-search-field:focused,
+.events-sort-box:focused {
+    -fx-border-color: #2f87ea;
 }
 
 .events-scroll {
@@ -58,14 +63,14 @@
 }
 
 .event-card {
-    -fx-background-color: linear-gradient(to bottom right, #FFFFFF, #F8FBFF);
-    -fx-background-radius: 18;
-    -fx-border-color: #DDE6F0;
-    -fx-border-radius: 18;
+    -fx-background-color: linear-gradient(to bottom right, #ffffff, #f7fbff 65%, #eef5ff);
+    -fx-background-radius: 22;
+    -fx-border-color: #dbe6f2;
+    -fx-border-radius: 22;
     -fx-padding: 22;
     -fx-min-width: 340;
     -fx-max-width: 340;
-    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.06), 16, 0, 0, 4);
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.08), 18, 0, 0, 6);
 }
 
 .event-card-title {
@@ -116,6 +121,19 @@
     -fx-font-weight: 800;
 }
 
+.event-motivation-button {
+    -fx-background-color: linear-gradient(to right, #0b6cae, #15a8ea);
+    -fx-text-fill: white;
+    -fx-background-radius: 999;
+    -fx-padding: 10 16;
+    -fx-font-weight: 800;
+    -fx-cursor: hand;
+}
+
+.event-motivation-button:hover {
+    -fx-background-color: linear-gradient(to right, #0a5f99, #1298d2);
+}
+
 .event-edit-button {
     -fx-background-color: linear-gradient(to right, #DBEAFE, #BFDBFE);
     -fx-text-fill: #0B63CE;
@@ -125,6 +143,10 @@
     -fx-cursor: hand;
 }
 
+.event-edit-button:hover {
+    -fx-background-color: linear-gradient(to right, #c7ddff, #a9ccff);
+}
+
 .event-delete-button {
     -fx-background-color: linear-gradient(to right, #FECACA, #FBCFE8);
     -fx-text-fill: #C81E1E;
@@ -132,4 +154,8 @@
     -fx-padding: 10 16;
     -fx-font-weight: 800;
     -fx-cursor: hand;
+}
+
+.event-delete-button:hover {
+    -fx-background-color: linear-gradient(to right, #fbb6b6, #f7bad8);
 }
