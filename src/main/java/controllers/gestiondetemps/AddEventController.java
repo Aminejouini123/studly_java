@@ -104,6 +104,11 @@ public class AddEventController {
         clearForm();
     }
 
+    @FXML
+    private void handleCancel(ActionEvent actionEvent) {
+        clearForm();
+    }
+
     private boolean validateInput() {
         StringBuilder errorMessage = new StringBuilder();
 
