@@ -1,6 +1,8 @@
 package controllers;
 
 import javafx.fxml.FXML;
+import javafx.scene.input.MouseEvent;
+import controllers.courses.BaseCourseController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -9,7 +11,7 @@ import javafx.scene.layout.StackPane;
 import java.io.IOException;
 import java.net.URL;
 
-public class FrontendController {
+public class FrontendController extends BaseCourseController {
 
     @FXML
     private Label dashboardNavLabel;
@@ -64,4 +66,7 @@ public class FrontendController {
         label.getStyleClass().removeAll("nav-link", "nav-link-active");
         label.getStyleClass().add(active ? "nav-link-active" : "nav-link");
     }
+
+    // Navigation methods are inherited from BaseCourseController
+    // but we can override or add dashboard-specific ones here
 }

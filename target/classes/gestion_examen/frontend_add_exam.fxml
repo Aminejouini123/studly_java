@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<?import javafx.scene.shape.SVGPath?>
+
+<StackPane fx:id="rootPane" prefHeight="900.0" prefWidth="1200.0" style="-fx-background-color: #f8f9fa;" stylesheets="@../TEMPLATE/frontend_style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.exams.ExamAddController">
+   <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;">
+      <content>
+         <VBox alignment="TOP_CENTER" spacing="0.0" style="-fx-background-color: transparent; -fx-padding: 20 0 60 0;">
+            <children>
+               <!-- Header Container -->
+               <VBox maxWidth="1000.0" style="-fx-background-color: #004fb0; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0, 51, 102, 0.15), 30, 0, 0, 10);">
+                  <padding>
+                     <Insets bottom="80.0" left="40.0" right="40.0" top="30.0" />
+                  </padding>
+                  <children>
+                     <Button mnemonicParsing="false" onAction="#handleCancel" style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 50; -fx-padding: 8 20; -fx-cursor: hand;" text="← Back to Exams" />
+                     <VBox alignment="CENTER" spacing="10.0">
+                        <VBox.margin>
+                           <Insets top="20.0" />
+                        </VBox.margin>
+                        <children>
+                           <Label style="-fx-font-size: 32px; -fx-font-weight: 800; -fx-text-fill: white;" text="Setup New Exam" />
+                           <Label fx:id="courseNameLabel" style="-fx-font-size: 16px; -fx-text-fill: rgba(255,255,255,0.9);" text="Course Name" />
+                        </children>
+                     </VBox>
+                  </children>
+               </VBox>
+
+               <!-- Form Card -->
+               <VBox maxWidth="960.0" spacing="40.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-border-radius: 20; -fx-border-color: linear-gradient(to right, #00c6ff, #0072ff) transparent transparent transparent; -fx-border-width: 4 0 0 0; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 30, 0, 0, 10); -fx-translate-y: -40;">
+                  <padding>
+                     <Insets bottom="50.0" left="50.0" right="50.0" top="40.0" />
+                  </padding>
+                  <children>
+
+                     <!-- 1. Examination Details -->
+                     <VBox spacing="20.0" style="-fx-border-color: transparent transparent #e9ecef transparent; -fx-border-width: 0 0 1 0; -fx-padding: 0 0 25 0;">
+                        <children>
+                           <HBox alignment="CENTER_LEFT" spacing="10.0">
+                              <children>
+                                 <Region prefHeight="18.0" prefWidth="4.0" style="-fx-background-color: #00c6ff; -fx-background-radius: 2;" />
+                                 <Label style="-fx-font-size: 18px; -fx-font-weight: 800; -fx-text-fill: #1E293B;" text="Examination Details" />
+                              </children>
+                           </HBox>
+
+                           <VBox spacing="8.0">
+                              <children>
+                                 <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #344767;" text="Exam Title" />
+                                       <TextField fx:id="titleField" promptText="Ex: Midterm Evaluation" styleClass="modern-input" />
+                                       <Label fx:id="titleError" text="" style="-fx-text-fill: #ef4444; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 2 0 0 5;" visible="false" managed="false"/>
+                              </children>
+                           </VBox>
+
+                           <HBox spacing="25.0">
+                              <children>
+                                 <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                       <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #344767;" text="Exam Date" />
+                                       <DatePicker fx:id="datePicker" maxWidth="Infinity" />
+                                       <Label fx:id="dateError" text="" style="-fx-text-fill: #ef4444; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 2 0 0 5;" visible="false" managed="false"/>
+                                    </children>
+                                 </VBox>
+                                 <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                       <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #344767;" text="Duration (min)" />
+                                       <TextField fx:id="durationField" promptText="Ex: 120" styleClass="modern-input" />
+                                       <Label fx:id="durationError" text="" style="-fx-text-fill: #ef4444; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 2 0 0 5;" visible="false" managed="false"/>
+                                    </children>
+                                 </VBox>
+                                 <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                       <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #344767;" text="Difficulty" />
+                                       <ComboBox fx:id="difficultyCombo" promptText="Select" maxWidth="Infinity" styleClass="modern-combo">
+                                            <!-- Items set in controller -->
+                                       </ComboBox>
+                                       <Label fx:id="difficultyError" text="" style="-fx-text-fill: #ef4444; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 2 0 0 5;" visible="false" managed="false"/>
+                                    </children>
+                                 </VBox>
+                              </children>
+                           </HBox>
+                        </children>
+                     </VBox>
+
+                     <!-- 2. Performance & Tracking -->
+                     <VBox spacing="20.0" style="-fx-border-color: transparent transparent #e9ecef transparent; -fx-border-width: 0 0 1 0; -fx-padding: 0 0 25 0;">
+                        <children>
+                           <HBox alignment="CENTER_LEFT" spacing="10.0">
+                              <children>
+                                 <Region prefHeight="18.0" prefWidth="4.0" style="-fx-background-color: #00c6ff; -fx-background-radius: 2;" />
+                                 <Label style="-fx-font-size: 18px; -fx-font-weight: 800; -fx-text-fill: #1E293B;" text="Performance &amp; Status" />
+                              </children>
+                           </HBox>
+
+                           <HBox spacing="30.0">
+                              <children>
+                                 <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                       <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #344767;" text="Target Grade" />
+                                       <TextField fx:id="gradeField" promptText="0.00" styleClass="modern-input" />
+                                       <Label fx:id="gradeError" text="" style="-fx-text-fill: #ef4444; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 2 0 0 5;" visible="false" managed="false"/>
+                                    </children>
+                                 </VBox>
+                                 <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                       <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #344767;" text="Status" />
+                                       <ComboBox fx:id="statusCombo" promptText="Select Status" maxWidth="Infinity" styleClass="modern-combo">
+                                            <!-- Items set in controller -->
+                                       </ComboBox>
+                                       <Label fx:id="statusError" text="" style="-fx-text-fill: #ef4444; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 2 0 0 5;" visible="false" managed="false"/>
+                                    </children>
+                                 </VBox>
+                              </children>
+                           </HBox>
+                        </children>
+                     </VBox>
+
+                     <!-- 3. Reference Materials -->
+                     <VBox spacing="20.0">
+                        <children>
+                           <HBox alignment="CENTER_LEFT" spacing="10.0">
+                              <children>
+                                 <Region prefHeight="18.0" prefWidth="4.0" style="-fx-background-color: #00c6ff; -fx-background-radius: 2;" />
+                                 <Label style="-fx-font-size: 18px; -fx-font-weight: 800; -fx-text-fill: #1E293B;" text="Reference Materials" />
+                              </children>
+                           </HBox>
+
+                           <HBox spacing="30.0">
+                              <children>
+                                 <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                       <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #344767;" text="Resource Link" />
+                                       <TextField fx:id="linkField" promptText="https://..." styleClass="modern-input" />
+                                    </children>
+                                 </VBox>
+                                 <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                       <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #344767;" text="Attached File Path" />
+                                       <HBox spacing="10.0">
+                                           <TextField fx:id="fileField" promptText="Choose a file..." styleClass="modern-input" HBox.hgrow="ALWAYS" editable="false" />
+                                           <Button mnemonicParsing="false" onAction="#handleChooseFile" text="Browse..." style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand; -fx-border-color: #cbd5e1; -fx-border-radius: 8;" />
+                                       </HBox>
+                                    </children>
+                                 </VBox>
+                              </children>
+                           </HBox>
+                        </children>
+                     </VBox>
+
+                     <!-- Action Button -->
+                     <VBox alignment="CENTER_RIGHT" style="-fx-padding: 20 0 0 0;">
+                        <children>
+                           <Button mnemonicParsing="false" onAction="#handleSave" style="-fx-background-color: linear-gradient(to right, #003366, #004080); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 12; -fx-padding: 15 50; -fx-cursor: hand; -fx-font-size: 16px; -fx-effect: dropshadow(gaussian, rgba(0, 51, 102, 0.2), 10, 0, 0, 4);" text="💾 Save Exam" />
+                        </children>
+                     </VBox>
+
+                  </children>
+               </VBox>
+            </children>
+         </VBox>
+      </content>
+   </ScrollPane>
+</StackPane>

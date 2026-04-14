@@ -14,7 +14,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.SVGPath?>
 
-<StackPane prefHeight="768.0" prefWidth="1024.0" styleClass="root" stylesheets="@backend_style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BackendController">
+<StackPane prefHeight="768.0" prefWidth="1024.0" styleClass="root" stylesheets="@backend_style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BackendController">
 
    <!-- Main interface (z-index 1) -->
 
