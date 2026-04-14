@@ -9,11 +9,13 @@ import javafx.stage.Stage;
 import java.net.URL;
 
 public class MainFX extends Application {
+    private static final String DASHBOARD_FXML = "/TEMPLATE/frontend_dashboard.fxml";
+
     @Override
     public void start(Stage stage) throws Exception {
-        URL dashboardResource = getClass().getResource("/TEMPLATE/frontend_dashboard.fxml");
+        URL dashboardResource = getClass().getResource(DASHBOARD_FXML);
         if (dashboardResource == null) {
-            throw new IllegalStateException("Missing FXML resource: /TEMPLATE/frontend_dashboard.fxml");
+            throw new IllegalStateException("Missing FXML resource: " + DASHBOARD_FXML);
         }
 
         FXMLLoader fxmlloader = new FXMLLoader(dashboardResource);

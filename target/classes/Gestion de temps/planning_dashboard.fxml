@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="700.0" prefWidth="980.0" stylesheets="@planning_dashboard.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.gestiondetemps.PlanningDashboardController">
+   <children>
+      <VBox spacing="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" styleClass="planning-hero-card">
+               <children>
+                  <VBox spacing="8.0">
+                     <children>
+                        <Label styleClass="planning-title" text="Gestion du Temps" />
+                        <Label styleClass="planning-subtitle" text="Créez et gérez vos événements et plannings" />
+                     </children>
+                  </VBox>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <HBox spacing="12.0">
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#showEventsTable" styleClass="planning-primary-button" text="Voir liste" />
+                        <Button mnemonicParsing="false" onAction="#showAddEventForm" styleClass="planning-primary-button" text="Ajouter un événement" />
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+
+            <HBox spacing="14.0" styleClass="planning-stats-panel">
+               <children>
+                  <VBox alignment="CENTER" spacing="10.0" styleClass="planning-stat-card" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label fx:id="eventsCountLabel" styleClass="planning-stat-value" text="0" />
+                        <Label styleClass="planning-stat-label" text="ÉVÉNEMENTS" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="10.0" styleClass="planning-stat-card" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label fx:id="completedCountLabel" styleClass="planning-stat-value" text="0" />
+                        <Label styleClass="planning-stat-label" text="TERMINÉS" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="10.0" styleClass="planning-stat-card" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label fx:id="inProgressCountLabel" styleClass="planning-stat-value" text="0" />
+                        <Label styleClass="planning-stat-label" text="EN COURS" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="10.0" styleClass="planning-stat-card" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label fx:id="totalCountLabel" styleClass="planning-stat-value" text="0" />
+                        <Label styleClass="planning-stat-label" text="TOTAL" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT" styleClass="planning-ai-card">
+               <children>
+                  <Label styleClass="planning-ai-icon" text="/" />
+                  <VBox spacing="5.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label styleClass="planning-ai-title" text="Planification" />
+                              <Label styleClass="planning-ai-badge" text="IA Agent" />
+                           </children>
+                        </HBox>
+                        <Label styleClass="planning-ai-description" text="Laissez l'algorithme organiser votre emploi du temps selon votre humeur." />
+                     </children>
+                  </VBox>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Button mnemonicParsing="false" onAction="#showOverview" styleClass="planning-ghost-button" text="Afficher" />
+               </children>
+            </HBox>
+
+            <StackPane fx:id="planningContentHost" minHeight="420.0" VBox.vgrow="ALWAYS">
+               <children>
+                  <VBox spacing="18.0" styleClass="planning-content-card">
+                     <padding>
+                        <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
+                     </padding>
+                     <children>
+                        <Label styleClass="planning-section-title" text="Liste des événements" />
+                        <Separator />
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label styleClass="planning-filter-label" text="Vos événements" />
+                              <Label styleClass="planning-filter-chip planning-filter-chip-date" text="Date" />
+                              <Label styleClass="planning-filter-chip planning-filter-chip-priority" text="Priority" />
+                           </children>
+                        </HBox>
+                        <VBox fx:id="eventCardsContainer" spacing="16.0" VBox.vgrow="ALWAYS" />
+                     </children>
+                  </VBox>
+               </children>
+            </StackPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
