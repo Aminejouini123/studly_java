@@ -6,14 +6,21 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.net.URL;
+
 public class MainFX extends Application {
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader fxmlloader = new FXMLLoader(getClass().getResource("/frontend_dashboard.fxml"));
+        URL dashboardResource = getClass().getResource("/TEMPLATE/frontend_dashboard.fxml");
+        if (dashboardResource == null) {
+            throw new IllegalStateException("Missing FXML resource: /TEMPLATE/frontend_dashboard.fxml");
+        }
+
+        FXMLLoader fxmlloader = new FXMLLoader(dashboardResource);
         Parent root = fxmlloader.load();
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        stage.setTitle("Login – Studly");
+        stage.setTitle("Studly");
         stage.show();
     }
 

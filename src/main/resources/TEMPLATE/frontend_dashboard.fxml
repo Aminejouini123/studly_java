@@ -33,8 +33,8 @@
                <!-- Navigation Links -->
                <HBox alignment="CENTER_LEFT" spacing="25.0">
                   <children>
-                     <Label styleClass="nav-link-active" text="Dashboard" />
-                     <Label styleClass="nav-link" text="Planing" />
+                     <Label fx:id="dashboardNavLabel" onMouseClicked="#showDashboard" styleClass="nav-link-active" text="Dashboard" />
+                     <Label fx:id="planningNavLabel" onMouseClicked="#showPlanning" styleClass="nav-link" text="Planing" />
                      <Label styleClass="nav-link" text="Coursses" />
                      <Label styleClass="nav-link" text="Groups" />
                      <Label styleClass="nav-link" text="Tasks" />
@@ -64,15 +64,15 @@
          <!-- Wrapping ScrollPane so the background gradients show through -->
          <ScrollPane fitToWidth="true" style="-fx-padding: 0;" styleClass="scroll-pane" BorderPane.alignment="CENTER">
             <content>
-               <VBox spacing="40.0" style="-fx-background-color: transparent;">
+                <VBox spacing="40.0" style="-fx-background-color: transparent;">
                   <padding>
                      <Insets bottom="50.0" left="40.0" right="40.0" top="40.0" />
                   </padding>
                   <children>
-                     <!-- Dashboard blank canvas -->
+                     <StackPane fx:id="contentHost" minHeight="640.0" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
                   </children>
-               </VBox>
-            </content>
+                </VBox>
+             </content>
          </ScrollPane>
       </center>
    </BorderPane>
