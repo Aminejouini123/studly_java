@@ -18,6 +18,9 @@ public class FrontendController {
     private Label planningNavLabel;
 
     @FXML
+    private Label groupsNavLabel;
+
+    @FXML
     private StackPane contentHost;
 
     @FXML
@@ -37,6 +40,12 @@ public class FrontendController {
         setActiveNav(planningNavLabel);
     }
 
+    @FXML
+    private void showGroups() {
+        loadContent("/gestion_group/groups_dashboard.fxml");
+        setActiveNav(groupsNavLabel);
+    }
+
     private void loadContent(String resourcePath) {
         try {
             URL resource = getClass().getResource(resourcePath);
@@ -54,6 +63,7 @@ public class FrontendController {
     private void setActiveNav(Label activeLabel) {
         updateNavStyle(dashboardNavLabel, dashboardNavLabel == activeLabel);
         updateNavStyle(planningNavLabel, planningNavLabel == activeLabel);
+        updateNavStyle(groupsNavLabel, groupsNavLabel == activeLabel);
     }
 
     private void updateNavStyle(Label label, boolean active) {
