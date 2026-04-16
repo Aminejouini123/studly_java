@@ -10,6 +10,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Label;
 import javafx.geometry.Pos;
+import models.User;
+import services.CourseService;
+import utils.SessionManager;
 import java.io.IOException;
 
 public abstract class BaseCourseController {
@@ -50,7 +53,7 @@ public abstract class BaseCourseController {
         if (controllers.FrontendController.getInstance() != null) {
             controllers.FrontendController.getInstance().loadContent("/gestion_cours/add_course_body.fxml");
         } else {
-            loadScene("/gestion_cours/frontend_add_course.fxml", event, null);
+            loadScene("/gestion_cours/add_course_body.fxml", event, null);
         }
     }
 
@@ -71,5 +74,35 @@ public abstract class BaseCourseController {
         valLabel.getStyleClass().add("stat-item-label");
         item.getChildren().addAll(icon, valLabel);
         return item;
+    }
+    protected boolean fromBackend = false;
+    protected controllers.BackendCourseController backendController;
+
+    public void setFromBackend(boolean fromBackend) {
+        this.fromBackend = fromBackend;
+    }
+
+    public void setBackendController(controllers.BackendCourseController controller) {
+        this.backendController = controller;
+    }
+
+    protected void returnToDashboard(javafx.scene.Node anchor) {
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+        } else if (fromBackend) {
+            loadScene("/gestion_cours/backend_courses.fxml", null, anchor);
+        } else {
+            goToCourses(null);
+        }
+    }
+
+    protected void returnToCourses(javafx.scene.input.MouseEvent event) {
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+        } else if (fromBackend) {
+            loadScene("/gestion_cours/backend_courses.fxml", event, null);
+        } else {
+            goToCourses(event);
+        }
     }
 }

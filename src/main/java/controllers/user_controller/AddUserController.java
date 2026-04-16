@@ -1,4 +1,4 @@
-package controllers;
+package controllers.user_controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;

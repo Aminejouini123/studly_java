@@ -17,8 +17,11 @@ import javafx.animation.KeyFrame;
 import javafx.util.Duration;
 import javafx.geometry.Pos;
 import models.Course;
+import models.User;
 import services.CourseService;
-import java.sql.SQLException;
+import utils.SessionManager;
+import utils.MyDatabase;
+import java.sql.*;
 import java.sql.Timestamp;
 import javafx.stage.FileChooser;
 import java.io.File;
@@ -39,6 +42,23 @@ public class CourseAddController extends BaseCourseController {
     public void initialize() {
         if (formTitle != null) formTitle.setText("Add a New Course");
         if (submitBtn != null) submitBtn.setText("💾 Add Course");
+
+        // Populate ComboBoxes if they are empty
+        if (semesterComboBox != null && semesterComboBox.getItems().isEmpty()) {
+            semesterComboBox.getItems().addAll("Semester 1", "Semester 2", "Summer Term");
+        }
+        if (difficultyComboBox != null && difficultyComboBox.getItems().isEmpty()) {
+            difficultyComboBox.getItems().addAll("Beginner (L1)", "Intermediate (L2)", "Advanced (L3)", "Expert (M1/M2)");
+        }
+        if (typeComboBox != null && typeComboBox.getItems().isEmpty()) {
+            typeComboBox.getItems().addAll("In-Person", "Online (Remote)", "Hybrid / Blended");
+        }
+        if (priorityComboBox != null && priorityComboBox.getItems().isEmpty()) {
+            priorityComboBox.getItems().addAll("Low", "Medium", "High", "Urgent");
+        }
+        if (statusComboBox != null && statusComboBox.getItems().isEmpty()) {
+            statusComboBox.getItems().addAll("Pending", "Active", "Archived");
+        }
 
         // Real-time validation listeners
         addClearOnType(courseNameField, errName);
@@ -184,16 +204,20 @@ public class CourseAddController extends BaseCourseController {
         if (!validateForm()) return;
 
         try {
-            Course course = buildCourse();
+            User currentUser = SessionManager.getCurrentUser();
+            Course course = buildCourse(currentUser);
             new CourseService().ajouter(course);
             showSuccessNotification();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showErrorNotification("Database Error: " + e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
-            showErrorNotification("Error saving course: " + e.getMessage());
+            showErrorNotification("System Error: " + e.getMessage());
         }
     }
 
-    private Course buildCourse() {
+    private Course buildCourse(User currentUser) {
         Course course = new Course();
         course.setName(courseNameField.getText().trim());
         course.setTeacher_email(teacherEmailField.getText().trim());
@@ -208,7 +232,11 @@ public class CourseAddController extends BaseCourseController {
         course.setCoefficient(parseCoefficient());
         course.setDuration(parseDuration());
         course.setCreated_at(new Timestamp(System.currentTimeMillis()));
-        course.setUser_id(1);
+        
+        if (currentUser != null) {
+            course.setUser_id(currentUser.getId());
+        }
+        
         return course;
     }
 
@@ -243,9 +271,7 @@ public class CourseAddController extends BaseCourseController {
         scaleUp.setToY(1.0);
         fadeIn.play();
         scaleUp.play();
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1.5), e -> {
-            goToCourses(null);
-        }));
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1.5), e -> returnToDashboard(rootPane)));
         timeline.play();
     }
 
@@ -302,6 +328,6 @@ public class CourseAddController extends BaseCourseController {
 
     @FXML
     public void handleBack(javafx.scene.input.MouseEvent event) {
-        goToCourses(event);
+        returnToCourses(event);
     }
 }

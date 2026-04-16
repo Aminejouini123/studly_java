@@ -1,10 +1,11 @@
-package controllers;
+package controllers.user_controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import models.User;
 import services.UserService;
 import utils.SessionManager;
+import controllers.FrontendController;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;

@@ -281,3 +281,60 @@
 .btn-edit:hover {
     -fx-background-color: rgba(59, 130, 246, 0.1);
 }
+
+/* --- Professional Admin Form Styles --- */
+.admin-form-container {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12;
+    -fx-padding: 30;
+    -fx-spacing: 25;
+}
+
+.admin-form-section {
+    -fx-spacing: 20;
+    -fx-padding: 0 0 10 0;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.admin-form-section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1E293B;
+}
+
+.admin-form-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #64748B;
+}
+
+.admin-form-input {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 12;
+    -fx-text-fill: #1E293B;
+    -fx-font-size: 13px;
+}
+
+.admin-form-input:focused {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #3b82f6;
+    -fx-effect: dropshadow(three-pass-box, rgba(59, 130, 246, 0.1), 8, 0, 0, 0);
+}
+
+.admin-form-combo {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 5 10;
+}
+
+.admin-form-button-bar {
+    -fx-alignment: center-right;
+    -fx-spacing: 15;
+    -fx-padding: 20 0 0 0;
+}
