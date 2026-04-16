@@ -109,3 +109,11 @@
     -fx-text-fill: #99ccff;
     -fx-underline: true;
 }
+
+.error-label {
+    -fx-text-fill: #ff4d4d;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 0 0 5;
+}
+

@@ -1,4 +1,4 @@
-package controllers;
+package controllers.user_controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -24,6 +24,12 @@ public class Sign_upController {
     @FXML private TextField date_id;
     @FXML private PasswordField passw_s_id;
     @FXML private PasswordField pass_s_id;
+    @FXML private Label firstNameError;
+    @FXML private Label lastNameError;
+    @FXML private Label emailError;
+    @FXML private Label dobError;
+    @FXML private Label passwordError;
+    @FXML private Label confirmPasswordError;
     @FXML private Button sign_button_id;
     @FXML private Hyperlink return_login_id;
 
@@ -43,38 +49,58 @@ public class Sign_upController {
         String password  = passw_s_id.getText().trim();
         String confirm   = pass_s_id.getText().trim();
 
+        // --- Reset Errors ---
+        resetErrors();
+
+        boolean hasError = false;
+
         // --- Validation ---
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty()
-                || dobText.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Missing Fields",
-                "Please fill in all required fields.");
-            return;
+        if (firstName.isEmpty()) {
+            showError(firstNameError, "First name is required");
+            hasError = true;
         }
 
-        if (!email.matches("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$")) {
-            showAlert(Alert.AlertType.WARNING, "Invalid Email",
-                "Please enter a valid email address.");
-            return;
+        if (lastName.isEmpty()) {
+            showError(lastNameError, "Last name is required");
+            hasError = true;
         }
 
-        if (!password.equals(confirm)) {
-            showAlert(Alert.AlertType.WARNING, "Password Mismatch",
-                "Passwords do not match. Please try again.");
-            return;
+        if (email.isEmpty()) {
+            showError(emailError, "Email is required");
+            hasError = true;
+        } else if (!email.matches("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$")) {
+            showError(emailError, "Invalid email format");
+            hasError = true;
         }
 
-        if (password.length() < 6) {
-            showAlert(Alert.AlertType.WARNING, "Weak Password",
-                "Password must be at least 6 characters long.");
-            return;
+        if (dobText.isEmpty()) {
+            showError(dobError, "Date of birth is required");
+            hasError = true;
         }
+
+        if (password.isEmpty()) {
+            showError(passwordError, "Password is required");
+            hasError = true;
+        } else if (password.length() < 6) {
+            showError(passwordError, "Min 6 characters required");
+            hasError = true;
+        }
+
+        if (confirm.isEmpty()) {
+            showError(confirmPasswordError, "Please confirm password");
+            hasError = true;
+        } else if (!password.equals(confirm)) {
+            showError(confirmPasswordError, "Passwords do not match");
+            hasError = true;
+        }
+
+        if (hasError) return;
 
         Date dob;
         try {
             dob = Date.valueOf(LocalDate.parse(dobText));
         } catch (DateTimeParseException ex) {
-            showAlert(Alert.AlertType.WARNING, "Invalid Date",
-                "Date of birth must be in YYYY-MM-DD format.");
+            showError(dobError, "Format: YYYY-MM-DD");
             return;
         }
 
@@ -115,6 +141,20 @@ public class Sign_upController {
         } catch (Exception ex) {
             showAlert(Alert.AlertType.ERROR, "Navigation Error", ex.getMessage());
         }
+    }
+
+    private void resetErrors() {
+        Label[] labels = {firstNameError, lastNameError, emailError, dobError, passwordError, confirmPasswordError};
+        for (Label l : labels) {
+            l.setVisible(false);
+            l.setManaged(false);
+        }
+    }
+
+    private void showError(Label label, String message) {
+        label.setText(message);
+        label.setVisible(true);
+        label.setManaged(true);
     }
 
     private void showAlert(Alert.AlertType type, String header, String content) {
