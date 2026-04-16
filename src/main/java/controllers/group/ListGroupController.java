@@ -20,6 +20,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import models.Group;
 import services.GroupService;
+import services.UserService;
 
 import java.io.IOException;
 import java.net.URL;
@@ -45,6 +46,8 @@ public class ListGroupController {
     private VBox emptyStateBox;
 
     private final GroupService groupService = new GroupService();
+    private final UserService userService = new UserService();
+    private final UserLabelResolver userLabelResolver = new UserLabelResolver(userService);
     private final ObservableList<Group> masterData = FXCollections.observableArrayList();
     private FilteredList<Group> filtered;
 
@@ -285,7 +288,7 @@ public class ListGroupController {
             }
 
             nameLabel.setText(nullToDash(group.getCategory()));
-            creatorLabel.setText("createur id: " + group.getCreatorId());
+            creatorLabel.setText(userLabelResolver.resolve(group.getCreatorId()) + " (Createur)");
             placesLabel.setText(group.getCapacity() + " places");
             dateLabel.setText("Cree le " + formatDate(group));
 

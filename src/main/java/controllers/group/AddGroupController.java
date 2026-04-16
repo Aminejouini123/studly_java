@@ -7,6 +7,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import models.Group;
 import services.GroupService;
+import utils.SessionManager;
 
 import java.sql.SQLException;
 
@@ -73,9 +74,9 @@ public class AddGroupController {
         group.setCapacity(capacity);
         group.setGroupPhoto(groupPhoto.isEmpty() ? null : groupPhoto);
         group.setCategory(category);
-        // Creator id should come from the logged-in user/session.
-        // For now, leave it unset (<= 0) so GroupService can resolve a valid user id (or NULL if allowed).
-        group.setCreatorId(0);
+        // Creator id comes from the logged-in user/session.
+        // If session is missing, leave it unset (<= 0) so GroupService can resolve a valid user id (or NULL if allowed).
+        group.setCreatorId(SessionManager.getCurrentUser() != null ? SessionManager.getCurrentUser().getId() : 0);
 
         try {
             groupService.ajouter(group);

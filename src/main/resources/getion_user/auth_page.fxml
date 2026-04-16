@@ -14,7 +14,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 
-<AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.LoginPage">
+<AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.LoginPage">
     <children>
         <!-- Background decorative elements for the modern feel -->
         <!-- Big abstract circle on the top left -->
@@ -48,22 +48,22 @@
                         </Label>
                         
                         <Label styleClass="input-label" text="Email" />
-                        <TextField fx:id="email_ID" promptText="username@gmail.com" styleClass="text-input-modern" />
+                        <TextField fx:id="emailInput" promptText="username@gmail.com" styleClass="text-input-modern" />
                         
                         <Label styleClass="input-label" text="Password">
                             <VBox.margin>
                                 <Insets top="5.0" />
                             </VBox.margin>
                         </Label>
-                        <PasswordField fx:id="mdp_id" promptText="Password" styleClass="text-input-modern" />
+                        <PasswordField fx:id="passwordInput" promptText="Password" styleClass="text-input-modern" />
                         
                         <HBox alignment="CENTER_LEFT">
                             <children>
-                                <Hyperlink fx:id="reset_mdp_id" styleClass="forgot-password-link" text="Forgot Password?" />
+                                <Hyperlink fx:id="resetPasswordLink" styleClass="forgot-password-link" text="Forgot Password?" />
                             </children>
                         </HBox>
                         
-                        <Button fx:id="login_button" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="signin-button" text="Sign in">
+                        <Button fx:id="loginButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="signin-button" text="Sign in">
                             <VBox.margin>
                                 <Insets bottom="15.0" top="15.0" />
                             </VBox.margin>
@@ -88,7 +88,7 @@
                         
                         <HBox alignment="CENTER">
                             <children>
-                                <Hyperlink fx:id="sign_up_id" styleClass="signup-link" text="Don't have an account yet? Register for free" />
+                                <Hyperlink fx:id="signUpLink" styleClass="signup-link" text="Don't have an account yet? Register for free" />
                             </children>
                         </HBox>
                     </children>

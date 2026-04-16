@@ -8,6 +8,7 @@ import java.util.List;
 
 public class ActivityService implements IService<Activity> {
     private Connection connection;
+
     public ActivityService() {
         connection = MyDatabase.getInstance().getConnection();
     }
@@ -92,5 +93,41 @@ public class ActivityService implements IService<Activity> {
             list.add(entity);
         }
         return list;
+    }
+
+    public List<Activity> recupererParCours(int courseId) throws SQLException {
+        String sql = "select * from `activity` where course_id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, courseId);
+        ResultSet rs = ps.executeQuery();
+        List<Activity> list = new ArrayList<>();
+        while (rs.next()) {
+            Activity entity = new Activity();
+            entity.setId(rs.getInt("id"));
+            entity.setTitle(rs.getString("title"));
+            entity.setDescription(rs.getString("description"));
+            entity.setFile(rs.getString("file"));
+            entity.setLink(rs.getString("link"));
+            entity.setDuration(rs.getInt("duration"));
+            entity.setStatus(rs.getString("status"));
+            entity.setDifficulty(rs.getString("difficulty"));
+            entity.setLevel(rs.getString("level"));
+            entity.setType(rs.getString("type"));
+            entity.setInstructions(rs.getString("instructions"));
+            entity.setExpected_output(rs.getString("expected_output"));
+            entity.setHints(rs.getString("hints"));
+            entity.setCompleted_at(rs.getTimestamp("completed_at"));
+            entity.setCourse_id(rs.getInt("course_id"));
+            entity.setAssigned_user_id(rs.getInt("assigned_user_id"));
+            list.add(entity);
+        }
+        return list;
+    }
+
+    public void supprimerParCours(int courseId) throws SQLException {
+        String sql = "delete from `activity` where course_id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, courseId);
+        ps.executeUpdate();
     }
 }

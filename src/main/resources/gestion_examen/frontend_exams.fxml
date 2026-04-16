@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="controllers.exams.ExamListController"
+           styleClass="root, course-detail-container" stylesheets="@../TEMPLATE/frontend_style.css">
+    
+    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+        <VBox spacing="30" style="-fx-padding: 40;">
+            
+            <!-- Header Section -->
+            <HBox alignment="CENTER_LEFT" spacing="20" styleClass="glass-card" style="-fx-padding: 30;">
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label fx:id="courseTitleLabel" text="Course Name" styleClass="hero-title-detail" style="-fx-text-fill: #0F172A; -fx-font-size: 36px;"/>
+                        <Label text="- Exams" styleClass="hero-title-detail" style="-fx-text-fill: #0F172A; -fx-font-size: 36px;"/>
+                    </HBox>
+                    <Label text="Evaluations, tests, and final examinations" styleClass="subtitle-text"/>
+                </VBox>
+                
+                <HBox spacing="15" alignment="CENTER_RIGHT">
+                    <Button text="Back to Courses" onAction="#handleBackToCourses" styleClass="btn-modal-cancel">
+                        <graphic>
+                            <SVGPath content="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="#475569" scaleX="0.6" scaleY="0.6"/>
+                        </graphic>
+                    </Button>
+                    <Button text="Add an Exam" onAction="#handleAddExam" styleClass="btn-primary">
+                        <graphic>
+                            <SVGPath content="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white" scaleX="0.6" scaleY="0.6"/>
+                        </graphic>
+                    </Button>
+                </HBox>
+            </HBox>
+
+            <!-- Stats Dashboard -->
+            <HBox spacing="15.0" alignment="CENTER" style="-fx-background-color: #004fb0; -fx-background-radius: 12; -fx-padding: 25;">
+                <VBox alignment="CENTER" HBox.hgrow="ALWAYS" spacing="10.0" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 8; -fx-padding: 15 0;">
+                    <Label fx:id="statTotal" text="0" style="-fx-font-size: 28px; -fx-font-weight: 800; -fx-text-fill: white;"/>
+                    <Label text="TOTAL EXAMS" style="-fx-text-fill: rgba(255,255,255,0.8); -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;"/>
+                </VBox>
+                <VBox alignment="CENTER" HBox.hgrow="ALWAYS" spacing="10.0" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 8; -fx-padding: 15 0;">
+                    <Label fx:id="statSuccessRate" text="0%" style="-fx-font-size: 28px; -fx-font-weight: 800; -fx-text-fill: white;"/>
+                    <Label text="SUCCESS RATE" style="-fx-text-fill: rgba(255,255,255,0.8); -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;"/>
+                </VBox>
+                <VBox alignment="CENTER" HBox.hgrow="ALWAYS" spacing="10.0" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 8; -fx-padding: 15 0;">
+                    <Label fx:id="statAvgGrade" text="0.00" style="-fx-font-size: 28px; -fx-font-weight: 800; -fx-text-fill: white;"/>
+                    <Label text="AVG GRADE" style="-fx-text-fill: rgba(255,255,255,0.8); -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;"/>
+                </VBox>
+                <VBox alignment="CENTER" HBox.hgrow="ALWAYS" spacing="10.0" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 8; -fx-padding: 15 0;">
+                    <Label fx:id="statUpcoming" text="0" style="-fx-font-size: 28px; -fx-font-weight: 800; -fx-text-fill: white;"/>
+                    <Label text="UPCOMING" style="-fx-text-fill: rgba(255,255,255,0.8); -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;"/>
+                </VBox>
+            </HBox>
+
+            <!-- List Section -->
+            <VBox spacing="20" styleClass="glass-card" style="-fx-padding: 30;">
+                <HBox alignment="CENTER_LEFT" spacing="20">
+                    <HBox alignment="CENTER_LEFT" spacing="10" HBox.hgrow="ALWAYS">
+                        <SVGPath content="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#0F172A" scaleX="0.8" scaleY="0.8"/>
+                        <Label text="Exam List" styleClass="section-title"/>
+                    </HBox>
+                    
+                    <HBox spacing="10">
+                        <TextField fx:id="searchField" promptText="Search for an exam..." styleClass="modern-input" prefWidth="250" style="-fx-background-color: transparent; -fx-padding: 8 15;"/>
+                        <ComboBox fx:id="statusFilter" prefWidth="150" promptText="All statuses" styleClass="modern-combo"/>
+                        <ComboBox fx:id="sortComboBox" prefWidth="150" promptText="Sort by" styleClass="modern-combo">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="Title (A-Z)" />
+                                    <String fx:value="Grade (High-Low)" />
+                                    <String fx:value="Date (Soonest)" />
+                                    <String fx:value="Newest First" />
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </HBox>
+                </HBox>
+
+                <Separator style="-fx-opacity: 0.5;"/>
+
+                <FlowPane fx:id="examsContainer" hgap="25.0" vgap="25.0" prefWrapLength="1000.0" />
+
+                <!-- Empty State -->
+                <VBox fx:id="emptyState" alignment="CENTER" spacing="15" style="-fx-padding: 60 0;">
+                    <SVGPath content="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" fill="#CBD5E1" scaleX="3" scaleY="3"/>
+                    <Label text="No exams found" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E293B;"/>
+                    <Label text="You have not added any exams for this course yet." style="-fx-text-fill: #64748B;"/>
+                </VBox>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+</StackPane>

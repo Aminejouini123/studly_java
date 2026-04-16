@@ -82,6 +82,7 @@ public class GroupDetailsController {
     private final ProjectService projectService = new ProjectService();
     private final InvitationService invitationService = new InvitationService();
     private final UserService userService = new UserService();
+    private final UserLabelResolver userLabelResolver = new UserLabelResolver(userService);
 
     private final ObservableList<Message> messages = FXCollections.observableArrayList();
     private final ObservableList<Project> projects = FXCollections.observableArrayList();
@@ -142,7 +143,7 @@ public class GroupDetailsController {
         statusPill.setText("LIBRE");
         placesChip.setText(group.getCapacity() + " places");
         createdChip.setText("Cree le " + formatDate(group.getCreatedAt()));
-        creatorChip.setText(resolveCreatorLabel(group.getCreatorId()));
+        creatorChip.setText(userLabelResolver.resolve(group.getCreatorId()));
 
         descriptionLabel.setText("Groupe d'etude dedie a " + nullToDash(group.getCategory())
                 + ". Rejoignez ce groupe pour collaborer, partager des ressources et atteindre vos objectifs.");
@@ -181,7 +182,7 @@ public class GroupDetailsController {
 
     private void loadMembers() {
         members.clear();
-        String creator = resolveCreatorLabel(group.getCreatorId());
+        String creator = userLabelResolver.resolve(group.getCreatorId());
         members.add(creator + " (Createur)");
 
         // No membership table wired yet. Keep UI consistent with Symfony screenshot.
@@ -288,13 +289,6 @@ public class GroupDetailsController {
         if (onBack != null) {
             onBack.run();
         }
-    }
-
-    private String resolveCreatorLabel(int creatorId) {
-        if (creatorId <= 0) {
-            return "Utilisateur";
-        }
-        return "user #" + creatorId;
     }
 
     private static String formatDate(Timestamp ts) {
