@@ -1,4 +1,5 @@
 /target/
 /.idea/
 /.vscode/
-*.class
+*.classbuild_run.log
+build_run.log
