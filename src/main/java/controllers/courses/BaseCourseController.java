@@ -31,15 +31,27 @@ public abstract class BaseCourseController {
     }
 
     public void goToDashboard(javafx.event.Event event) {
-        loadScene("/TEMPLATE/frontend_dashboard.fxml", event, null);
+        if (controllers.FrontendController.getInstance() != null) {
+            controllers.FrontendController.getInstance().goToDashboard(event);
+        } else {
+            loadScene("/TEMPLATE/frontend_dashboard.fxml", event, null);
+        }
     }
 
     public void goToCourses(MouseEvent event) {
-        loadScene("/gestion_cours/frontend_courses.fxml", event, null);
+        if (controllers.FrontendController.getInstance() != null) {
+            controllers.FrontendController.getInstance().loadContent("/gestion_cours/courses_body.fxml");
+        } else {
+            loadScene("/gestion_cours/frontend_courses.fxml", event, null);
+        }
     }
 
     public void goToAddCourse(MouseEvent event) {
-        loadScene("/gestion_cours/frontend_add_course.fxml", event, null);
+        if (controllers.FrontendController.getInstance() != null) {
+            controllers.FrontendController.getInstance().loadContent("/gestion_cours/add_course_body.fxml");
+        } else {
+            loadScene("/gestion_cours/frontend_add_course.fxml", event, null);
+        }
     }
 
     protected SVGPath createIcon(String path, String color, double size) {
