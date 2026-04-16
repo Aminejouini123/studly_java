@@ -338,3 +338,11 @@
     -fx-spacing: 15;
     -fx-padding: 20 0 0 0;
 }
+
+.error-label {
+    -fx-text-fill: #e11d48;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 0 0 2;
+}
+

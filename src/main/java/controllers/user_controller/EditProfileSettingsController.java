@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
+import controllers.FrontendController;
+
 public class EditProfileSettingsController {
 
     @FXML private Label avatarSideLabel;

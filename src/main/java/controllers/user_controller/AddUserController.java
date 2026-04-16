@@ -15,11 +15,16 @@ import java.time.LocalDateTime;
 
 public class AddUserController {
 
-    @FXML private TextField firstNameField;
-    @FXML private TextField lastNameField;
-    @FXML private TextField emailField;
-    @FXML private PasswordField passwordField;
-    @FXML private ChoiceBox<String> roleChoiceBox;
+    @FXML
+    private TextField firstNameField;
+    @FXML
+    private TextField lastNameField;
+    @FXML
+    private TextField emailField;
+    @FXML
+    private PasswordField passwordField;
+    @FXML
+    private ChoiceBox<String> roleChoiceBox;
 
     private final UserService userService = new UserService();
     private ListUserController listUserController;
@@ -55,7 +60,7 @@ public class AddUserController {
         newUser.setRoles("[\"" + role + "\"]");
         newUser.setStatut("Active");
         newUser.setIs_verified(1);
-        
+
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
         newUser.setCreated_at(now);
         newUser.setUpdated_at(now);
@@ -63,11 +68,11 @@ public class AddUserController {
         try {
             userService.ajouter(newUser);
             showAlert(Alert.AlertType.INFORMATION, "Success", "User added successfully!");
-            
+
             if (listUserController != null) {
                 listUserController.refresh();
             }
-            
+
             closeStage();
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Database Error", "Could not add user: " + e.getMessage());
