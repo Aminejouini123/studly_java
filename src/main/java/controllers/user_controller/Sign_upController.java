@@ -85,7 +85,7 @@ public class Sign_upController {
         newUser.setEmail(email);
         newUser.setPassword(password);
         newUser.setDate_of_birth(dob);
-        newUser.setRoles("ROLE_USER");
+        newUser.setRoles("[\"ROLE_USER\"]");
         newUser.setIs_verified(0);
         newUser.setStatut("active");
         newUser.setScore(0);

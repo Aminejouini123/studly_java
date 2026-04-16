@@ -28,6 +28,14 @@ public class MyDatabase {
     }
 
     public Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed() || !connection.isValid(2)) {
+                System.out.println("Reconnecting to the database...");
+                connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error reconnecting: " + e.getMessage());
+        }
         return connection;
     }
 }

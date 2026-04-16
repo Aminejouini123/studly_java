@@ -9,7 +9,7 @@ import javafx.stage.Stage;
 import java.net.URL;
 
 public class MainFX extends Application {
-    private static final String DASHBOARD_FXML = "/TEMPLATE/frontend_dashboard.fxml";
+    private static final String DASHBOARD_FXML = "/getion_user/auth_page.fxml";
 
     @Override
     public void start(Stage stage) throws Exception {
