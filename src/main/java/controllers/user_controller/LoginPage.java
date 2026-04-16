@@ -10,31 +10,30 @@ import models.User;
 import services.UserService;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public class LoginPage {
 
-    @FXML private TextField email_ID;
-    @FXML private PasswordField mdp_id;
-    @FXML private Button login_button;
-    @FXML private Hyperlink reset_mdp_id;
-    @FXML private Hyperlink sign_up_id;
+    @FXML private TextField emailInput;
+    @FXML private PasswordField passwordInput;
+    @FXML private Button loginButton;
+    @FXML private Hyperlink resetPasswordLink;
+    @FXML private Hyperlink signUpLink;
 
     private final UserService userService = new UserService();
 
     @FXML
     public void initialize() {
-        login_button.setOnAction(e -> handleLogin());
-        sign_up_id.setOnAction(e -> navigateTo("/getion_user/signUp_page.fxml", "Sign Up – Studly"));
-        reset_mdp_id.setOnAction(e ->
+        loginButton.setOnAction(e -> handleLogin());
+        signUpLink.setOnAction(e -> navigateTo("/getion_user/signUp_page.fxml", "Sign Up – Studly"));
+        resetPasswordLink.setOnAction(e ->
             showAlert(Alert.AlertType.INFORMATION, "Reset Password",
                 "Password reset is not yet implemented.")
         );
     }
 
     private void handleLogin() {
-        String email    = email_ID.getText().trim();
-        String password = mdp_id.getText().trim();
+        String email    = emailInput.getText().trim();
+        String password = passwordInput.getText().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Missing Fields",
@@ -43,15 +42,18 @@ public class LoginPage {
         }
 
         try {
-            List<User> users = userService.recuperer();
-            boolean found = users.stream()
-                .anyMatch(u -> u.getEmail().equalsIgnoreCase(email)
-                            && u.getPassword().equals(password));
+            User user = userService.authenticateUser(email, password);
 
-            if (found) {
+            if (user != null) {
+                utils.SessionManager.setCurrentUser(user);
                 showAlert(Alert.AlertType.INFORMATION, "Welcome!",
-                    "Login successful. Welcome, " + email + "!");
-                // TODO: navigate to main dashboard
+                    "Login successful. Welcome, " + user.getFirst_name() + "!");
+                
+                if (user.getRoles() != null && user.getRoles().contains("ROLE_ADMIN")) {
+                    navigateTo("/TEMPLATE/backend_management.fxml", "Admin Dashboard – Studly");
+                } else {
+                    navigateTo("/TEMPLATE/frontend_dashboard.fxml", "Dashboard – Studly");
+                }
             } else {
                 showAlert(Alert.AlertType.ERROR, "Login Failed",
                     "Invalid email or password. Please try again.");
@@ -66,11 +68,18 @@ public class LoginPage {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
-            Stage stage = (Stage) login_button.getScene().getWindow();
+            Stage stage = (Stage) loginButton.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle(title);
         } catch (Exception ex) {
-            showAlert(Alert.AlertType.ERROR, "Navigation Error", ex.getMessage());
+            System.err.println("Navigation Error Details:");
+            ex.printStackTrace();
+            if (ex.getCause() != null) {
+                System.err.println("Caused by:");
+                ex.getCause().printStackTrace();
+            }
+            String msg = ex.getClass().getSimpleName() + (ex.getCause() != null ? " caused by " + ex.getCause().getClass().getSimpleName() : "");
+            showAlert(Alert.AlertType.ERROR, "Navigation Error", msg + "\nCheck console for details.");
         }
     }
 

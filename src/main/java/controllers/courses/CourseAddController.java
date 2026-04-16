@@ -244,7 +244,7 @@ public class CourseAddController extends BaseCourseController {
         fadeIn.play();
         scaleUp.play();
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1.5), e -> {
-            loadScene("/gestion_cours/frontend_courses.fxml", null, rootPane);
+            goToCourses(null);
         }));
         timeline.play();
     }
