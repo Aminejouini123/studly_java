@@ -35,6 +35,8 @@ public class MainFX extends Application {
         Parent root = fxmlloader.load();
         Scene scene = new Scene(root);
         stage.setScene(scene);
+        stage.setWidth(1100);
+        stage.setHeight(800);
         stage.setTitle("Studly");
         stage.show();
     }

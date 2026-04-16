@@ -365,9 +365,26 @@ public class ActivityListController extends BaseActivityController {
         }
     }
 
+    private boolean isFromBackend = false;
+
+    public void setFromBackend(boolean fromBackend) {
+        this.isFromBackend = fromBackend;
+    }
+
     @FXML
     private void handleBackToCourses() {
-        loadScene("/gestion_cours/frontend_courses.fxml", null, courseTitleLabel);
+        if (isFromBackend) {
+            try {
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/TEMPLATE/backend_courses.fxml"));
+                javafx.scene.Parent root = loader.load();
+                javafx.stage.Stage stage = (javafx.stage.Stage) activitiesContainer.getScene().getWindow();
+                stage.getScene().setRoot(root);
+            } catch (java.io.IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            loadScene("/gestion_cours/frontend_courses.fxml", null, courseTitleLabel);
+        }
     }
 
     @FXML

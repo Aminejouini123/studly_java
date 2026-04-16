@@ -30,7 +30,7 @@
                         <!-- Top Navigation Bar -->
                         <HBox alignment="CENTER_LEFT" spacing="20.0">
                             <children>
-                                <Button mnemonicParsing="false" onMouseClicked="#goToCourses" style="-fx-background-color: white; -fx-background-radius: 50; -fx-padding: 10 24; -fx-text-fill: #64748B; -fx-font-weight: 800; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 2);" text="←  Back to Courses" />
+                                <Button mnemonicParsing="false" onAction="#handleBackToCoursesAction" style="-fx-background-color: white; -fx-background-radius: 50; -fx-padding: 10 24; -fx-text-fill: #64748B; -fx-font-weight: 800; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 2);" text="←  Back to Courses" />
                                 <Region HBox.hgrow="ALWAYS" />
                                 <HBox alignment="CENTER" spacing="15.0">
                                    <children>

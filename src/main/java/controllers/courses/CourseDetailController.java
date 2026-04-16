@@ -36,6 +36,19 @@ public class CourseDetailController extends BaseCourseController {
     private Course displayedCourse;
 
     @FXML
+    public void handleBackToCoursesAction(javafx.event.ActionEvent event) {
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+        } else if (fromBackend) {
+            loadScene("/TEMPLATE/backend_courses.fxml", null, (javafx.scene.Node) event.getSource());
+        } else {
+            // Always reload the standalone full-page scene since we completely replaced the root 
+            // when entering this detail view. Calling FrontendController.loadContent here modifies a detached node.
+            loadScene("/gestion_cours/frontend_courses.fxml", null, (javafx.scene.Node) event.getSource());
+        }
+    }
+
+    @FXML
     public void populateCourseDetails(Course course) {
         this.displayedCourse = course;
 

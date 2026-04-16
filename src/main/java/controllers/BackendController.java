@@ -6,14 +6,17 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import java.io.IOException;
+import java.util.List;
+import controllers.user_controller.ListUserController;
+import controllers.user_controller.AddUserController;
 
 public class BackendController {
 
     @FXML private StackPane mainContentHost;
     
     @FXML private Button overviewBtn;
-    @FXML private Button usersBtn;
     @FXML private Button timeBtn;
+    @FXML private Button coursesBtn;
 
     @FXML
     public void initialize() {
@@ -57,7 +60,7 @@ public class BackendController {
     }
 
     private void setActiveButton(Button activeBtn) {
-        Button[] buttons = {overviewBtn, usersBtn, timeBtn};
+        Button[] buttons = {overviewBtn, usersBtn, timeBtn, coursesBtn};
         for (Button btn : buttons) {
             if (btn != null) {
                 btn.getStyleClass().remove("nav-button-active");
@@ -94,5 +97,12 @@ public class BackendController {
     public void handleExportExcel() {
         // This might be called from descendants if not handled there
         System.out.println("Export logic should be handled by sub-controllers.");
+    }
+
+    @FXML
+    public void handleShowCourses() {
+        System.out.println("Navigating to courses...");
+        setActiveButton(coursesBtn);
+        loadContent("/gestion_cours/backend_courses.fxml");
     }
 }

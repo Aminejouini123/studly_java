@@ -14,30 +14,36 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 
-<AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.LoginPage">
+<StackPane prefHeight="800.0" prefWidth="1100.0" styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.user_controller.LoginPage">
+
     <children>
-        <!-- Background decorative elements for the modern feel -->
-        <!-- Big abstract circle on the top left -->
-        <Circle fill="#2464d1" layoutX="120.0" layoutY="120.0" opacity="0.4" radius="150.0" />
-        
-        <!-- Small cyan circle on the bottom left -->
-        <Circle fill="#0dcaf0" layoutX="100.0" layoutY="550.0" opacity="0.5" radius="50.0" />
-        
-        <!-- Medium translucent circle on the right side -->
-        <Circle fill="#1d4899" layoutX="850.0" layoutY="200.0" opacity="0.6" radius="120.0" />
-
-        <!-- 3D-like pill shapes (Moved further to the edges so they don't block the form) -->
-        <Rectangle arcHeight="60.0" arcWidth="60.0" fill="#377df0" height="60.0" layoutX="100.0" layoutY="350.0" opacity="0.7" rotate="45.0" width="160.0" />
-        <Rectangle arcHeight="60.0" arcWidth="60.0" fill="#00c3ff" height="40.0" layoutX="160.0" layoutY="280.0" opacity="0.4" rotate="45.0" width="80.0" />
-        
-        <Rectangle arcHeight="60.0" arcWidth="60.0" fill="#295bb8" height="60.0" layoutX="-50.0" layoutY="550.0" opacity="0.8" rotate="45.0" width="160.0" />
-
-        <!-- Centered Main Content Area -->
-        <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <AnchorPane mouseTransparent="true" prefHeight="800.0" prefWidth="1100.0">
             <children>
-                <!-- Glassmorphic Login Card -->
-                <VBox alignment="CENTER_LEFT" maxWidth="420.0" maxHeight="-Infinity" spacing="12.0" styleClass="login-card">
-                    <padding>
+                <!-- Background decorative elements for the modern feel -->
+                <!-- Big abstract circle on the top left -->
+                <Circle fill="#2464d1" layoutX="120.0" layoutY="120.0" opacity="0.4" radius="150.0" />
+                
+                <!-- Small cyan circle on the bottom left -->
+                <Circle fill="#0dcaf0" layoutX="100.0" layoutY="550.0" opacity="0.5" radius="50.0" />
+                
+                <!-- Medium translucent circle on the right side -->
+                <Circle fill="#1d4899" layoutX="850.0" layoutY="200.0" opacity="0.6" radius="120.0" />
+
+                <!-- 3D-like pill shapes (Moved further to the edges so they don't block the form) -->
+                <Rectangle arcHeight="60.0" arcWidth="60.0" fill="#377df0" height="60.0" layoutX="100.0" layoutY="350.0" opacity="0.7" rotate="45.0" width="160.0" />
+                <Rectangle arcHeight="60.0" arcWidth="60.0" fill="#00c3ff" height="40.0" layoutX="160.0" layoutY="280.0" opacity="0.4" rotate="45.0" width="80.0" />
+                
+                <Rectangle arcHeight="60.0" arcWidth="60.0" fill="#295bb8" height="60.0" layoutX="-50.0" layoutY="550.0" opacity="0.8" rotate="45.0" width="160.0" />
+
+                <!-- Illustration Image positioned at the bottom right corner (Just to match target design) -->
+                <ImageView fitHeight="250.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="30.0">
+                    <!-- Set your illustration image here in SceneBuilder -->
+                </ImageView>
+            </children>
+        </AnchorPane>
+        <!-- Glassmorphic Login Card -->
+        <VBox alignment="CENTER_LEFT" maxWidth="420.0" maxHeight="-Infinity" spacing="12.0" styleClass="login-card" StackPane.alignment="CENTER">
+            <padding>
                         <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
                     </padding>
                     <children>
@@ -49,6 +55,7 @@
                         
                         <Label styleClass="input-label" text="Email" />
                         <TextField fx:id="emailInput" promptText="username@gmail.com" styleClass="text-input-modern" />
+                        <Label fx:id="emailError" managed="false" styleClass="error-label" visible="false" />
                         
                         <Label styleClass="input-label" text="Password">
                             <VBox.margin>
@@ -56,6 +63,7 @@
                             </VBox.margin>
                         </Label>
                         <PasswordField fx:id="passwordInput" promptText="Password" styleClass="text-input-modern" />
+                        <Label fx:id="passwordError" managed="false" styleClass="error-label" visible="false" />
                         
                         <HBox alignment="CENTER_LEFT">
                             <children>
@@ -94,12 +102,4 @@
                     </children>
                 </VBox>
             </children>
-        </StackPane>
-
-        <!-- Illustration Image positioned at the bottom right corner (Just to match target design) -->
-        <ImageView fitHeight="250.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="30.0">
-            <!-- Set your illustration image here in SceneBuilder -->
-        </ImageView>
-
-    </children>
-</AnchorPane>
+</StackPane>

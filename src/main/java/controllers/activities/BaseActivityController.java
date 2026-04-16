@@ -64,4 +64,24 @@ public abstract class BaseActivityController {
         alert.setContentText(content);
         alert.showAndWait();
     }
+    protected boolean fromBackend = false;
+    protected controllers.backend.BackendActivityController backendController;
+
+    public void setFromBackend(boolean fromBackend) {
+        this.fromBackend = fromBackend;
+    }
+
+    public void setBackendController(controllers.backend.BackendActivityController controller) {
+        this.backendController = controller;
+    }
+
+    protected void returnToDashboard(javafx.scene.Node anchor) {
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+        } else if (fromBackend) {
+            loadScene("/gestion_activites/backend_activities.fxml", null, anchor);
+        } else {
+            loadScene("/gestion_activites/frontend_activities.fxml", null, anchor);
+        }
+    }
 }

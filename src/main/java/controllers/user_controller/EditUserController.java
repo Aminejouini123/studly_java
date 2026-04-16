@@ -1,4 +1,4 @@
-package controllers;
+package controllers.user_controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -17,6 +17,10 @@ public class EditUserController {
     @FXML private TextField lastNameField;
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
+    @FXML private Label firstNameError;
+    @FXML private Label lastNameError;
+    @FXML private Label emailError;
+    @FXML private Label passwordError;
     @FXML private ChoiceBox<String> roleChoiceBox;
 
     private final UserService userService = new UserService();
@@ -58,10 +62,33 @@ public class EditUserController {
         String password = passwordField.getText().trim();
         String role = roleChoiceBox.getValue();
 
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Missing Fields", "First name, last name, and email are required.");
-            return;
+        // Reset errors
+        resetErrors();
+        boolean hasError = false;
+
+        if (firstName.isEmpty()) {
+            showError(firstNameError, "First name is required");
+            hasError = true;
         }
+        if (lastName.isEmpty()) {
+            showError(lastNameError, "Last name is required");
+            hasError = true;
+        }
+        if (email.isEmpty()) {
+            showError(emailError, "Email address is required");
+            hasError = true;
+        } else if (!email.matches("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$")) {
+            showError(emailError, "Invalid email format");
+            hasError = true;
+        }
+
+        // Optional password: only validate if something is typed
+        if (!password.isEmpty() && password.length() < 6) {
+            showError(passwordError, "Min 6 characters required");
+            hasError = true;
+        }
+
+        if (hasError) return;
 
         currentUser.setFirst_name(firstName);
         currentUser.setLast_name(lastName);
@@ -97,6 +124,20 @@ public class EditUserController {
     private void closeStage() {
         Stage stage = (Stage) firstNameField.getScene().getWindow();
         stage.close();
+    }
+
+    private void resetErrors() {
+        Label[] labels = {firstNameError, lastNameError, emailError, passwordError};
+        for (Label l : labels) {
+            l.setVisible(false);
+            l.setManaged(false);
+        }
+    }
+
+    private void showError(Label label, String message) {
+        label.setText(message);
+        label.setVisible(true);
+        label.setManaged(true);
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {
