@@ -9,6 +9,7 @@ public class Main {
 
 
     public static void main(String[] args) {
+        utils.DatabaseInitializer.initialize("schema.sql");
         services.UserService us = new services.UserService();
         try {
             for (models.User u : us.recuperer()) {

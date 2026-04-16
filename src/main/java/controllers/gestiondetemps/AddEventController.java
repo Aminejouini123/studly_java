@@ -2,6 +2,7 @@ package controllers.gestiondetemps;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -19,6 +20,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 public class AddEventController {
+
+    @FXML
+    private Node rootContainer;
 
     @FXML
     private TextField titleField;
@@ -106,7 +110,14 @@ public class AddEventController {
 
     @FXML
     private void handleCancel(ActionEvent actionEvent) {
-        clearForm();
+        if (rootContainer != null) {
+            javafx.stage.Stage stage = (javafx.stage.Stage) rootContainer.getScene().getWindow();
+            if (stage != null) {
+                stage.close();
+            } else if (rootContainer.getParent() instanceof javafx.scene.layout.Pane) {
+                ((javafx.scene.layout.Pane) rootContainer.getParent()).getChildren().remove(rootContainer);
+            }
+        }
     }
 
     private boolean validateInput() {

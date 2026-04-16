@@ -14,6 +14,9 @@ public class EventService implements IService<Event> {
 
     @Override
     public void ajouter(Event entity) throws SQLException {
+        if (connection == null) {
+            throw new SQLException("Database connection is not available.");
+        }
         String sql = "insert into `event` (title, description, type, duration, location, status, priority, difficulty, date, start_time, end_time, color, category, notes, all_day, reminder_minutes, google_event_id, motivation_id, user_id) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, entity.getTitle());
@@ -40,6 +43,9 @@ public class EventService implements IService<Event> {
 
     @Override
     public void modifier(Event entity) throws SQLException {
+        if (connection == null) {
+            throw new SQLException("Database connection is not available.");
+        }
         String sql = "update `event` set title = ?, description = ?, type = ?, duration = ?, location = ?, status = ?, priority = ?, difficulty = ?, date = ?, start_time = ?, end_time = ?, color = ?, category = ?, notes = ?, all_day = ?, reminder_minutes = ?, google_event_id = ?, motivation_id = ?, user_id = ? where id = ?";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, entity.getTitle());
@@ -67,6 +73,9 @@ public class EventService implements IService<Event> {
 
     @Override
     public void supprimer(int id) throws SQLException {
+        if (connection == null) {
+            throw new SQLException("Database connection is not available.");
+        }
         String sql = "delete from `event` where id = ?";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setInt(1, id);
@@ -75,6 +84,9 @@ public class EventService implements IService<Event> {
 
     @Override
     public List<Event> recuperer() throws SQLException {
+        if (connection == null) {
+            throw new SQLException("Database connection is not available.");
+        }
         String sql = "select * from `event`";
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(sql);

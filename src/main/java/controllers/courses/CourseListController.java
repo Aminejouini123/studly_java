@@ -66,14 +66,54 @@ public class CourseListController extends BaseCourseController {
         }
     }
 
+<<<<<<< HEAD
     private void loadCourses() {
         try {
             CourseService service = new CourseService();
             allCourses = service.recuperer();
+=======
+        // Load courses on a background thread to avoid blocking the FX thread
+        javafx.concurrent.Task<java.util.List<Course>> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected java.util.List<Course> call() throws Exception {
+                CourseService service = new CourseService();
+                User currentUser = SessionManager.getCurrentUser();
+                if (currentUser != null) {
+                    return service.recupererParUser(currentUser.getId());
+                } else {
+                    return new ArrayList<>();
+                }
+            }
+        };
+
+        task.setOnRunning(ev -> {
+            if (coursesContainer != null) {
+                coursesContainer.setDisable(true);
+            }
+        });
+
+        task.setOnSucceeded(ev -> {
+            allCourses = task.getValue() != null ? task.getValue() : new ArrayList<>();
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
             updateCourseDisplay();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            if (coursesContainer != null) {
+                coursesContainer.setDisable(false);
+            }
+        });
+
+        task.setOnFailed(ev -> {
+            System.err.println("Failed to load courses: " + task.getException());
+            task.getException().printStackTrace();
+            allCourses = new ArrayList<>();
+            updateCourseDisplay();
+            if (coursesContainer != null) {
+                coursesContainer.setDisable(false);
+            }
+        });
+
+        Thread t = new Thread(task, "course-loader");
+        t.setDaemon(true);
+        t.start();
     }
 
     // --- Core Logic: Search & Filter ---
@@ -212,14 +252,36 @@ public class CourseListController extends BaseCourseController {
         examBtn.setMaxWidth(Double.MAX_VALUE);
         examBtn.setOnAction(e -> {
             try {
-                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_examen/frontend_exams.fxml"));
+                java.net.URL resource = getClass().getResource("/gestion_examen/frontend_exams.fxml");
+                if (resource == null) {
+                    final String msg = "Missing FXML resource: /gestion_examen/frontend_exams.fxml";
+                    System.err.println(msg);
+                    javafx.application.Platform.runLater(() -> {
+                        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                        alert.setTitle("Load Error");
+                        alert.setHeaderText("Unable to load component");
+                        alert.setContentText(msg);
+                        alert.showAndWait();
+                    });
+                    return;
+                }
+
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(resource);
                 javafx.scene.Parent root = loader.load();
                 controllers.exams.ExamListController controller = loader.getController();
                 controller.setCourse(course);
                 Stage stage = (Stage) card.getScene().getWindow();
                 stage.getScene().setRoot(root);
-            } catch (java.io.IOException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
+                final String msg = "Unable to load /gestion_examen/frontend_exams.fxml: " + ex.getMessage();
+                javafx.application.Platform.runLater(() -> {
+                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                    alert.setTitle("Load Error");
+                    alert.setHeaderText("Unable to load component");
+                    alert.setContentText(msg);
+                    alert.showAndWait();
+                });
             }
         });
 
@@ -229,14 +291,36 @@ public class CourseListController extends BaseCourseController {
         activityBtn.setMaxWidth(Double.MAX_VALUE);
         activityBtn.setOnAction(e -> {
             try {
-                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_activities.fxml"));
+                java.net.URL resource = getClass().getResource("/gestion_activites/frontend_activities.fxml");
+                if (resource == null) {
+                    final String msg = "Missing FXML resource: /gestion_activites/frontend_activities.fxml";
+                    System.err.println(msg);
+                    javafx.application.Platform.runLater(() -> {
+                        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                        alert.setTitle("Load Error");
+                        alert.setHeaderText("Unable to load component");
+                        alert.setContentText(msg);
+                        alert.showAndWait();
+                    });
+                    return;
+                }
+
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(resource);
                 javafx.scene.Parent root = loader.load();
                 controllers.activities.ActivityListController controller = loader.getController();
                 controller.setCourse(course);
                 Stage stage = (Stage) card.getScene().getWindow();
                 stage.getScene().setRoot(root);
-            } catch (java.io.IOException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
+                final String msg = "Unable to load /gestion_activites/frontend_activities.fxml: " + ex.getMessage();
+                javafx.application.Platform.runLater(() -> {
+                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                    alert.setTitle("Load Error");
+                    alert.setHeaderText("Unable to load component");
+                    alert.setContentText(msg);
+                    alert.showAndWait();
+                });
             }
         });
 
@@ -344,15 +428,36 @@ public class CourseListController extends BaseCourseController {
 
     private void showCourseDetailView(Course course) {
         try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                    getClass().getResource("/gestion_cours/frontend_course_detail.fxml"));
+            java.net.URL resource = getClass().getResource("/gestion_cours/frontend_course_detail.fxml");
+            if (resource == null) {
+                final String msg = "Missing FXML resource: /gestion_cours/frontend_course_detail.fxml";
+                System.err.println(msg);
+                javafx.application.Platform.runLater(() -> {
+                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                    alert.setTitle("Load Error");
+                    alert.setHeaderText("Unable to load component");
+                    alert.setContentText(msg);
+                    alert.showAndWait();
+                });
+                return;
+            }
+
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(resource);
             javafx.scene.Parent root = loader.load();
             CourseDetailController controller = loader.getController();
             controller.populateCourseDetails(course);
             Stage stage = (Stage) coursesContainer.getScene().getWindow();
             stage.getScene().setRoot(root);
-        } catch (java.io.IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            final String msg = "Unable to load /gestion_cours/frontend_course_detail.fxml: " + e.getMessage();
+            javafx.application.Platform.runLater(() -> {
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                alert.setTitle("Load Error");
+                alert.setHeaderText("Unable to load component");
+                alert.setContentText(msg);
+                alert.showAndWait();
+            });
         }
     }
 }
