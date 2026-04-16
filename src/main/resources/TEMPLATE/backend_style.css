@@ -281,3 +281,44 @@
 .btn-edit:hover {
     -fx-background-color: rgba(59, 130, 246, 0.1);
 }
+
+/* Time Management Specific Styles */
+.status-badge {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 8;
+    -fx-background-radius: 10;
+}
+
+.btn-icon-only {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 5;
+    -fx-background-radius: 50%;
+}
+
+.btn-icon-only:hover {
+    -fx-background-color: rgba(99, 102, 241, 0.1);
+}
+
+.btn-action-edit {
+    -fx-background-color: #E0F2FE;
+    -fx-text-fill: #0369A1;
+    -fx-shape: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z";
+    -fx-pref-width: 14;
+    -fx-pref-height: 14;
+    -fx-scale-x: 0.8;
+    -fx-scale-y: 0.8;
+    -fx-cursor: hand;
+}
+
+.btn-action-delete {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #B91C1C;
+    -fx-shape: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z";
+    -fx-pref-width: 14;
+    -fx-pref-height: 14;
+    -fx-scale-x: 0.8;
+    -fx-scale-y: 0.8;
+    -fx-cursor: hand;
+}

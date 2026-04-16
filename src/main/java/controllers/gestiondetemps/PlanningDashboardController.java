@@ -144,13 +144,30 @@ public class PlanningDashboardController {
         try {
             URL resource = getClass().getResource(resourcePath);
             if (resource == null) {
-                throw new IllegalStateException("Missing FXML resource: " + resourcePath);
+                final String msg = "Missing FXML resource: " + resourcePath;
+                System.err.println(msg);
+                javafx.application.Platform.runLater(() -> {
+                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                    alert.setTitle("Load Error");
+                    alert.setHeaderText("Unable to load component");
+                    alert.setContentText(msg);
+                    alert.showAndWait();
+                });
+                return;
             }
 
             Node content = FXMLLoader.load(resource);
             planningContentHost.getChildren().setAll(content);
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to load FXML resource: " + resourcePath, e);
+            e.printStackTrace();
+            final String msg = "Unable to load FXML resource: " + resourcePath + "\n" + e.getMessage();
+            javafx.application.Platform.runLater(() -> {
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                alert.setTitle("Load Error");
+                alert.setHeaderText("Unable to load component");
+                alert.setContentText(msg);
+                alert.showAndWait();
+            });
         }
     }
 
@@ -158,7 +175,16 @@ public class PlanningDashboardController {
         try {
             URL resource = getClass().getResource("/Gestion de temps/motivation_setup.fxml");
             if (resource == null) {
-                throw new IllegalStateException("Missing FXML resource: /Gestion de temps/motivation_setup.fxml");
+                final String msg = "Missing FXML resource: /Gestion de temps/motivation_setup.fxml";
+                System.err.println(msg);
+                javafx.application.Platform.runLater(() -> {
+                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                    alert.setTitle("Load Error");
+                    alert.setHeaderText("Unable to load component");
+                    alert.setContentText(msg);
+                    alert.showAndWait();
+                });
+                return;
             }
 
             FXMLLoader loader = new FXMLLoader(resource);
@@ -167,7 +193,15 @@ public class PlanningDashboardController {
             controller.configure(event, this::showOverview);
             planningContentHost.getChildren().setAll(content);
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to load FXML resource: /Gestion de temps/motivation_setup.fxml", e);
+            e.printStackTrace();
+            final String msg = "Unable to load FXML resource: /Gestion de temps/motivation_setup.fxml\n" + e.getMessage();
+            javafx.application.Platform.runLater(() -> {
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                alert.setTitle("Load Error");
+                alert.setHeaderText("Unable to load component");
+                alert.setContentText(msg);
+                alert.showAndWait();
+            });
         }
     }
 

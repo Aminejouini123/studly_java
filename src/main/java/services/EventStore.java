@@ -18,23 +18,45 @@ public class EventStore {
     private int nextLocalId = 1;
 
     private EventStore() {
+        // Initialize eventService and load persisted events off the FX thread
         EventService service = null;
         try {
             service = new EventService();
-            List<Event> persistedEvents = service.recuperer();
-            if (persistedEvents != null && !persistedEvents.isEmpty()) {
-                events.addAll(persistedEvents);
-                nextLocalId = persistedEvents.stream()
-                        .map(Event::getId)
-                        .max(Comparator.naturalOrder())
-                        .orElse(0) + 1;
-            } else {
-                seedSampleData();
-            }
         } catch (Exception ignored) {
-            seedSampleData();
+            service = null;
         }
         this.eventService = service;
+        final EventService svc = service;
+
+        if (svc != null) {
+            javafx.concurrent.Task<List<Event>> loader = new javafx.concurrent.Task<>() {
+                @Override
+                protected List<Event> call() throws Exception {
+                    return svc.recuperer();
+                }
+            };
+
+            loader.setOnSucceeded(ev -> {
+                List<Event> persistedEvents = loader.getValue();
+                if (persistedEvents != null && !persistedEvents.isEmpty()) {
+                    events.addAll(persistedEvents);
+                    nextLocalId = persistedEvents.stream()
+                            .map(Event::getId)
+                            .max(Comparator.naturalOrder())
+                            .orElse(0) + 1;
+                } else {
+                    seedSampleData();
+                }
+            });
+
+            loader.setOnFailed(ev -> seedSampleData());
+
+            Thread t = new Thread(loader, "eventstore-loader");
+            t.setDaemon(true);
+            t.start();
+        } else {
+            seedSampleData();
+        }
     }
 
     public static EventStore getInstance() {

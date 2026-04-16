@@ -9,6 +9,7 @@ public class Main {
 
 
     public static void main(String[] args) {
+        utils.DatabaseInitializer.initialize("schema.sql");
         PersonneService ps = new PersonneService();
 
         try {

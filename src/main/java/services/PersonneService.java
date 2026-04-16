@@ -17,6 +17,9 @@ public class PersonneService implements IService<Personne> {
 
     @Override
     public void ajouter(Personne personne) throws SQLException {
+        if (connection == null) {
+            throw new SQLException("Database connection is not available.");
+        }
         String sql = "insert into personne (nom, prenom,age) " +
                 "values('" + personne.getNom() + "','" + personne.getPrenom() + "'" +
                 "," + personne.getAge() + ")";
@@ -26,6 +29,9 @@ public class PersonneService implements IService<Personne> {
 
     @Override
     public void modifier(Personne personne) throws SQLException {
+        if (connection == null) {
+            throw new SQLException("Database connection is not available.");
+        }
         String sql = "update personne set nom = ?, prenom = ?, age = ? where id = ?";
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setString(1, personne.getNom());
@@ -37,6 +43,9 @@ public class PersonneService implements IService<Personne> {
 
     @Override
     public void supprimer(int id) throws SQLException {
+        if (connection == null) {
+            throw new SQLException("Database connection is not available.");
+        }
         String sql = "delete from personne where id = ?";
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setInt(1, id);
@@ -45,6 +54,9 @@ public class PersonneService implements IService<Personne> {
 
     @Override
     public List<Personne> recuperer() throws SQLException {
+        if (connection == null) {
+            throw new SQLException("Database connection is not available.");
+        }
         String sql = "select * from personne";
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(sql);

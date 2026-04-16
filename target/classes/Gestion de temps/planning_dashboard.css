@@ -180,3 +180,13 @@
     -fx-font-size: 14px;
     -fx-font-weight: 800;
 }
+
+.planning-motivation-button {
+    -fx-background-color: linear-gradient(to right, #0b6cae, #15a8ea);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}

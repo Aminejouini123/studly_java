@@ -65,13 +65,13 @@ public class FrontendController extends controllers.courses.BaseCourseController
     }
 
     @FXML
-    private void showDashboard() {
+    public void showDashboard() {
         contentHost.getChildren().clear();
         setActiveNav(dashboardNavLabel);
     }
 
     @FXML
-    private void showPlanning() {
+    public void showPlanning() {
         loadContent("/Gestion de temps/planning_dashboard.fxml");
         setActiveNav(planningNavLabel);
     }
@@ -101,16 +101,24 @@ public class FrontendController extends controllers.courses.BaseCourseController
     public void loadContent(String resourcePath) {
         try {
             URL resource = getClass().getResource(resourcePath);
+            System.out.println("FrontendController: loading resource -> " + resourcePath + " (url=" + resource + ")");
             if (resource == null) {
-                System.err.println("FXML NOT FOUND: " + resourcePath);
-                return;
+                throw new IOException("Missing FXML resource: " + resourcePath);
             }
 
             FXMLLoader loader = new FXMLLoader(resource);
             Node content = loader.load();
+            System.out.println("FrontendController: loaded content for " + resourcePath + ", nodes=" + (content == null ? "null" : content.getClass().getSimpleName()));
             contentHost.getChildren().setAll(content);
         } catch (IOException e) {
             e.printStackTrace();
+            javafx.application.Platform.runLater(() -> {
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                alert.setTitle("Load Error");
+                alert.setHeaderText("Unable to load component");
+                alert.setContentText("Resource: " + resourcePath + "\nError: " + e.getMessage());
+                alert.showAndWait();
+            });
         }
     }
 

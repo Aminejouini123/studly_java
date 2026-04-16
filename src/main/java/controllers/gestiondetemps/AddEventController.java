@@ -110,8 +110,13 @@ public class AddEventController {
 
     @FXML
     private void handleCancel(ActionEvent actionEvent) {
-        if (rootContainer != null && rootContainer.getParent() instanceof javafx.scene.layout.Pane) {
-            ((javafx.scene.layout.Pane) rootContainer.getParent()).getChildren().remove(rootContainer);
+        if (rootContainer != null) {
+            javafx.stage.Stage stage = (javafx.stage.Stage) rootContainer.getScene().getWindow();
+            if (stage != null) {
+                stage.close();
+            } else if (rootContainer.getParent() instanceof javafx.scene.layout.Pane) {
+                ((javafx.scene.layout.Pane) rootContainer.getParent()).getChildren().remove(rootContainer);
+            }
         }
     }
 
