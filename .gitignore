@@ -1,0 +1,6 @@
+target/
+.idea/
+*.class
+*.log
+cp.txt
+.DS_Store
