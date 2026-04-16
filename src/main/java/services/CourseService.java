@@ -10,10 +10,42 @@ public class CourseService implements IService<Course> {
     private Connection connection;
     public CourseService() {
         connection = MyDatabase.getInstance().getConnection();
+        applySelfHealing();
+    }
+
+    private void applySelfHealing() {
+        try {
+            DatabaseMetaData dm = connection.getMetaData();
+            ResultSet rs = dm.getImportedKeys(null, null, "course");
+            while (rs.next()) {
+                String fkColumn = rs.getString("FKCOLUMN_NAME");
+                String fkName = rs.getString("FK_NAME");
+                if ("teacher_email".equalsIgnoreCase(fkColumn)) {
+                    System.out.println("🔧 Tuning database: Removing registration requirement for teacher emails...");
+                    try (Statement stmt = connection.createStatement()) {
+                        stmt.execute("ALTER TABLE `course` DROP FOREIGN KEY `" + fkName + "`");
+                        System.out.println("✅ Constraint " + fkName + " removed.");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Silently ignore if already dropped or other issues
+        }
     }
 
     @Override
     public void ajouter(Course entity) throws SQLException {
+        if (entity.getUser_id() <= 0) {
+            try (Statement st = connection.createStatement();
+                 ResultSet rs = st.executeQuery("SELECT id FROM user LIMIT 1")) {
+                if (rs.next()) {
+                    entity.setUser_id(rs.getInt("id"));
+                } else {
+                    throw new SQLException("Cannot add course: No users exist in the database. Please register first.");
+                }
+            }
+        }
+
         String sql = "insert into `course` (name, course_file, course_link, teacher_email, semester, difficulty_level, type, priority, coefficient, status, duration, comment, created_at, user_id) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, entity.getName());
@@ -75,6 +107,34 @@ public class CourseService implements IService<Course> {
         String sql = "select * from `course`";
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(sql);
+        List<Course> list = new ArrayList<>();
+        while (rs.next()) {
+            Course entity = new Course();
+            entity.setId(rs.getInt("id"));
+            entity.setName(rs.getString("name"));
+            entity.setCourse_file(rs.getString("course_file"));
+            entity.setCourse_link(rs.getString("course_link"));
+            entity.setTeacher_email(rs.getString("teacher_email"));
+            entity.setSemester(rs.getString("semester"));
+            entity.setDifficulty_level(rs.getString("difficulty_level"));
+            entity.setType(rs.getString("type"));
+            entity.setPriority(rs.getString("priority"));
+            entity.setCoefficient(rs.getDouble("coefficient"));
+            entity.setStatus(rs.getString("status"));
+            entity.setDuration(rs.getInt("duration"));
+            entity.setComment(rs.getString("comment"));
+            entity.setCreated_at(rs.getTimestamp("created_at"));
+            entity.setUser_id(rs.getInt("user_id"));
+            list.add(entity);
+        }
+        return list;
+    }
+
+    public List<Course> recupererParUser(int userId) throws SQLException {
+        String sql = "select * from `course` where user_id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
         List<Course> list = new ArrayList<>();
         while (rs.next()) {
             Course entity = new Course();

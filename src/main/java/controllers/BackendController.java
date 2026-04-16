@@ -16,6 +16,8 @@ import javafx.stage.StageStyle;
 import models.User;
 import java.io.IOException;
 import java.util.List;
+import controllers.user_controller.ListUserController;
+import controllers.user_controller.AddUserController;
 
 public class BackendController {
 
@@ -163,6 +165,19 @@ public class BackendController {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(form));
             stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void handleShowCourses() {
+        System.out.println("Navigating to courses... showing the courses template.");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestion_cours/backend_courses.fxml"));
+            javafx.scene.Parent root = loader.load();
+            Stage stage = (Stage) usersTable.getScene().getWindow();
+            stage.setScene(new Scene(root));
         } catch (IOException e) {
             e.printStackTrace();
         }

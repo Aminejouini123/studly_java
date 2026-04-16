@@ -16,7 +16,9 @@ import javafx.geometry.Insets;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import models.Course;
+import models.User;
 import services.CourseService;
+import utils.SessionManager;
 
 import javafx.scene.layout.StackPane;
 import javafx.animation.FadeTransition;
@@ -69,7 +71,13 @@ public class CourseListController extends BaseCourseController {
     private void loadCourses() {
         try {
             CourseService service = new CourseService();
-            allCourses = service.recuperer();
+            User currentUser = SessionManager.getCurrentUser();
+            if (currentUser != null) {
+                allCourses = service.recupererParUser(currentUser.getId());
+            } else {
+                // Fallback to empty if no user is found, to prevent data leakage
+                allCourses = new ArrayList<>();
+            }
             updateCourseDisplay();
         } catch (SQLException e) {
             e.printStackTrace();

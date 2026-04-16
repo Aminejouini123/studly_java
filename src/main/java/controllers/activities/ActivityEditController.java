@@ -2,6 +2,7 @@ package controllers.activities;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.StackPane;
 import models.Activity;
 import models.Course;
 import services.ActivityService;
@@ -18,12 +19,19 @@ public class ActivityEditController extends BaseActivityController {
     private Course currentCourse;
     private Activity currentActivity;
     private final ActivityService activityService = new ActivityService();
-
+    public void setActivity(Activity activity) {
+        this.currentActivity = activity;
+        this.currentCourse = null;
+        populateFields(activity);
+    }
+    
     public void setActivity(Activity activity, Course course) {
         this.currentActivity = activity;
         this.currentCourse = course;
-        
-        // Populate fields
+        populateFields(activity);
+    }
+
+    private void populateFields(Activity activity) {
         titleField.setText(activity.getTitle());
         descriptionArea.setText(activity.getDescription());
         fileField.setText(activity.getFile());
@@ -57,7 +65,7 @@ public class ActivityEditController extends BaseActivityController {
             currentActivity.setHints(hintsArea.getText());
 
             activityService.modifier(currentActivity);
-            handleBack();
+            returnToDashboard(updateBtn);
 
         } catch (SQLException | NumberFormatException e) {
             e.printStackTrace();
@@ -67,6 +75,10 @@ public class ActivityEditController extends BaseActivityController {
 
     @FXML
     private void handleBack() {
+        if (fromBackend) {
+            returnToDashboard(updateBtn);
+            return;
+        }
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_activities.fxml"));
             javafx.scene.Parent root = loader.load();
@@ -78,6 +90,7 @@ public class ActivityEditController extends BaseActivityController {
             e.printStackTrace();
         }
     }
+
 
     private void hideErrors() {
         if (titleError != null) {

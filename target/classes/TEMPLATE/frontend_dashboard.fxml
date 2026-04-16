@@ -32,7 +32,7 @@
                    <children>
                       <Label fx:id="dashboardNavLabel" onMouseClicked="#showDashboard" styleClass="nav-link-active" text="Dashboard" />
                       <Label fx:id="planningNavLabel" onMouseClicked="#showPlanning" styleClass="nav-link" text="Planing" />
-                      <Label fx:id="coursesNavLabel" onMouseClicked="#goToCourses" styleClass="nav-link" text="Courses" />
+                      <Label onMouseClicked="#goToCourses" styleClass="nav-link" text="Coursses" />
                       <Label styleClass="nav-link" text="Groups" />
                       <Label styleClass="nav-link" text="Tasks" />
                    </children>
