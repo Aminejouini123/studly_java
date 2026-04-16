@@ -281,3 +281,11 @@
 .btn-edit:hover {
     -fx-background-color: rgba(59, 130, 246, 0.1);
 }
+
+.error-label {
+    -fx-text-fill: #e11d48;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 0 0 2;
+}
+

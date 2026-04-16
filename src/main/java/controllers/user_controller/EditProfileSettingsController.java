@@ -1,4 +1,4 @@
-package controllers;
+package controllers.user_controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -9,6 +9,8 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+
+import controllers.FrontendController;
 
 public class EditProfileSettingsController {
 

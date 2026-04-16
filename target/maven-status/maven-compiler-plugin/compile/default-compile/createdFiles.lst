@@ -41,7 +41,6 @@ controllers\activities\ActivityListController.class
 controllers\activities\ActivityEditController.class
 models\Groups.class
 models\Objective.class
-controllers\EditProfileSettingsController.class
 controllers\LoginPage.class
 models\Project.class
 controllers\courses\BaseCourseController.class
