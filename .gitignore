@@ -1,6 +1,14 @@
+<<<<<<< HEAD
+/target/
+/.idea/
+/.vscode/
+*.classbuild_run.log
+build_run.log
+=======
 target/
 .idea/
 *.class
 *.log
 cp.txt
 .DS_Store
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e

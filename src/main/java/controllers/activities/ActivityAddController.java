@@ -57,7 +57,7 @@ public class ActivityAddController extends BaseActivityController {
             );
 
             activityService.ajouter(activity);
-            returnToDashboard(addBtn);
+            handleBack(); 
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -67,10 +67,6 @@ public class ActivityAddController extends BaseActivityController {
 
     @FXML
     private void handleBack() {
-        if (fromBackend) {
-            returnToDashboard(addBtn);
-            return;
-        }
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_activities.fxml"));
             javafx.scene.Parent root = loader.load();
@@ -82,7 +78,6 @@ public class ActivityAddController extends BaseActivityController {
             e.printStackTrace();
         }
     }
-
 
     private void hideErrors() {
         if (titleError != null) {

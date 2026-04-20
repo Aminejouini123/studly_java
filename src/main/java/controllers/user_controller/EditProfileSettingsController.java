@@ -1,17 +1,14 @@
-package controllers.user_controller;
+package controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import models.User;
 import services.UserService;
 import utils.SessionManager;
-import controllers.FrontendController;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-
-import controllers.FrontendController;
 
 public class EditProfileSettingsController {
 
@@ -127,7 +124,9 @@ public class EditProfileSettingsController {
             SessionManager.setCurrentUser(currentUser); // Update session
             
             // Refresh main dashboard header if possible
-            FrontendController.getInstance().initialize(); 
+            if (FrontendController.getInstance() != null) {
+                FrontendController.getInstance().refreshUserHeader();
+            }
 
             showAlert(Alert.AlertType.INFORMATION, "Success", "Profile updated successfully!");
             handleCancel(); // Return to profile view
@@ -138,7 +137,9 @@ public class EditProfileSettingsController {
 
     @FXML
     private void handleCancel() {
-        FrontendController.getInstance().showProfile();
+        if (FrontendController.getInstance() != null) {
+            FrontendController.getInstance().showProfile();
+        }
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {

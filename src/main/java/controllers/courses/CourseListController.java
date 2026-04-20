@@ -16,9 +16,7 @@ import javafx.geometry.Insets;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import models.Course;
-import models.User;
 import services.CourseService;
-import utils.SessionManager;
 
 import javafx.scene.layout.StackPane;
 import javafx.animation.FadeTransition;
@@ -68,6 +66,12 @@ public class CourseListController extends BaseCourseController {
         }
     }
 
+<<<<<<< HEAD
+    private void loadCourses() {
+        try {
+            CourseService service = new CourseService();
+            allCourses = service.recuperer();
+=======
         // Load courses on a background thread to avoid blocking the FX thread
         javafx.concurrent.Task<java.util.List<Course>> task = new javafx.concurrent.Task<>() {
             @Override
@@ -90,6 +94,7 @@ public class CourseListController extends BaseCourseController {
 
         task.setOnSucceeded(ev -> {
             allCourses = task.getValue() != null ? task.getValue() : new ArrayList<>();
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
             updateCourseDisplay();
             if (coursesContainer != null) {
                 coursesContainer.setDisable(false);

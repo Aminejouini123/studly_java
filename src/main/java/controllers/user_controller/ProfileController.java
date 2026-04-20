@@ -1,18 +1,11 @@
-package controllers.user_controller;
-
-import java.io.IOException;
+package controllers;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Button;
 import javafx.scene.shape.Circle;
-import javafx.stage.Stage;
 import models.User;
 import utils.SessionManager;
-import controllers.FrontendController;
 
 public class ProfileController {
 
@@ -30,7 +23,6 @@ public class ProfileController {
     @FXML private Label educationValue;
     @FXML private Label skillsValue;
     @FXML private Button editProfileBtn;
-    @FXML private Button logoutBtn;
 
     @FXML
     public void initialize() {
@@ -77,18 +69,6 @@ public class ProfileController {
         // Button Action
         editProfileBtn.setOnAction(e -> {
             FrontendController.getInstance().showEditProfile();
-        });
-        
-        logoutBtn.setOnAction(e -> {
-            SessionManager.clearSession();
-            try {
-                Parent root = FXMLLoader.load(getClass().getResource("/getion_user/auth_page.fxml"));
-                Stage stage = (Stage) logoutBtn.getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.show();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
         });
     }
 }

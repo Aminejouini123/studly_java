@@ -177,24 +177,4 @@ public abstract class BaseExamController {
             e.printStackTrace();
         }
     }
-    protected boolean fromBackend = false;
-    protected controllers.backend.BackendExamController backendController;
-
-    public void setFromBackend(boolean fromBackend) {
-        this.fromBackend = fromBackend;
-    }
-
-    public void setBackendController(controllers.backend.BackendExamController controller) {
-        this.backendController = controller;
-    }
-
-    protected void returnToDashboard(javafx.scene.Node anchor) {
-        if (fromBackend && backendController != null) {
-            backendController.restoreDashboard();
-        } else if (fromBackend) {
-            loadScene("/gestion_examen/backend_exams.fxml", null, anchor);
-        } else {
-            loadScene("/gestion_examen/frontend_exams.fxml", null, anchor);
-        }
-    }
 }

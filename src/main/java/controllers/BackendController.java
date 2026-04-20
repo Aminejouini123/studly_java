@@ -7,13 +7,74 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import java.io.IOException;
 import java.util.List;
-import controllers.user_controller.ListUserController;
-import controllers.user_controller.AddUserController;
 
 public class BackendController {
 
     @FXML private StackPane mainContentHost;
     
+<<<<<<< HEAD
+    @FXML public TextField searchField;
+    @FXML public Button sortDateBtn;
+
+    // Sidebar nav
+    @FXML public Button navOverviewBtn;
+    @FXML public Button navUsersBtn;
+    @FXML public Button navGroupsBtn;
+
+    // Views
+    @FXML public VBox usersView;
+    @FXML public VBox groupsView;
+
+    // Filter Labels
+    @FXML public Label filterAll;
+    @FXML public Label filterAdmins;
+    @FXML public Label filterUsers;
+
+    // Dashboard Stat Labels
+    @FXML public Label totalUsersLabel;
+    @FXML public Label flaggedUsersLabel;
+
+    private ListUserController listUserController;
+
+    @FXML
+    public void initialize() {
+        try {
+            System.out.println("Initializing BackendController...");
+
+            if (groupsView != null) {
+                groupsView.setVisible(false);
+                groupsView.setManaged(false);
+            }
+            
+            // 1. Initialize logic
+            listUserController = new ListUserController(usersTable);
+            
+            // 2. Setup table
+            listUserController.initializeTable(
+                colAvatar, 
+                colUser, 
+                colRole, 
+                colStatus, 
+                colLastLogin, 
+                colActions
+            );
+
+            // 3. Setup dashboard update callback
+            listUserController.setOnDataChanged(this::updateDashboardStats);
+            
+            // 4. Setup listeners
+            setupListeners();
+            
+            // 5. Initial stats update
+            updateDashboardStats();
+
+            // Default view
+            setActiveNav(navUsersBtn);
+            
+            System.out.println("BackendController initialized successfully.");
+        } catch (Exception e) {
+            System.err.println("CRITICAL ERROR in BackendController.initialize():");
+=======
     @FXML private Button overviewBtn;
     @FXML private Button timeBtn;
     @FXML private Button coursesBtn;
@@ -55,6 +116,7 @@ public class BackendController {
             mainContentHost.getChildren().setAll(content);
         } catch (IOException e) {
             System.err.println("Error loading FXML content: " + fxmlPath);
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
             e.printStackTrace();
         }
     }
@@ -100,9 +162,50 @@ public class BackendController {
     }
 
     @FXML
+<<<<<<< HEAD
+    public void showUsers() {
+        if (usersView != null) {
+            usersView.setVisible(true);
+            usersView.setManaged(true);
+        }
+        if (groupsView != null) {
+            groupsView.setVisible(false);
+            groupsView.setManaged(false);
+        }
+        setActiveNav(navUsersBtn);
+    }
+
+    @FXML
+    public void showGroups() {
+        if (usersView != null) {
+            usersView.setVisible(false);
+            usersView.setManaged(false);
+        }
+        if (groupsView != null) {
+            groupsView.setVisible(true);
+            groupsView.setManaged(true);
+        }
+        setActiveNav(navGroupsBtn);
+    }
+
+    @FXML
+    public void showOverview() {
+        // Not implemented yet; keep users view as default.
+        showUsers();
+    }
+
+    private void setActiveNav(Button active) {
+        Button[] btns = {navOverviewBtn, navUsersBtn, navGroupsBtn};
+        for (Button b : btns) {
+            if (b == null) continue;
+            b.getStyleClass().removeAll("nav-button", "nav-button-active");
+            b.getStyleClass().add(b == active ? "nav-button-active" : "nav-button");
+        }
+=======
     public void handleShowCourses() {
         System.out.println("Navigating to courses...");
         setActiveButton(coursesBtn);
         loadContent("/gestion_cours/backend_courses.fxml");
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
     }
 }

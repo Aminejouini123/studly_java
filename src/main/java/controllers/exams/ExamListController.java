@@ -286,12 +286,6 @@ public class ExamListController extends BaseExamController {
         }
     }
 
-    private boolean isFromBackend = false;
-
-    public void setFromBackend(boolean fromBackend) {
-        this.isFromBackend = fromBackend;
-    }
-
     @FXML
     public void handleAddExam() {
         if (currentCourse == null) {
@@ -320,17 +314,6 @@ public class ExamListController extends BaseExamController {
 
     @FXML
     public void handleBackToCourses() {
-        if (isFromBackend) {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/TEMPLATE/backend_courses.fxml"));
-                Parent root = loader.load();
-                Stage stage = (Stage) examsContainer.getScene().getWindow();
-                stage.getScene().setRoot(root);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            loadScene("/gestion_cours/frontend_courses.fxml", null, courseTitleLabel);
-        }
+        loadScene("/gestion_cours/frontend_courses.fxml", null, courseTitleLabel);
     }
 }

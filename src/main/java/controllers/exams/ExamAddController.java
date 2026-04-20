@@ -10,12 +10,9 @@ import models.Course;
 import models.Exam;
 import services.ExamService;
 
-import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import javafx.fxml.FXMLLoader;
-import javafx.stage.Stage;
 
 public class ExamAddController extends BaseExamController {
 
@@ -60,7 +57,7 @@ public class ExamAddController extends BaseExamController {
             );
 
             examService.ajouter(exam);
-            showSuccessNotification(rootPane, "Perfect!", "Examination scheduled successfully.", () -> returnToDashboard(rootPane));
+            showSuccessNotification(rootPane, "Perfect!", "Examination scheduled successfully.", this::handleCancel);
         } catch (SQLException e) {
             e.printStackTrace();
             showErrorNotification(rootPane, "Oops!", "Could not save exam: " + e.getMessage());
@@ -69,11 +66,7 @@ public class ExamAddController extends BaseExamController {
 
     @FXML
     public void handleCancel() {
-        if (fromBackend) {
-            returnToDashboard(rootPane);
-        } else {
-            navigateToExamList(titleField, currentCourse);
-        }
+        navigateToExamList(titleField, currentCourse);
     }
 
     private void hideErrors() {
