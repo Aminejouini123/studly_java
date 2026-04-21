@@ -21,45 +21,41 @@ import java.time.format.DateTimeParseException;
 
 public class AddEventController {
 
-    @FXML
-    private Node rootContainer;
+    @FXML private Node rootContainer;
+    @FXML private TextField titleField;
+    @FXML private ComboBox<String> typeComboBox;
+    @FXML private DatePicker datePicker;
+    @FXML private TextField startTimeField;
+    @FXML private TextField endTimeField;
+    @FXML private TextField locationField;
+    @FXML private ComboBox<String> priorityComboBox;
+    @FXML private TextArea descriptionArea;
+    @FXML private TextField reminderField;
 
-    @FXML
-    private TextField titleField;
-
-    @FXML
-    private ComboBox<String> typeComboBox;
-
-    @FXML
-    private DatePicker datePicker;
-
-    @FXML
-    private TextField startTimeField;
-
-    @FXML
-    private TextField endTimeField;
-
-    @FXML
-    private TextField locationField;
-
-    @FXML
-    private ComboBox<String> priorityComboBox;
-
-    @FXML
-    private TextArea descriptionArea;
-
-    @FXML
-    private TextField reminderField;
+    private final LocationAutocompleteHelper locationAutocompleteHelper = new LocationAutocompleteHelper();
 
     @FXML
     private void initialize() {
+        // Default to today
+        datePicker.setValue(LocalDate.now());
+
+        // Disable past dates in the calendar popup
+        datePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                if (date.isBefore(LocalDate.now())) {
+                    setDisable(true);
+                    setStyle("-fx-background-color: #e0e0e0; -fx-text-fill: #aaaaaa;");
+                }
+            }
+        });
+        locationAutocompleteHelper.bind(locationField);
     }
 
     @FXML
     private void handleAddEvent(ActionEvent actionEvent) {
-        if (!validateInput()) {
-            return;
-        }
+        if (!validateInput()) return;
 
         String title = titleField.getText().trim();
         String type = typeComboBox.getValue();
@@ -103,7 +99,6 @@ public class AddEventController {
         event.setDuration(calculateDurationMinutes(startTimestamp, endTimestamp));
 
         EventStore.getInstance().addEvent(event);
-
         showAlert(Alert.AlertType.INFORMATION, "Succes", "L'evenement a ete ajoute avec succes.");
         clearForm();
     }
@@ -123,20 +118,35 @@ public class AddEventController {
     private boolean validateInput() {
         StringBuilder errorMessage = new StringBuilder();
 
-        if (titleField.getText() == null || titleField.getText().trim().isEmpty()) {
+        if (titleField.getText() == null || titleField.getText().trim().isEmpty())
             errorMessage.append("- Le titre est obligatoire.\n");
-        }
-        if (typeComboBox.getValue() == null) {
+        if (typeComboBox.getValue() == null)
             errorMessage.append("- Le type est obligatoire.\n");
-        }
         if (datePicker.getValue() == null) {
             errorMessage.append("- La date est obligatoire.\n");
+        } else if (datePicker.getValue().isBefore(LocalDate.now())) {
+            errorMessage.append("- La date ne peut pas etre dans le passe.\n");
         }
-        if (!startTimeField.getText().trim().isEmpty() && !startTimeField.getText().trim().matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")) {
+
+        boolean startValid = true, endValid = true;
+        if (!startTimeField.getText().trim().isEmpty()
+                && !startTimeField.getText().trim().matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")) {
             errorMessage.append("- L'heure de debut doit etre au format HH:mm.\n");
+            startValid = false;
         }
-        if (!endTimeField.getText().trim().isEmpty() && !endTimeField.getText().trim().matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")) {
+        if (!endTimeField.getText().trim().isEmpty()
+                && !endTimeField.getText().trim().matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")) {
             errorMessage.append("- L'heure de fin doit etre au format HH:mm.\n");
+            endValid = false;
+        }
+        if (startValid && endValid
+                && !startTimeField.getText().trim().isEmpty()
+                && !endTimeField.getText().trim().isEmpty()) {
+            DateTimeFormatter tf = DateTimeFormatter.ofPattern("HH:mm");
+            LocalTime start = LocalTime.parse(startTimeField.getText().trim(), tf);
+            LocalTime end   = LocalTime.parse(endTimeField.getText().trim(), tf);
+            if (!end.isAfter(start))
+                errorMessage.append("- L'heure de fin doit etre apres l'heure de debut.\n");
         }
         if (!reminderField.getText().trim().isEmpty()) {
             try {
@@ -150,24 +160,17 @@ public class AddEventController {
             showAlert(Alert.AlertType.ERROR, "Erreur de validation", errorMessage.toString());
             return false;
         }
-
         return true;
     }
 
-    private int calculateDurationMinutes(Timestamp startTimestamp, Timestamp endTimestamp) {
-        if (startTimestamp == null || endTimestamp == null) {
-            return 60;
-        }
-
-        long millis = endTimestamp.getTime() - startTimestamp.getTime();
-        if (millis <= 0) {
-            return 60;
-        }
-        return (int) (millis / 60000);
+    private int calculateDurationMinutes(Timestamp start, Timestamp end) {
+        if (start == null || end == null) return 60;
+        long millis = end.getTime() - start.getTime();
+        return millis <= 0 ? 60 : (int) (millis / 60000);
     }
 
-    private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
@@ -177,7 +180,7 @@ public class AddEventController {
     private void clearForm() {
         titleField.clear();
         typeComboBox.setValue(null);
-        datePicker.setValue(null);
+        datePicker.setValue(LocalDate.now());
         startTimeField.clear();
         endTimeField.clear();
         locationField.clear();

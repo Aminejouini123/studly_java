@@ -109,8 +109,9 @@ public class PlanningDashboardController {
         description.getStyleClass().add("planning-event-description");
         description.setWrapText(true);
 
-        Label sessions = new Label(event.getReminder_minutes() + " Sessions Plan");
-        sessions.getStyleClass().add("planning-event-sessions");
+        Label location = new Label("Lieu : " + defaultValue(event.getLocation(), "Non renseigne"));
+        location.getStyleClass().add("planning-event-sessions");
+        location.setWrapText(true);
 
         HBox header = new HBox(12);
         Region spacer = new Region();
@@ -123,7 +124,7 @@ public class PlanningDashboardController {
         motivationButton.setOnAction(actionEvent -> showMotivationForm(event));
 
         actionsRow.getChildren().add(motivationButton);
-        card.getChildren().addAll(header, description, metaRow, sessions, actionsRow);
+        card.getChildren().addAll(header, description, location, metaRow, actionsRow);
         return new HBox(card);
     }
 
@@ -212,6 +213,10 @@ public class PlanningDashboardController {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH);
         return date.toLocalDate().format(formatter);
+    }
+
+    private String defaultValue(String value, String fallback) {
+        return value == null || value.trim().isEmpty() ? fallback : value;
     }
 
     private String colorForPriorityBackground(String priority) {

@@ -26,6 +26,7 @@ import services.EventStore;
 
 import java.net.URL;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -151,15 +152,16 @@ public class EventListController {
         descriptionLabel.getStyleClass().add("event-description");
         descriptionLabel.setWrapText(true);
 
+        Label locationLabel = new Label("Lieu : " + defaultValue(event.getLocation(), "Non renseigne"));
+        locationLabel.getStyleClass().add("event-sessions");
+        locationLabel.setWrapText(true);
+
         HBox pillsRow = new HBox(10);
         pillsRow.getChildren().addAll(
                 createInfoPill(event.getDuration() + "m", "pill-neutral"),
                 createInfoPill(defaultValue(event.getPriority(), "Sans priorite"), "pill-priority"),
                 createInfoPill(defaultValue(event.getStatus(), "En cours"), "pill-status")
         );
-
-        Label sessionsLabel = new Label(event.getReminder_minutes() + " Sessions Plan");
-        sessionsLabel.getStyleClass().add("event-sessions");
 
         FlowPane actionsRow = new FlowPane();
         actionsRow.setHgap(8);
@@ -178,7 +180,7 @@ public class EventListController {
 
         actionsRow.getChildren().addAll(motivationButton, editButton, deleteButton);
 
-        card.getChildren().addAll(header, descriptionLabel, pillsRow, sessionsLabel, actionsRow);
+        card.getChildren().addAll(header, descriptionLabel, locationLabel, pillsRow, actionsRow);
         return card;
     }
 
@@ -214,6 +216,8 @@ public class EventListController {
 
         TextField locationField = new TextField(event.getLocation());
         locationField.getStyleClass().add("event-dialog-field");
+        new LocationAutocompleteHelper().bind(locationField);
+        locationField.setPromptText("Rechercher un lieu avec la carte...");
 
         ComboBox<String> priorityBox = new ComboBox<>();
         priorityBox.getItems().addAll("Haute", "Moyenne", "Basse");
@@ -222,6 +226,16 @@ public class EventListController {
 
         DatePicker datePicker = new DatePicker(event.getDate() == null ? java.time.LocalDate.now() : event.getDate().toLocalDate());
         datePicker.getStyleClass().addAll("event-dialog-field", "event-dialog-date");
+        datePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                if (date.isBefore(LocalDate.now())) {
+                    setDisable(true);
+                    setStyle("-fx-background-color: #e0e0e0; -fx-text-fill: #aaaaaa;");
+                }
+            }
+        });
 
         Label titleLabel = new Label("Titre");
         Label descriptionLabel = new Label("Description");
@@ -249,6 +263,15 @@ public class EventListController {
 
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
+            if (datePicker.getValue() != null && datePicker.getValue().isBefore(LocalDate.now())) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Erreur de validation");
+                alert.setHeaderText(null);
+                alert.setContentText("La date ne peut pas etre dans le passe.");
+                alert.showAndWait();
+                return;
+            }
+
             Event updatedEvent = copyEvent(event);
             updatedEvent.setTitle(defaultValue(titleField.getText().trim(), event.getTitle()));
             updatedEvent.setDescription(defaultValue(descriptionArea.getText().trim(), event.getDescription()));
