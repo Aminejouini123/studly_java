@@ -11,6 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.control.Label;
 import javafx.geometry.Pos;
 import java.io.IOException;
+import models.Course;
 
 public abstract class BaseActivityController {
 
@@ -64,6 +65,40 @@ public abstract class BaseActivityController {
         alert.setContentText(content);
         alert.showAndWait();
     }
+
+    protected void navigateToFrontendCourseList(Node anchor) {
+        if (controllers.FrontendController.getInstance() != null) {
+            controllers.FrontendController.getInstance().loadContent("/gestion_cours/courses_body.fxml");
+        } else {
+            loadScene("/gestion_cours/frontend_courses.fxml", null, anchor);
+        }
+    }
+
+    /** Reload activity list for the given course (required after add/update from forms). */
+    protected void navigateToActivityList(Node anchor, Course course) {
+        if (anchor == null || anchor.getScene() == null) {
+            return;
+        }
+        if (course == null) {
+            navigateToFrontendCourseList(anchor);
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestion_activites/frontend_activities.fxml"));
+            Parent root = loader.load();
+            ActivityListController controller = loader.getController();
+            controller.setCourse(course);
+            if (controllers.FrontendController.getInstance() != null) {
+                controllers.FrontendController.getInstance().loadContentNode(root);
+            } else {
+                Stage stage = (Stage) anchor.getScene().getWindow();
+                stage.getScene().setRoot(root);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     protected boolean fromBackend = false;
     protected controllers.backend.BackendActivityController backendController;
 

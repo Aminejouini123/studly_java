@@ -79,7 +79,13 @@ public class ExamEditController extends BaseExamController {
             currentExam.setLink(linkField.getText());
 
             examService.modifier(currentExam);
-            showSuccessNotification(rootPane, "Updated!", "Changes saved successfully.", () -> returnToDashboard(rootPane));
+            showSuccessNotification(rootPane, "Updated!", "Changes saved successfully.", () -> {
+                if (fromBackend) {
+                    returnToDashboard(rootPane);
+                } else {
+                    navigateToExamList(rootPane, currentCourse);
+                }
+            });
         } catch (SQLException e) {
             e.printStackTrace();
             showErrorNotification(rootPane, "Update Error", "Could not update exam: " + e.getMessage());

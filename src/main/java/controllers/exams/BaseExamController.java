@@ -126,6 +126,14 @@ public abstract class BaseExamController {
         rootPane.getChildren().add(overlay);
     }
 
+    protected void navigateToFrontendCourseList(Node anchor) {
+        if (controllers.FrontendController.getInstance() != null) {
+            controllers.FrontendController.getInstance().loadContent("/gestion_cours/courses_body.fxml");
+        } else {
+            loadScene("/gestion_cours/frontend_courses.fxml", null, anchor);
+        }
+    }
+
     protected void showConfirmOverlay(StackPane rootPane, String titleText, String msgText, String confirmBtnText, String cancelBtnText, Runnable onConfirm) {
         StackPane overlay = new StackPane();
         overlay.setAlignment(javafx.geometry.Pos.CENTER);
@@ -166,13 +174,24 @@ public abstract class BaseExamController {
     }
 
     protected void navigateToExamList(Node sourceNode, Course course) {
+        if (sourceNode == null || sourceNode.getScene() == null) {
+            return;
+        }
+        if (course == null) {
+            navigateToFrontendCourseList(sourceNode);
+            return;
+        }
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestion_examen/frontend_exams.fxml"));
             Parent root = loader.load();
             ExamListController controller = loader.getController();
             controller.setCourse(course);
-            Stage stage = (Stage) sourceNode.getScene().getWindow();
-            stage.getScene().setRoot(root);
+            if (controllers.FrontendController.getInstance() != null) {
+                controllers.FrontendController.getInstance().loadContentNode(root);
+            } else {
+                Stage stage = (Stage) sourceNode.getScene().getWindow();
+                stage.getScene().setRoot(root);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

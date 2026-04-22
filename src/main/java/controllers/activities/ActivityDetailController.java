@@ -91,16 +91,7 @@ public class ActivityDetailController extends BaseActivityController {
 
     @FXML
     private void handleBack() {
-        try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_activities.fxml"));
-            javafx.scene.Parent root = loader.load();
-            ActivityListController controller = loader.getController();
-            controller.setCourse(currentCourse);
-            javafx.stage.Stage stage = (javafx.stage.Stage) detailTitle.getScene().getWindow();
-            stage.getScene().setRoot(root);
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
+        navigateToActivityList(detailTitle, currentCourse);
     }
 
     @FXML
@@ -110,8 +101,12 @@ public class ActivityDetailController extends BaseActivityController {
             javafx.scene.Parent root = loader.load();
             ActivityEditController controller = loader.getController();
             controller.setActivity(currentActivity, currentCourse);
-            javafx.stage.Stage stage = (javafx.stage.Stage) detailTitle.getScene().getWindow();
-            stage.getScene().setRoot(root);
+            if (controllers.FrontendController.getInstance() != null) {
+                controllers.FrontendController.getInstance().loadContentNode(root);
+            } else {
+                javafx.stage.Stage stage = (javafx.stage.Stage) detailTitle.getScene().getWindow();
+                stage.getScene().setRoot(root);
+            }
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }

@@ -41,7 +41,7 @@ public abstract class BaseCourseController {
         }
     }
 
-    public void goToCourses(MouseEvent event) {
+    public void goToCourses(javafx.event.Event event) {
         if (controllers.FrontendController.getInstance() != null) {
             controllers.FrontendController.getInstance().loadContent("/gestion_cours/courses_body.fxml");
         } else {
@@ -49,7 +49,7 @@ public abstract class BaseCourseController {
         }
     }
 
-    public void goToAddCourse(MouseEvent event) {
+    public void goToAddCourse(javafx.event.Event event) {
         if (controllers.FrontendController.getInstance() != null) {
             controllers.FrontendController.getInstance().loadContent("/gestion_cours/add_course_body.fxml");
         } else {
@@ -86,6 +86,15 @@ public abstract class BaseCourseController {
         this.backendController = controller;
     }
 
+    /** When the main shell hosts content in {@code contentHost}, reload the course list there; otherwise replace the scene root. */
+    protected void navigateToFrontendCourseList(Node anchor) {
+        if (controllers.FrontendController.getInstance() != null) {
+            controllers.FrontendController.getInstance().loadContent("/gestion_cours/courses_body.fxml");
+        } else {
+            loadScene("/gestion_cours/frontend_courses.fxml", null, anchor);
+        }
+    }
+
     protected void returnToDashboard(javafx.scene.Node anchor) {
         if (fromBackend && backendController != null) {
             backendController.restoreDashboard();
@@ -96,7 +105,7 @@ public abstract class BaseCourseController {
         }
     }
 
-    protected void returnToCourses(javafx.scene.input.MouseEvent event) {
+    protected void returnToCourses(javafx.event.Event event) {
         if (fromBackend && backendController != null) {
             backendController.restoreDashboard();
         } else if (fromBackend) {

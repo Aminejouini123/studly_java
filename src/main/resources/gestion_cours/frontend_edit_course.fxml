@@ -161,9 +161,8 @@
                                            <ComboBox fx:id="statusComboBox" maxWidth="Infinity" promptText="Status" styleClass="modern-combo">
                                                <items>
                                                   <FXCollections fx:factory="observableArrayList">
-                                                     <String fx:value="Pending" />
                                                      <String fx:value="Active" />
-                                                     <String fx:value="Archived" />
+                                                     <String fx:value="Pending" />
                                                   </FXCollections>
                                                </items>
                                            </ComboBox>

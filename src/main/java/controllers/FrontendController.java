@@ -77,7 +77,7 @@ public class FrontendController extends controllers.courses.BaseCourseController
     }
 
     @Override
-    public void goToCourses(javafx.scene.input.MouseEvent event) {
+    public void goToCourses(javafx.event.Event event) {
         loadContent("/gestion_cours/courses_body.fxml");
         setActiveNav(coursesNavLabel);
     }
@@ -112,6 +112,23 @@ public class FrontendController extends controllers.courses.BaseCourseController
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Show an already-built node inside the dashboard (keeps nav/header).
+     * Do not use {@code TOP_LEFT} alignment here: with that alignment, StackPane keeps the child's
+     * preferred size only, so detail views inside the ScrollPane often appear blank or a thin strip.
+     */
+    public void loadContentNode(Node content) {
+        if (contentHost == null || content == null) {
+            return;
+        }
+        if (content instanceof javafx.scene.layout.Region) {
+            javafx.scene.layout.Region r = (javafx.scene.layout.Region) content;
+            r.setMaxWidth(Double.MAX_VALUE);
+            r.setMaxHeight(Double.MAX_VALUE);
+        }
+        contentHost.getChildren().setAll(content);
     }
 
     private void setActiveNav(Label activeLabel) {

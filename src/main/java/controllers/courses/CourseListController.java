@@ -1,4 +1,6 @@
 package controllers.courses;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import javafx.fxml.FXML;
 import javafx.scene.layout.FlowPane;
@@ -25,6 +27,8 @@ import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.util.Duration;
 import javafx.scene.Node;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -53,7 +57,67 @@ public class CourseListController extends BaseCourseController {
     @FXML
     public void initialize() {
         setupListeners();
+        
+        // Filtre statut : All + Active + Pending
+        ObservableList<String> statuses = FXCollections.observableArrayList("All", "Active", "Pending");
+        if (statusFilter != null) {
+            statusFilter.setItems(statuses);
+        }
+
+        ObservableList<String> sortOptions = FXCollections.observableArrayList(
+                "Name (A-Z)",
+                "Name (Z-A)",
+                "Newest first",
+                "Oldest first",
+                "Coefficient (high to low)",
+                "Coefficient (low to high)",
+                "Duration (short to long)",
+                "Duration (long to short)",
+                "Semester (by number)");
+        if (sortComboBox != null) {
+            sortComboBox.setItems(sortOptions);
+        }
+
+        // Professional UI Fix: Force list cell styling to prevent "blank" popups
+        styleComboBox(statusFilter);
+        styleComboBox(sortComboBox);
+        
+        if (statusFilter != null) {
+            statusFilter.setValue("All");
+        }
+        if (sortComboBox != null) {
+            sortComboBox.setValue("Name (A-Z)");
+        }
+        
         loadCourses();
+    }
+
+    private void styleComboBox(javafx.scene.control.ComboBox<String> combo) {
+        if (combo == null) return;
+        
+        combo.setButtonCell(new javafx.scene.control.ListCell<String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(combo.getPromptText());
+                } else {
+                    setText(item);
+                    setTextFill(javafx.scene.paint.Color.web("#0F172A"));
+                }
+            }
+        });
+        
+        combo.setCellFactory(lv -> new javafx.scene.control.ListCell<String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setTextFill(javafx.scene.paint.Color.web("#1E293B"));
+                }
+            }
+        });
     }
 
     private void setupListeners() {
@@ -89,14 +153,18 @@ public class CourseListController extends BaseCourseController {
         if (coursesContainer == null)
             return;
 
-        String searchText = searchField != null ? searchField.getText().toLowerCase() : "";
-        String statusCriterion = (statusFilter != null && statusFilter.getValue() != null) ? statusFilter.getValue()
-                : "All statuses";
+        String searchText = searchField != null ? searchField.getText().toLowerCase().trim() : "";
+        String statusCriterion = (statusFilter != null && statusFilter.getValue() != null)
+                ? statusFilter.getValue().trim()
+                : "All";
 
         List<Course> filtered = allCourses.stream()
-                .filter(c -> c.getName().toLowerCase().contains(searchText)
-                        || c.getTeacher_email().toLowerCase().contains(searchText))
-                .filter(c -> statusCriterion.equals("All statuses") || c.getStatus().equalsIgnoreCase(statusCriterion))
+                .filter(c -> {
+                    String name = c.getName() != null ? c.getName().toLowerCase() : "";
+                    String email = c.getTeacher_email() != null ? c.getTeacher_email().toLowerCase() : "";
+                    return searchText.isEmpty() || name.contains(searchText) || email.contains(searchText);
+                })
+                .filter(c -> matchesStatusFilter(c, statusCriterion))
                 .collect(Collectors.toList());
 
         applySorting(filtered);
@@ -120,39 +188,109 @@ public class CourseListController extends BaseCourseController {
         updateStats(filtered);
     }
 
+    /** Status filter: All (no filter), Active, or Pending. */
+    private static boolean matchesStatusFilter(Course c, String criterion) {
+        String crit = (criterion == null || criterion.isEmpty()) ? "All" : criterion.trim();
+        if (crit.equalsIgnoreCase("All")) {
+            return true;
+        }
+        String raw = c.getStatus();
+        if (raw == null || raw.isBlank()) {
+            return crit.equalsIgnoreCase("Active");
+        }
+        return raw.trim().equalsIgnoreCase(crit);
+    }
+
+    private static int semesterRank(Course c) {
+        String s = c.getSemester();
+        if (s == null || s.trim().isEmpty()) {
+            return Integer.MAX_VALUE;
+        }
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+)").matcher(s);
+        return m.find() ? Integer.parseInt(m.group(1)) : Integer.MAX_VALUE - 1;
+    }
+
     // --- Core Logic: Tri (Sort) ---
     private void applySorting(List<Course> list) {
-        String sortCriterion = sortComboBox.getValue() != null ? sortComboBox.getValue() : "Name (A-Z)";
+        String sortCriterion = sortComboBox != null && sortComboBox.getValue() != null
+                ? sortComboBox.getValue().trim()
+                : "Name (A-Z)";
+        Comparator<Course> byName = Comparator.comparing(
+                c -> c.getName() != null ? c.getName().toLowerCase() : "",
+                String.CASE_INSENSITIVE_ORDER);
         switch (sortCriterion) {
             case "Name (A-Z)":
-                list.sort(Comparator.comparing(c -> c.getName().toLowerCase()));
+                list.sort(byName);
                 break;
+            case "Name (Z-A)":
+                list.sort(byName.reversed());
+                break;
+            case "Newest first":
+                list.sort(Comparator
+                        .comparing(Course::getCreated_at, Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparingInt(c -> -c.getId()));
+                break;
+            case "Oldest first":
+                list.sort(Comparator
+                        .comparing(Course::getCreated_at, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparingInt(Course::getId));
+                break;
+            case "Coefficient (high to low)":
+                list.sort((c1, c2) -> Double.compare(c2.getCoefficient(), c1.getCoefficient()));
+                break;
+            case "Coefficient (low to high)":
+                list.sort(Comparator.comparingDouble(Course::getCoefficient));
+                break;
+            case "Duration (short to long)":
+                list.sort(Comparator.comparingInt(Course::getDuration));
+                break;
+            case "Duration (long to short)":
+                list.sort((c1, c2) -> Integer.compare(c2.getDuration(), c1.getDuration()));
+                break;
+            case "Semester (by number)":
+                list.sort(Comparator.comparingInt(CourseListController::semesterRank).thenComparing(byName));
+                break;
+            // Legacy labels from older builds
             case "Coefficient (High-Low)":
                 list.sort((c1, c2) -> Double.compare(c2.getCoefficient(), c1.getCoefficient()));
                 break;
             case "Semester (1-2)":
-                list.sort(Comparator.comparing(Course::getSemester));
+                list.sort(Comparator.comparingInt(CourseListController::semesterRank).thenComparing(byName));
                 break;
             case "Duration (Shortest)":
                 list.sort(Comparator.comparingInt(Course::getDuration));
+                break;
+            default:
+                list.sort(byName);
                 break;
         }
     }
 
     private void updateStats(List<Course> list) {
         long total = list.size();
-        long inProgress = list.stream().filter(c -> c.getStatus().equalsIgnoreCase("In Progress")).count();
-        long completed = list.stream().filter(c -> c.getStatus().equalsIgnoreCase("Completed")).count();
-        long pending = list.stream().filter(c -> c.getStatus().equalsIgnoreCase("Pending")).count();
+        long active = list.stream()
+                .filter(c -> c.getStatus() != null && c.getStatus().equalsIgnoreCase("Active"))
+                .count();
+        long pending = list.stream()
+                .filter(c -> c.getStatus() != null && c.getStatus().equalsIgnoreCase("Pending"))
+                .count();
+        long archived = list.stream()
+                .filter(c -> c.getStatus() != null
+                        && (c.getStatus().equalsIgnoreCase("Archived") || c.getStatus().equalsIgnoreCase("Draft")))
+                .count();
 
-        if (statTotal != null)
+        if (statTotal != null) {
             statTotal.setText(String.valueOf(total));
-        if (statInProgress != null)
-            statInProgress.setText(String.valueOf(inProgress));
-        if (statCompleted != null)
-            statCompleted.setText(String.valueOf(completed));
-        if (statPending != null)
-            statPending.setText(String.valueOf(pending));
+        }
+        if (statInProgress != null) {
+            statInProgress.setText(String.valueOf(active));
+        }
+        if (statCompleted != null) {
+            statCompleted.setText(String.valueOf(pending));
+        }
+        if (statPending != null) {
+            statPending.setText(String.valueOf(archived));
+        }
     }
 
     private VBox createCourseCard(Course course) {
@@ -164,19 +302,22 @@ public class CourseListController extends BaseCourseController {
         // Header
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
-        Label title = new Label(course.getName().toLowerCase());
+        String courseName = course.getName() != null ? course.getName().toLowerCase() : "untitled";
+        Label title = new Label(courseName);
         title.getStyleClass().add("course-card-title");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label statusBadge = new Label(course.getStatus().toUpperCase());
+        String statusText = course.getStatus() != null ? course.getStatus().toUpperCase() : "UNKNOWN";
+        Label statusBadge = new Label(statusText);
         statusBadge.getStyleClass().add("status-badge");
-        String status = course.getStatus().toLowerCase();
-        if (status.contains("progress"))
+        String status = course.getStatus() != null ? course.getStatus().toLowerCase() : "";
+        if (status.equals("active") || status.contains("progress")) {
             statusBadge.getStyleClass().add("status-badge-progress");
-        else if (status.contains("complete"))
+        } else if (status.equals("archived") || status.equals("draft") || status.contains("complete")) {
             statusBadge.getStyleClass().add("status-badge-completed");
-        else
+        } else {
             statusBadge.getStyleClass().add("status-badge-pending");
+        }
         header.getChildren().addAll(title, spacer, statusBadge);
 
         // Teacher
@@ -185,7 +326,7 @@ public class CourseListController extends BaseCourseController {
         SVGPath personIcon = createIcon(
                 "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z",
                 "#64748B", 14);
-        Label teacher = new Label(course.getTeacher_email());
+        Label teacher = new Label(course.getTeacher_email() != null ? course.getTeacher_email() : "—");
         teacher.getStyleClass().add("course-card-teacher");
         teacherRow.getChildren().addAll(personIcon, teacher);
 
@@ -204,67 +345,88 @@ public class CourseListController extends BaseCourseController {
                         "M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z",
                         "Coef: " + (int) course.getCoefficient()));
 
-        // Actions
-        VBox actions = new VBox(12);
-        actions.setPadding(new Insets(10, 0, 0, 0));
+        // Actions Hub
+        VBox actions = new VBox(10);
+        actions.setPadding(new Insets(15, 0, 0, 0));
+        
+        // Primary Action
         Button viewBtn = new Button("View Details");
         viewBtn.getStyleClass().add("btn-primary-action");
-        viewBtn.setGraphic(createIcon("M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z", "white", 14));
+        javafx.scene.Node viewGraphic = createIcon("M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z", "white", 14);
+        viewGraphic.setMouseTransparent(true);
+        viewBtn.setGraphic(viewGraphic);
         viewBtn.setMaxWidth(Double.MAX_VALUE);
-        viewBtn.setOnAction(e -> showCourseDetailView(course));
+        viewBtn.setOnAction(e -> {
+            e.consume();
+            showCourseDetailView(course);
+        });
 
-        HBox actionRow = new HBox(12);
-        Button examBtn = new Button("Exam");
+        // Sub-Management Row (Exam & Activity)
+        HBox subRow = new HBox(10);
+        subRow.setAlignment(Pos.CENTER);
+        
+        Button examBtn = new Button("Exams");
         examBtn.getStyleClass().add("btn-secondary-exam");
         examBtn.setGraphic(createIcon("M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z", "#4338CA", 14));
         examBtn.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(examBtn, Priority.ALWAYS);
         examBtn.setOnAction(e -> {
             try {
                 javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_examen/frontend_exams.fxml"));
                 javafx.scene.Parent root = loader.load();
                 controllers.exams.ExamListController controller = loader.getController();
                 controller.setCourse(course);
-                Stage stage = (Stage) card.getScene().getWindow();
-                stage.getScene().setRoot(root);
-            } catch (java.io.IOException ex) {
-                ex.printStackTrace();
-            }
+                if (controllers.FrontendController.getInstance() != null) {
+                    controllers.FrontendController.getInstance().loadContentNode(root);
+                } else {
+                    Stage stage = (Stage) card.getScene().getWindow();
+                    stage.getScene().setRoot(root);
+                }
+            } catch (java.io.IOException ex) { ex.printStackTrace(); }
         });
 
-        Button activityBtn = new Button("Activity");
+        Button activityBtn = new Button("Activities");
         activityBtn.getStyleClass().add("btn-secondary-activity");
         activityBtn.setGraphic(createIcon("M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z", "#0E7490", 14));
         activityBtn.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(activityBtn, Priority.ALWAYS);
         activityBtn.setOnAction(e -> {
             try {
                 javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_activities.fxml"));
                 javafx.scene.Parent root = loader.load();
                 controllers.activities.ActivityListController controller = loader.getController();
                 controller.setCourse(course);
-                Stage stage = (Stage) card.getScene().getWindow();
-                stage.getScene().setRoot(root);
-            } catch (java.io.IOException ex) {
-                ex.printStackTrace();
-            }
+                if (controllers.FrontendController.getInstance() != null) {
+                    controllers.FrontendController.getInstance().loadContentNode(root);
+                } else {
+                    Stage stage = (Stage) card.getScene().getWindow();
+                    stage.getScene().setRoot(root);
+                }
+            } catch (java.io.IOException ex) { ex.printStackTrace(); }
         });
+        subRow.getChildren().addAll(examBtn, activityBtn);
 
+        // Management Row (Edit & Delete)
+        HBox manageRow = new HBox(10);
+        manageRow.setAlignment(Pos.CENTER);
+        
         Button editBtn = new Button("Edit");
         editBtn.getStyleClass().add("btn-small-edit");
         editBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(editBtn, Priority.ALWAYS);
-        editBtn.setGraphic(createIcon("M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z", "#7C3AED", 14));
+        editBtn.setGraphic(createIcon("M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z", "#7C3AED", 14));
         editBtn.setOnAction(e -> CourseEditController.startEdit(course, (Stage) card.getScene().getWindow()));
 
         Button deleteBtn = new Button("Delete");
         deleteBtn.getStyleClass().add("btn-small-delete");
         deleteBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(deleteBtn, Priority.ALWAYS);
-        deleteBtn.setGraphic(createIcon("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z", "#DC2626", 14));
+        deleteBtn.setGraphic(createIcon("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z", "#DC2626", 14));
         deleteBtn.setOnAction(e -> showSleekDeleteOverlay(course));
 
-        actionRow.getChildren().addAll(editBtn, deleteBtn);
-        actions.getChildren().addAll(viewBtn, examBtn, activityBtn, actionRow);
-
+        manageRow.getChildren().addAll(editBtn, deleteBtn);
+        
+        actions.getChildren().addAll(viewBtn, subRow, manageRow);
         card.getChildren().addAll(header, teacherRow, statsBox, actions);
         return card;
     }
@@ -320,10 +482,12 @@ public class CourseListController extends BaseCourseController {
         overlay.getChildren().add(card);
         rootPane.getChildren().add(overlay);
 
-        // 3. Animations
+        // Invisible overlay still receives mouse hits until fade-in completes — block clicks on cards underneath
+        overlay.setMouseTransparent(true);
         FadeTransition fadeIn = new FadeTransition(Duration.millis(200), overlay);
         fadeIn.setFromValue(0);
         fadeIn.setToValue(1);
+        fadeIn.setOnFinished(ev -> overlay.setMouseTransparent(false));
 
         ScaleTransition scaleUp = new ScaleTransition(Duration.millis(300), card);
         scaleUp.setFromX(0.8);
@@ -336,6 +500,7 @@ public class CourseListController extends BaseCourseController {
     }
 
     private void hideOverlay(StackPane overlay, VBox card) {
+        overlay.setMouseTransparent(true);
         FadeTransition fadeOut = new FadeTransition(Duration.millis(200), overlay);
         fadeOut.setFromValue(1);
         fadeOut.setToValue(0);
@@ -351,16 +516,45 @@ public class CourseListController extends BaseCourseController {
     }
 
     private void showCourseDetailView(Course course) {
-        try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                    getClass().getResource("/gestion_cours/frontend_course_detail.fxml"));
-            javafx.scene.Parent root = loader.load();
-            CourseDetailController controller = loader.getController();
-            controller.populateCourseDetails(course);
-            Stage stage = (Stage) coursesContainer.getScene().getWindow();
-            stage.getScene().setRoot(root);
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
+        final Course courseRef = course;
+        Platform.runLater(() -> {
+            try {
+                java.net.URL url = CourseDetailController.class.getResource("/gestion_cours/frontend_course_detail.fxml");
+                if (url == null) {
+                    url = Thread.currentThread().getContextClassLoader()
+                            .getResource("gestion_cours/frontend_course_detail.fxml");
+                }
+                if (url == null) {
+                    showCourseDetailError("Missing FXML", "Resource not found: gestion_cours/frontend_course_detail.fxml");
+                    return;
+                }
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(url);
+                javafx.scene.Parent root = loader.load();
+                CourseDetailController controller = loader.getController();
+                // WebView / preview: attach to scene first, then populate (avoids many Windows/JavaFX failures).
+                if (controllers.FrontendController.getInstance() != null) {
+                    controllers.FrontendController.getInstance().loadContentNode(root);
+                } else if (coursesContainer != null && coursesContainer.getScene() != null) {
+                    Stage stage = (Stage) coursesContainer.getScene().getWindow();
+                    stage.getScene().setRoot(root);
+                } else {
+                    showCourseDetailError("Navigation", "No window or dashboard to show course details.");
+                    return;
+                }
+                controller.populateCourseDetails(courseRef);
+            } catch (Throwable t) {
+                t.printStackTrace();
+                String msg = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
+                showCourseDetailError("Course details", msg);
+            }
+        });
+    }
+
+    private static void showCourseDetailError(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.show();
     }
 }
