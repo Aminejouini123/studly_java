@@ -13,11 +13,16 @@ public class MyDatabase {
     private static MyDatabase instance;
 
     private MyDatabase() {
+        connect();
+    }
+
+    private void connect() {
         try {
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Connected");
+            System.out.println("Connected to database");
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            System.err.println("Database connection failed: " + e.getMessage());
+            connection = null;
         }
     }
 
@@ -31,10 +36,11 @@ public class MyDatabase {
         try {
             if (connection == null || connection.isClosed() || !connection.isValid(2)) {
                 System.out.println("Reconnecting to the database...");
-                connection = DriverManager.getConnection(URL, USER, PASSWORD);
+                connect();
             }
         } catch (SQLException e) {
             System.err.println("Error reconnecting: " + e.getMessage());
+            connect();
         }
         return connection;
     }

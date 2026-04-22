@@ -1,4 +1,4 @@
-package controllers.user_controller;
+package controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -6,7 +6,6 @@ import javafx.scene.control.Button;
 import javafx.scene.shape.Circle;
 import models.User;
 import utils.SessionManager;
-import controllers.FrontendController;
 
 public class ProfileController {
 

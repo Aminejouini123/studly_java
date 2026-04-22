@@ -1,0 +1,342 @@
+/* gestion_group/style.css */
+
+.root {
+    -fx-background-color: transparent;
+    -fx-font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* --- Symfony-like building blocks --- */
+.card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 14;
+    -fx-border-color: #E6EEF8;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(13, 55, 108, 0.06), 16, 0, 0, 5);
+}
+
+.hero {
+    -fx-background-color: linear-gradient(to right, #0D356C, #0D6BC8);
+    -fx-background-radius: 18;
+    -fx-padding: 26 26;
+}
+
+.hero-title {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 34px;
+    -fx-font-weight: 900;
+}
+
+.hero-subtitle {
+    -fx-text-fill: rgba(255, 255, 255, 0.82);
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+.pill {
+    -fx-background-radius: 999;
+    -fx-padding: 6 12;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+}
+
+.pill-solid {
+    -fx-background-color: rgba(255, 255, 255, 0.16);
+    -fx-text-fill: rgba(255, 255, 255, 0.92);
+}
+
+.pill-danger {
+    -fx-background-color: #FEF2F2;
+    -fx-text-fill: #DC2626;
+}
+
+.chip {
+    -fx-background-color: rgba(255, 255, 255, 0.14);
+    -fx-background-radius: 12;
+    -fx-padding: 8 12;
+    -fx-text-fill: rgba(255, 255, 255, 0.92);
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+}
+
+.section-header {
+    -fx-text-fill: #0F172A;
+    -fx-font-size: 16px;
+    -fx-font-weight: 900;
+}
+
+.muted {
+    -fx-text-fill: #64748B;
+}
+
+.linkish {
+    -fx-text-fill: #5B21B6;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-underline: false;
+    -fx-cursor: hand;
+}
+
+.linkish:hover {
+    -fx-underline: true;
+}
+
+.info-strip {
+    -fx-background-color: #F7FAFF;
+    -fx-background-radius: 12;
+    -fx-padding: 10 12;
+    -fx-border-color: #EDF4FF;
+    -fx-border-radius: 12;
+}
+
+.info-text {
+    -fx-text-fill: #0F172A;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+}
+
+.tag {
+    -fx-background-color: #E9F2FF;
+    -fx-text-fill: #0B5DC5;
+    -fx-background-radius: 999;
+    -fx-padding: 6 12;
+    -fx-font-size: 11px;
+    -fx-font-weight: 900;
+}
+
+.textarea-like {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 10;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10;
+    -fx-padding: 10 12;
+}
+
+.empty-title {
+    -fx-text-fill: #0F172A;
+    -fx-font-size: 18px;
+    -fx-font-weight: 900;
+}
+
+.empty-desc {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+.search-field {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10;
+    -fx-padding: 10 12;
+}
+
+.search-button {
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-background-color: #0B5DC5;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-shape: "M10 18a8 8 0 1 1 5.293-2.293l4 4a1 1 0 0 1-1.414 1.414l-4-4A7.963 7.963 0 0 1 10 18Zm0-2a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z";
+}
+
+.search-button:hover {
+    -fx-background-color: #094A9B;
+}
+
+.group-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 14;
+    -fx-border-color: #E6EEF8;
+    -fx-border-radius: 14;
+    -fx-padding: 18 18;
+}
+
+.group-name {
+    -fx-text-fill: #0F172A;
+    -fx-font-size: 22px;
+    -fx-font-weight: 900;
+}
+
+.group-meta {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+/* Titles + filters (match Gestion de temps structure) */
+.events-title {
+    -fx-text-fill: #111827;
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+}
+
+.events-subtitle {
+    -fx-text-fill: #1F2937;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+}
+
+.filter-badge {
+    -fx-padding: 8 14;
+    -fx-background-radius: 999;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+.filter-badge-date {
+    -fx-background-color: #FEF3C7;
+    -fx-text-fill: #D97706;
+}
+
+.filter-badge-priority {
+    -fx-background-color: #E5E7EB;
+    -fx-text-fill: #6B7280;
+}
+
+.events-search-field {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: #D7E2EF;
+    -fx-border-radius: 12;
+    -fx-padding: 10 14;
+}
+
+.empty-state {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 14px;
+    -fx-padding: 12 4;
+}
+
+/* Buttons */
+.button {
+    -fx-background-color: #E2E8F0;
+    -fx-text-fill: #0F172A;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 8;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #CBD5E1;
+}
+
+.btn-primary {
+    -fx-background-color: #004fb0;
+    -fx-text-fill: #FFFFFF;
+}
+
+.btn-primary:hover {
+    -fx-background-color: #002e7a;
+}
+
+.btn-secondary {
+    -fx-background-color: #FFFFFF;
+    -fx-text-fill: #0F172A;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.btn-secondary:hover {
+    -fx-background-color: #F8FAFC;
+}
+
+.btn-danger {
+    -fx-background-color: #FEF2F2;
+    -fx-text-fill: #DC2626;
+    -fx-border-color: #FECACA;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.btn-danger:hover {
+    -fx-background-color: #FEE2E2;
+}
+
+/* Form fields */
+.text-field,
+.combo-box-base {
+    -fx-background-color: #FFFFFF;
+    -fx-text-fill: #0F172A;
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 10;
+}
+
+.text-field:focused,
+.combo-box-base:focused {
+    -fx-border-color: #004fb0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 79, 176, 0.18), 10, 0, 0, 3);
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: #0F172A;
+}
+
+/* TableView */
+.table-view {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 10 10 0 0;
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-view .column-header,
+.table-view .filler {
+    -fx-background-color: transparent;
+    -fx-size: 38px;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #0F172A;
+    -fx-font-weight: 800;
+}
+
+.table-row-cell {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #F1F5F9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-row-cell:filled:hover {
+    -fx-background-color: #F8FAFC;
+}
+
+.table-row-cell:filled:selected,
+.table-row-cell:filled:selected:hover {
+    -fx-background-color: rgba(0, 79, 176, 0.12);
+}
+
+.table-cell {
+    -fx-padding: 10 12;
+    -fx-text-fill: #0F172A;
+}
+
+/* ListView cards */
+.list-view {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 10 0;
+}
+
+.list-cell:filled:selected,
+.list-cell:filled:selected:hover {
+    -fx-background-color: transparent;
+}

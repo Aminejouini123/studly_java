@@ -13,6 +13,19 @@ public class MainFX extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        // Set global exception handler for the FX thread
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            System.err.println("Uncaught exception: " + throwable.getMessage());
+            throwable.printStackTrace();
+            javafx.application.Platform.runLater(() -> {
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("An unexpected error occurred");
+                alert.setContentText(throwable.getMessage() != null ? throwable.getMessage() : throwable.toString());
+                alert.showAndWait();
+            });
+        });
+
         URL dashboardResource = getClass().getResource(DASHBOARD_FXML);
         if (dashboardResource == null) {
             throw new IllegalStateException("Missing FXML resource: " + DASHBOARD_FXML);
@@ -22,6 +35,8 @@ public class MainFX extends Application {
         Parent root = fxmlloader.load();
         Scene scene = new Scene(root);
         stage.setScene(scene);
+        stage.setWidth(1100);
+        stage.setHeight(800);
         stage.setTitle("Studly");
         stage.show();
     }

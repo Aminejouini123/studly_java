@@ -1,185 +1,100 @@
-package controllers;
+﻿package controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import models.User;
+
 import java.io.IOException;
-import java.util.List;
-import controllers.user_controller.ListUserController;
-import controllers.user_controller.AddUserController;
 
 public class BackendController {
 
-    @FXML public TableView<User> usersTable;
-    @FXML public TableColumn<User, String> colAvatar;
-    @FXML public TableColumn<User, User> colUser;
-    @FXML public TableColumn<User, String> colRole;
-    @FXML public TableColumn<User, String> colStatus;
-    @FXML public TableColumn<User, Object> colLastLogin;
-    @FXML public TableColumn<User, String> colActions;
-    
-    @FXML public TextField searchField;
-    @FXML public Button sortDateBtn;
+    @FXML
+    private StackPane mainContentHost;
 
-    // Filter Labels
-    @FXML public Label filterAll;
-    @FXML public Label filterAdmins;
-    @FXML public Label filterUsers;
-
-    // Dashboard Stat Labels
-    @FXML public Label totalUsersLabel;
-    @FXML public Label flaggedUsersLabel;
-
-    private ListUserController listUserController;
+    @FXML
+    private Button overviewBtn;
+    @FXML
+    private Button usersBtn;
+    @FXML
+    private Button timeBtn;
+    @FXML
+    private Button coursesBtn;
 
     @FXML
     public void initialize() {
-        try {
-            System.out.println("Initializing BackendController...");
-            
-            // 1. Initialize logic
-            listUserController = new ListUserController(usersTable);
-            
-            // 2. Setup table
-            listUserController.initializeTable(
-                colAvatar, 
-                colUser, 
-                colRole, 
-                colStatus, 
-                colLastLogin, 
-                colActions
-            );
-
-            // 3. Setup dashboard update callback
-            listUserController.setOnDataChanged(this::updateDashboardStats);
-            
-            // 4. Setup listeners
-            setupListeners();
-            
-            // 5. Initial stats update
-            updateDashboardStats();
-            
-            System.out.println("BackendController initialized successfully.");
-        } catch (Exception e) {
-            System.err.println("CRITICAL ERROR in BackendController.initialize():");
-            e.printStackTrace();
-        }
+        showUsers();
     }
 
-    private void updateDashboardStats() {
-        if (listUserController == null || totalUsersLabel == null || flaggedUsersLabel == null) return;
-        
-        List<User> allUsers = listUserController.getAllUsers();
-        long total = allUsers.size();
-        long flagged = allUsers.stream()
-                .filter(u -> "Flagged".equalsIgnoreCase(u.getStatut()))
-                .count();
-        
-        totalUsersLabel.setText(String.valueOf(total));
-        flaggedUsersLabel.setText(String.valueOf(flagged));
-    }
-
-    private void setupListeners() {
-        if (searchField != null) {
-            searchField.textProperty().addListener((obs, old, val) -> {
-                if (listUserController != null) listUserController.applyTextFilter(val);
-            });
-        }
-
-        if (sortDateBtn != null) {
-            sortDateBtn.setOnAction(e -> {
-                boolean descending = listUserController.toggleSortByDate();
-                updateSortUI(descending);
-            });
-        }
-
-        if (filterAll != null) filterAll.setOnMouseClicked(e -> handleRoleClick("ALL", filterAll));
-        if (filterAdmins != null) filterAdmins.setOnMouseClicked(e -> handleRoleClick("ADMIN", filterAdmins));
-        if (filterUsers != null) filterUsers.setOnMouseClicked(e -> handleRoleClick("USER", filterUsers));
-    }
-
-    private void handleRoleClick(String role, Label label) {
-        if (listUserController != null) {
-            listUserController.applyRoleFilter(role);
-            
-            // Reset styles
-            Label[] labels = {filterAll, filterAdmins, filterUsers};
-            for (Label l : labels) {
-                if (l != null) {
-                    l.getStyleClass().remove("filter-text-active");
-                    l.getStyleClass().add("filter-text");
-                }
-            }
-            label.getStyleClass().remove("filter-text");
-            label.getStyleClass().add("filter-text-active");
-        }
-    }
-
-    private void updateSortUI(boolean descending) {
-        if (sortDateBtn == null) return;
-        sortDateBtn.setText(descending ? "Sort: Newest First" : "Sort: Oldest First");
-        
-        if (sortDateBtn.getGraphic() instanceof SVGPath) {
-            SVGPath icon = (SVGPath) sortDateBtn.getGraphic();
-            if (descending) {
-                icon.setContent("M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z");
-            } else {
-                icon.setContent("M3 18h18v-2H3v2zM3 6v2h6V6H3zm0 7h12v-2H3v2z");
-            }
+    @FXML
+    public void showOverview() {
+        setActiveButton(overviewBtn);
+        if (mainContentHost != null) {
+            mainContentHost.getChildren().clear();
         }
     }
 
     @FXML
-    public void handleExportExcel() {
-        System.out.println("Exporting to Excel...");
-        // This is a placeholder for the actual Excel export logic
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-        alert.setTitle("Export Data");
-        alert.setHeaderText("Excel Export");
-        alert.setContentText("Successfully exported " + totalUsersLabel.getText() + " users to Excel format.");
-        alert.show();
+    public void showUsers() {
+        setActiveButton(usersBtn);
+        loadContent("/TEMPLATE/backend_users.fxml");
     }
 
     @FXML
-    public void handleCreateNewUser() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/getion_user/add_user.fxml"));
-            VBox form = loader.load();
-            
-            AddUserController controller = loader.getController();
-            controller.setListUserController(listUserController);
-            
-            Stage stage = new Stage();
-            stage.setTitle("Add User");
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setScene(new Scene(form));
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void showTimeManagement() {
+        setActiveButton(timeBtn);
+        loadContent("/TEMPLATE/backend_time.fxml");
     }
 
     @FXML
     public void handleShowCourses() {
-        System.out.println("Navigating to courses... showing the courses template.");
+        setActiveButton(coursesBtn);
+        loadContent("/gestion_cours/backend_courses.fxml");
+    }
+
+    private void loadContent(String fxmlPath) {
+        if (mainContentHost == null) {
+            return;
+        }
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestion_cours/backend_courses.fxml"));
-            javafx.scene.Parent root = loader.load();
-            Stage stage = (Stage) usersTable.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Node content = loader.load();
+            mainContentHost.getChildren().setAll(content);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void setActiveButton(Button activeBtn) {
+        Button[] buttons = {overviewBtn, usersBtn, timeBtn, coursesBtn};
+        for (Button btn : buttons) {
+            if (btn == null) continue;
+            btn.getStyleClass().remove("nav-button-active");
+            if (!btn.getStyleClass().contains("nav-button")) {
+                btn.getStyleClass().add("nav-button");
+            }
+            if (btn.getGraphic() instanceof SVGPath) {
+                SVGPath svg = (SVGPath) btn.getGraphic();
+                if (svg.getStroke() != null && svg.getStroke() != Color.TRANSPARENT) {
+                    svg.setStroke(Color.web("#64748B"));
+                } else {
+                    svg.setFill(Color.web("#64748B"));
+                }
+            }
+        }
+        if (activeBtn == null) return;
+        activeBtn.getStyleClass().remove("nav-button");
+        activeBtn.getStyleClass().add("nav-button-active");
+        if (activeBtn.getGraphic() instanceof SVGPath) {
+            SVGPath svg = (SVGPath) activeBtn.getGraphic();
+            if (svg.getStroke() != null && svg.getStroke() != Color.TRANSPARENT) {
+                svg.setStroke(Color.web("#004fb0"));
+            } else {
+                svg.setFill(Color.web("#38bdf8"));
+            }
         }
     }
 }

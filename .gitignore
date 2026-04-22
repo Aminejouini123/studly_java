@@ -1,6 +1,9 @@
+# Build output
 target/
 *.class
 *.log
+build_run.log
+cp.txt
 .DS_Store
 
 # IDE

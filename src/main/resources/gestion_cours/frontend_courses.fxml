@@ -38,7 +38,7 @@
                <HBox alignment="CENTER_LEFT" spacing="25.0">
                   <children>
                      <Label fx:id="navDashboard" onMouseClicked="#goToDashboard" styleClass="nav-link" text="Dashboard" />
-                     <Label styleClass="nav-link" text="Planing" />
+                     <Label onMouseClicked="#goToPlanning" styleClass="nav-link" text="Planning" />
                      <Label fx:id="navCourses" styleClass="nav-link-active" text="Courses" />
                      <Label styleClass="nav-link" text="Groups" />
                      <Label styleClass="nav-link" text="Tasks" />

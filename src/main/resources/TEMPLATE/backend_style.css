@@ -214,6 +214,182 @@
     -fx-alignment: center-left;
 }
 
+/* Groups Management (admin) */
+.gm-breadcrumb {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.gm-breadcrumb-strong {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.gm-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 15;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 3);
+}
+
+.gm-card-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0F172A;
+}
+
+.gm-search {
+    -fx-background-color: #F1F5F9;
+    -fx-background-radius: 12;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 12;
+    -fx-padding: 6 12;
+    -fx-spacing: 8;
+}
+
+.gm-search-input {
+    -fx-background-color: transparent;
+    -fx-prompt-text-fill: #94A3B8;
+    -fx-text-fill: #0F172A;
+    -fx-border-color: transparent;
+}
+
+.gm-icon-btn {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-min-width: 38px;
+    -fx-min-height: 38px;
+    -fx-cursor: hand;
+}
+
+.gm-icon-btn:hover {
+    -fx-background-color: #F8FAFC;
+}
+
+.gm-add-btn {
+    -fx-background-color: #6366F1;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-padding: 10 18;
+    -fx-cursor: hand;
+}
+
+.gm-add-btn:hover {
+    -fx-background-color: #4F46E5;
+}
+
+.gm-table {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.gm-table .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.gm-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.gm-table .column-header .label {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.gm-table .table-row-cell {
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 64px;
+}
+
+.gm-cell-title {
+    -fx-text-fill: #0F172A;
+    -fx-font-weight: 800;
+    -fx-font-size: 12px;
+}
+
+.gm-cell-sub {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.gm-cat-icon {
+    -fx-background-color: #EEF2FF;
+    -fx-background-radius: 12;
+    -fx-padding: 10 10;
+}
+
+.gm-cat-icon-shape {
+    -fx-fill: #6366F1;
+}
+
+.gm-status-pill {
+    -fx-padding: 4 10;
+    -fx-background-radius: 12;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.gm-status-assigned {
+    -fx-background-color: rgba(74, 222, 128, 0.18);
+    -fx-text-fill: #16a34a;
+}
+
+.gm-status-unassigned {
+    -fx-background-color: rgba(251, 191, 36, 0.22);
+    -fx-text-fill: #a16207;
+}
+
+.gm-action-btn {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-padding: 6 6;
+}
+
+.gm-action-btn-danger {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: rgba(248, 113, 113, 0.4);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-padding: 6 6;
+}
+
+.gm-action-btn:hover {
+    -fx-background-color: #F8FAFC;
+}
+
+.gm-action-btn-danger:hover {
+    -fx-background-color: rgba(248, 113, 113, 0.08);
+}
+
+.gm-icon {
+    -fx-fill: #64748B;
+}
+
+.gm-empty-title {
+    -fx-text-fill: #0F172A;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.gm-empty {
+    -fx-background-color: transparent;
+}
+
 /* Badges / Status Pills */
 .status-pill-active {
     -fx-background-color: rgba(74, 222, 128, 0.1);
@@ -282,20 +458,68 @@
     -fx-background-color: rgba(59, 130, 246, 0.1);
 }
 
+<<<<<<< HEAD
+.btn-view {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 5;
+    -fx-background-radius: 5;
+=======
+/* Time Management Specific Styles */
+.status-badge {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 8;
+    -fx-background-radius: 10;
+}
+
+.btn-icon-only {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 5;
+    -fx-background-radius: 50%;
+}
+
+.btn-icon-only:hover {
+    -fx-background-color: rgba(99, 102, 241, 0.1);
+}
+
+.btn-action-edit {
+    -fx-background-color: #E0F2FE;
+    -fx-text-fill: #0369A1;
+    -fx-shape: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z";
+    -fx-pref-width: 14;
+    -fx-pref-height: 14;
+    -fx-scale-x: 0.8;
+    -fx-scale-y: 0.8;
+    -fx-cursor: hand;
+}
+
+.btn-action-delete {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #B91C1C;
+    -fx-shape: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z";
+    -fx-pref-width: 14;
+    -fx-pref-height: 14;
+    -fx-scale-x: 0.8;
+    -fx-scale-y: 0.8;
+    -fx-cursor: hand;
+}
+
 /* --- Professional Admin Form Styles --- */
 .admin-form-container {
     -fx-background-color: #FFFFFF;
     -fx-background-radius: 12;
     -fx-padding: 30;
     -fx-spacing: 25;
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
 }
 
-.admin-form-section {
-    -fx-spacing: 20;
-    -fx-padding: 0 0 10 0;
-    -fx-border-color: transparent transparent #E2E8F0 transparent;
-    -fx-border-width: 0 0 1 0;
+.btn-view:hover {
+    -fx-background-color: rgba(100, 116, 139, 0.12);
 }
+<<<<<<< HEAD
+=======
 
 .admin-form-section-title {
     -fx-font-size: 16px;
@@ -338,3 +562,11 @@
     -fx-spacing: 15;
     -fx-padding: 20 0 0 0;
 }
+
+.error-label {
+    -fx-text-fill: #e11d48;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 0 0 2;
+}
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e

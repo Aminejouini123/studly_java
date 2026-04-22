@@ -64,6 +64,11 @@ public class FrontendController extends controllers.courses.BaseCourseController
         }
     }
 
+    // Called after profile edits to refresh header UI.
+    public void refreshUserHeader() {
+        loadUserInfo();
+    }
+
     @FXML
     private void showDashboard() {
         contentHost.getChildren().clear();

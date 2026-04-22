@@ -1,4 +1,4 @@
-package controllers.user_controller;
+package controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

@@ -9,27 +9,19 @@ public class Main {
 
 
     public static void main(String[] args) {
-        PersonneService ps = new PersonneService();
-
+        utils.DatabaseInitializer.initialize("schema.sql");
+        services.UserService us = new services.UserService();
         try {
-            ps.ajouter(new Personne(24, "Ben Foulen", "Foulen"));
-            System.out.println("Personne ajouté");
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            for (models.User u : us.recuperer()) {
+                if ("admin@studly.com".equals(u.getEmail())) {
+                    u.setPassword("admin");
+                    us.modifier(u);
+                    System.out.println("Password reset to 'admin' for admin@studly.com");
+                    break;
+                }
+            }
+        } catch (java.sql.SQLException e) {
+            System.err.println("Error: " + e.getMessage());
         }
-
-        try {
-            ps.modifier(new Personne(1, 24, "nsit", "Billal"));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-//
-
-        try {
-            System.out.println(ps.recuperer());
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
-
     }
 }
