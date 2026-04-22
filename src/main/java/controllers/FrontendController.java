@@ -1,49 +1,32 @@
 package controllers;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Circle;
+import javafx.scene.Node;
+import javafx.fxml.FXMLLoader;
 import models.User;
 import utils.SessionManager;
-
 import java.io.IOException;
 import java.net.URL;
 
-public class FrontendController {
+public class FrontendController extends controllers.courses.BaseCourseController {
+
+    @FXML private Label dashboardNavLabel;
+    @FXML private Label planningNavLabel;
+    @FXML private Label coursesNavLabel;
+    @FXML private StackPane contentHost;
+
+    // Profile header components
+    @FXML private HBox profileSection;
+    @FXML private Label userNameLabel;
+    @FXML private Label userRoleLabel;
+    @FXML private Label avatarInitials;
+    @FXML private Circle avatarCircle;
 
     private static FrontendController instance;
-
-    @FXML
-    private Label dashboardNavLabel;
-
-    @FXML
-    private Label planningNavLabel;
-
-    @FXML
-    private Label coursesNavLabel;
-
-    @FXML
-    private Label groupsNavLabel;
-
-    // Optional header fields (present in some variants of the dashboard FXML).
-    @FXML
-    private Label avatarInitials;
-
-    @FXML
-    private Label userNameLabel;
-
-    @FXML
-    private Label userRoleLabel;
-
-    @FXML
-    private StackPane contentHost;
-
-    public FrontendController() {
-        instance = this;
-    }
 
     public static FrontendController getInstance() {
         return instance;
@@ -51,83 +34,20 @@ public class FrontendController {
 
     @FXML
     public void initialize() {
+        instance = this;
         setActiveNav(dashboardNavLabel);
-        refreshUserHeader();
+        loadUserInfo();
     }
 
-    @FXML
-    public void showDashboard() {
-        contentHost.getChildren().clear();
-        setActiveNav(dashboardNavLabel);
-    }
-
-    @FXML
-    public void showPlanning() {
-        loadContent("/Gestion de temps/planning_dashboard.fxml");
-        setActiveNav(planningNavLabel);
-    }
-
-    public void loadContent(String resourcePath) {
-        try {
-            URL resource = getClass().getResource(resourcePath);
-            if (resource == null) {
-                throw new IllegalStateException("Missing FXML resource: " + resourcePath);
-            }
-
-            Node content = FXMLLoader.load(resource);
-            contentHost.getChildren().setAll(content);
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to load FXML resource: " + resourcePath, e);
-        }
-    }
-
-    public void goToDashboard(javafx.event.Event event) {
-        showDashboard();
-    }
-
-    @FXML
-    private void goToCourses(MouseEvent event) {
-        loadContent("/gestion_cours/courses_body.fxml");
-        setActiveNav(coursesNavLabel);
-    }
-
-    @FXML
-    private void showGroups(MouseEvent event) {
-        loadContent("/gestion_group/groups_dashboard.fxml");
-        setActiveNav(groupsNavLabel);
-    }
-
-    @FXML
-    private void showInvitations(MouseEvent event) {
-        loadContent("/gestion_group/invitations_inbox.fxml");
-    }
-
-    @FXML
-    public void showProfile() {
-        loadContent("/getion_user/profile.fxml");
-    }
-
-    public void showEditProfile() {
-        loadContent("/getion_user/edit_profile_settings.fxml");
-    }
-
-<<<<<<< HEAD
-    public void refreshUserHeader() {
+    private void loadUserInfo() {
         User user = SessionManager.getCurrentUser();
-        if (user == null) {
-            return;
-        }
-
-        String firstName = user.getFirst_name() != null ? user.getFirst_name() : "";
-        String lastName = user.getLast_name() != null ? user.getLast_name() : "";
-        String fullName = (firstName + " " + lastName).trim();
-
-        if (userNameLabel != null) {
-            userNameLabel.setText(fullName.isEmpty() ? "User" : fullName);
-        }
-
-        if (userRoleLabel != null) {
-            String roles = user.getRoles() != null ? user.getRoles() : "";
+        if (user != null) {
+            String firstName = user.getFirst_name() != null ? user.getFirst_name() : "";
+            String lastName = user.getLast_name() != null ? user.getLast_name() : "";
+            userNameLabel.setText(firstName + " " + lastName);
+            
+            // Set role display
+            String roles = user.getRoles() != null ? user.getRoles() : "Member";
             if (roles.contains("ROLE_ADMIN")) {
                 userRoleLabel.setText("Administrator");
             } else if (roles.contains("ROLE_TEACHER")) {
@@ -135,51 +55,95 @@ public class FrontendController {
             } else {
                 userRoleLabel.setText("Student");
             }
-        }
 
-        if (avatarInitials != null) {
+            // Set initials
             String initials = "";
             if (!firstName.isEmpty()) initials += firstName.substring(0, 1).toUpperCase();
             if (!lastName.isEmpty()) initials += lastName.substring(0, 1).toUpperCase();
-            avatarInitials.setText(initials.isEmpty() ? "U" : initials);
-=======
+            avatarInitials.setText(initials);
+        }
+    }
+
+    // Called after profile edits to refresh header UI.
+    public void refreshUserHeader() {
+        loadUserInfo();
+    }
+
+    @FXML
+    private void showDashboard() {
+        contentHost.getChildren().clear();
+        setActiveNav(dashboardNavLabel);
+    }
+
+    @FXML
+    private void showPlanning() {
+        loadContent("/Gestion de temps/planning_dashboard.fxml");
+        setActiveNav(planningNavLabel);
+    }
+
+    @Override
+    public void goToCourses(javafx.event.Event event) {
+        loadContent("/gestion_cours/courses_body.fxml");
+        setActiveNav(coursesNavLabel);
+    }
+
+    @Override
+    public void goToDashboard(javafx.event.Event event) {
+        showDashboard();
+    }
+
+    @FXML
+    public void showProfile() {
+        loadContent("/getion_user/profile.fxml");
+        setActiveNav(null); // Clear active nav state as we're on profile
+    }
+
+    @FXML
+    public void showEditProfile() {
+        loadContent("/getion_user/edit_profile_settings.fxml");
+    }
+
     public void loadContent(String resourcePath) {
         try {
             URL resource = getClass().getResource(resourcePath);
-            System.out.println("FrontendController: loading resource -> " + resourcePath + " (url=" + resource + ")");
             if (resource == null) {
-                throw new IOException("Missing FXML resource: " + resourcePath);
+                System.err.println("FXML NOT FOUND: " + resourcePath);
+                return;
             }
 
             FXMLLoader loader = new FXMLLoader(resource);
             Node content = loader.load();
-            System.out.println("FrontendController: loaded content for " + resourcePath + ", nodes=" + (content == null ? "null" : content.getClass().getSimpleName()));
             contentHost.getChildren().setAll(content);
         } catch (IOException e) {
             e.printStackTrace();
-            javafx.application.Platform.runLater(() -> {
-                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-                alert.setTitle("Load Error");
-                alert.setHeaderText("Unable to load component");
-                alert.setContentText("Resource: " + resourcePath + "\nError: " + e.getMessage());
-                alert.showAndWait();
-            });
->>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
         }
+    }
+
+    /**
+     * Show an already-built node inside the dashboard (keeps nav/header).
+     * Do not use {@code TOP_LEFT} alignment here: with that alignment, StackPane keeps the child's
+     * preferred size only, so detail views inside the ScrollPane often appear blank or a thin strip.
+     */
+    public void loadContentNode(Node content) {
+        if (contentHost == null || content == null) {
+            return;
+        }
+        if (content instanceof javafx.scene.layout.Region) {
+            javafx.scene.layout.Region r = (javafx.scene.layout.Region) content;
+            r.setMaxWidth(Double.MAX_VALUE);
+            r.setMaxHeight(Double.MAX_VALUE);
+        }
+        contentHost.getChildren().setAll(content);
     }
 
     private void setActiveNav(Label activeLabel) {
         updateNavStyle(dashboardNavLabel, dashboardNavLabel == activeLabel);
         updateNavStyle(planningNavLabel, planningNavLabel == activeLabel);
         updateNavStyle(coursesNavLabel, coursesNavLabel == activeLabel);
-        updateNavStyle(groupsNavLabel, groupsNavLabel == activeLabel);
     }
 
     private void updateNavStyle(Label label, boolean active) {
-        if (label == null) {
-            return;
-        }
-
+        if (label == null) return;
         label.getStyleClass().removeAll("nav-link", "nav-link-active");
         label.getStyleClass().add(active ? "nav-link-active" : "nav-link");
     }

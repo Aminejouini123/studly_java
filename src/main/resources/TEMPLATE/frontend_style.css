@@ -105,6 +105,33 @@
     -fx-background-color: #002e7a;
 }
 
+/* "+ Add a Course" — léger relief, survol plus lumineux, enfoncé plus sombre */
+.btn-add-course {
+    -fx-background-color: linear-gradient(to bottom, #2b6fd8 0%, #004fb0 45%, #003b85 100%);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 26;
+    -fx-background-radius: 12;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 40, 100, 0.38), 14, 0, 0, 4);
+}
+
+.btn-add-course:hover {
+    -fx-background-color: linear-gradient(to bottom, #4b8ef5 0%, #1d6fdf 50%, #004fb0 100%);
+    -fx-effect: dropshadow(three-pass-box, rgba(37, 99, 235, 0.55), 20, 0, 0, 6);
+}
+
+.btn-add-course:pressed {
+    -fx-background-color: linear-gradient(to bottom, #002a5c 0%, #001f45 100%);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.35), 8, 0, 0, 2);
+}
+
+.btn-add-course:focused {
+    -fx-effect: dropshadow(three-pass-box, rgba(59, 130, 246, 0.65), 16, 0, 0, 0);
+}
+
 /* Clean White Cards */
 .glass-card {
     -fx-background-color: #FFFFFF;
@@ -779,8 +806,9 @@
     -fx-border-color: #d2d6da;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
-    -fx-padding: 4 0;
+    -fx-padding: 4 10;
     -fx-font-size: 14px;
+    -fx-cursor: hand;
 }
 
 .modern-combo:focused {
@@ -791,27 +819,45 @@
 .modern-combo > .list-cell {
     -fx-padding: 8 15;
     -fx-background-color: transparent;
+    -fx-text-fill: #1E293B;
 }
 
 .modern-combo > .arrow-button {
     -fx-background-color: transparent;
-    -fx-padding: 0 15 0 0;
+    -fx-padding: 0 5 0 0;
+}
+
+/* --- FORCED VISIBILITY FOR COMBOBOX POPUPS --- */
+.combo-box-popup .list-view {
+    -fx-background-color: white !important;
+    -fx-padding: 0 !important;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: white !important;
+    -fx-text-fill: #1E293B !important;
+    -fx-padding: 10 15 !important;
+}
+
+.combo-box-popup .list-view .list-cell:filled:hover {
+    -fx-background-color: #F1F5F9 !important;
+    -fx-text-fill: #004fb0 !important;
+}
+
+.combo-box-popup .list-view .list-cell:filled:selected {
+    -fx-background-color: #004fb0 !important;
+    -fx-text-fill: white !important;
 }
 
 .modern-combo > .arrow-button > .arrow {
     -fx-background-color: #64748B;
     -fx-shape: "M7 10l5 5 5-5z";
-    -fx-scale-x: 1.2;
-    -fx-scale-y: 1.2;
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
 }
 
 .modern-combo:hover > .arrow-button > .arrow {
     -fx-background-color: #004fb0;
-}
-
-.modern-combo:focused {
-    -fx-border-color: #004fb0;
-    -fx-border-width: 1.5;
 }
 
 .modern-area {

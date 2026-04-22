@@ -61,8 +61,9 @@ public class ActivityListController extends BaseActivityController {
             searchField.textProperty().addListener((obs, oldVal, newVal) -> updateDisplay());
         }
         if (sortComboBox != null) {
-            sortComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateDisplay());
+            sortComboBox.getItems().setAll("Newest First", "Title (A-Z)", "Title (Z-A)", "Duration (Asc)", "Duration (Desc)");
             sortComboBox.setValue("Newest First");
+            sortComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateDisplay());
         }
     }
 
@@ -83,41 +84,54 @@ public class ActivityListController extends BaseActivityController {
     }
 
     private void updateDisplay() {
-        if (searchField == null || statusFilter == null || sortComboBox == null) return;
-        
-        String searchText = searchField.getText().toLowerCase().trim();
-        String selectedStatus = statusFilter.getValue();
-        String selectedSort = sortComboBox.getValue();
+        if (activitiesContainer == null) return;
+
+        String searchText = searchField != null ? searchField.getText().toLowerCase().trim() : "";
+        String selectedStatus = statusFilter != null ? statusFilter.getValue() : "All statuses";
+        String selectedSort = sortComboBox != null ? sortComboBox.getValue() : "Newest First";
 
         List<Activity> filtered = allActivities.stream()
-                .filter(a -> searchText.isEmpty() || 
-                            (a.getTitle() != null && a.getTitle().toLowerCase().contains(searchText)) || 
+                .filter(a -> searchText.isEmpty() ||
+                            (a.getTitle() != null && a.getTitle().toLowerCase().contains(searchText)) ||
                             (a.getDescription() != null && a.getDescription().toLowerCase().contains(searchText)))
                 .filter(a -> selectedStatus == null || selectedStatus.equals("All statuses") || (a.getStatus() != null && a.getStatus().equalsIgnoreCase(selectedStatus)))
                 .collect(Collectors.toList());
 
-        // Apply Sorting
         if (selectedSort != null) {
             switch (selectedSort) {
                 case "Title (A-Z)":
-                    filtered.sort((a1, a2) -> a1.getTitle().compareToIgnoreCase(a2.getTitle()));
+                    filtered.sort(java.util.Comparator.comparing(a -> a.getTitle() != null ? a.getTitle().toLowerCase() : "", String.CASE_INSENSITIVE_ORDER));
                     break;
                 case "Title (Z-A)":
-                    filtered.sort((a1, a2) -> a2.getTitle().compareToIgnoreCase(a1.getTitle()));
+                    filtered.sort((a1, a2) -> {
+                        String t1 = a1.getTitle() != null ? a1.getTitle() : "";
+                        String t2 = a2.getTitle() != null ? a2.getTitle() : "";
+                        return t2.compareToIgnoreCase(t1);
+                    });
                     break;
                 case "Duration (Asc)":
-                    filtered.sort((a1, a2) -> Integer.compare(a1.getDuration(), a2.getDuration()));
+                    filtered.sort(java.util.Comparator.comparingInt(Activity::getDuration));
                     break;
                 case "Duration (Desc)":
                     filtered.sort((a1, a2) -> Integer.compare(a2.getDuration(), a1.getDuration()));
                     break;
                 case "Newest First":
-                    if (filtered.size() > 1) {
-                        filtered.sort((a1, a2) -> {
-                            if (a1.getCompleted_at() == null || a2.getCompleted_at() == null) return 0;
-                            return a2.getCompleted_at().compareTo(a1.getCompleted_at());
-                        });
-                    }
+                default:
+                    filtered.sort((a1, a2) -> {
+                        int comp = 0;
+                        if (a1.getCompleted_at() != null && a2.getCompleted_at() != null) {
+                            comp = a2.getCompleted_at().compareTo(a1.getCompleted_at());
+                        } else if (a1.getCompleted_at() != null) {
+                            comp = -1;
+                        } else if (a2.getCompleted_at() != null) {
+                            comp = 1;
+                        }
+
+                        if (comp == 0) {
+                            return Integer.compare(a2.getId(), a1.getId());
+                        }
+                        return comp;
+                    });
                     break;
             }
         }
@@ -135,7 +149,8 @@ public class ActivityListController extends BaseActivityController {
             activitiesContainer.setVisible(true);
             activitiesContainer.setManaged(true);
             for (Activity activity : filtered) {
-                activitiesContainer.getChildren().add(createActivityCard(activity));
+                VBox card = createActivityCard(activity);
+                activitiesContainer.getChildren().add(card);
             }
         }
         
@@ -144,14 +159,14 @@ public class ActivityListController extends BaseActivityController {
 
     private void updateStats(List<Activity> list) {
         long total = allActivities.size();
-        long todo = allActivities.stream().filter(a -> a.getStatus().equalsIgnoreCase("To Do")).count();
-        long inProgress = allActivities.stream().filter(a -> a.getStatus().equalsIgnoreCase("In Progress")).count();
-        long completed = allActivities.stream().filter(a -> a.getStatus().equalsIgnoreCase("Completed")).count();
+        long todo = allActivities.stream().filter(a -> a.getStatus() != null && a.getStatus().equalsIgnoreCase("To Do")).count();
+        long inProgress = allActivities.stream().filter(a -> a.getStatus() != null && a.getStatus().equalsIgnoreCase("In Progress")).count();
+        long completed = allActivities.stream().filter(a -> a.getStatus() != null && a.getStatus().equalsIgnoreCase("Completed")).count();
 
-        statTotal.setText(String.valueOf(total));
-        statToDo.setText(String.valueOf(todo));
-        statInProgress.setText(String.valueOf(inProgress));
-        statCompleted.setText(String.valueOf(completed));
+        if (statTotal != null) statTotal.setText(String.valueOf(total));
+        if (statToDo != null) statToDo.setText(String.valueOf(todo));
+        if (statInProgress != null) statInProgress.setText(String.valueOf(inProgress));
+        if (statCompleted != null) statCompleted.setText(String.valueOf(completed));
     }
 
     private VBox createActivityCard(Activity activity) {
@@ -164,7 +179,8 @@ public class ActivityListController extends BaseActivityController {
         HBox header = new HBox(12);
         header.setAlignment(Pos.CENTER_LEFT);
         
-        Label title = new Label(activity.getTitle().toLowerCase()); // Lowercase for modern look
+        String titleText = activity.getTitle() != null ? activity.getTitle().toLowerCase() : "untitled";
+        Label title = new Label(titleText);
         title.getStyleClass().add("course-card-title");
         
         Region spacer = new Region();
@@ -179,7 +195,7 @@ public class ActivityListController extends BaseActivityController {
         SVGPath folderIcon = createIcon(
                 "M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z",
                 "#64748B", 14);
-        Label typeLabel = new Label(activity.getType());
+        Label typeLabel = new Label(activity.getType() != null ? activity.getType() : "—");
         typeLabel.getStyleClass().add("course-card-teacher"); // Reuse teacher styling for secondary info
         typeRow.getChildren().addAll(folderIcon, typeLabel);
 
@@ -247,17 +263,6 @@ public class ActivityListController extends BaseActivityController {
         if (s.contains("to do")) badge.getStyleClass().add("status-badge-pending");
         else if (s.contains("progress")) badge.getStyleClass().add("status-badge-progress");
         else badge.getStyleClass().add("status-badge-completed");
-        return badge;
-    }
-
-    private Label createDifficultyBadge(String diff) {
-        if (diff == null || diff.isEmpty()) diff = "Medium";
-        Label badge = new Label(diff.toUpperCase());
-        badge.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 2 8; -fx-background-radius: 4;");
-        String d = diff.toLowerCase();
-        if (d.contains("easy")) badge.setStyle(badge.getStyle() + "-fx-background-color: #DCFCE7; -fx-text-fill: #166534;");
-        else if (d.contains("medium")) badge.setStyle(badge.getStyle() + "-fx-background-color: #FEF9C3; -fx-text-fill: #854D0E;");
-        else badge.setStyle(badge.getStyle() + "-fx-background-color: #FEE2E2; -fx-text-fill: #991B1B;");
         return badge;
     }
 
@@ -334,6 +339,15 @@ public class ActivityListController extends BaseActivityController {
         st.setFromX(0.85); st.setFromY(0.85); st.setToX(1); st.setToY(1); st.play();
     }
 
+    private void showInMainOrShell(javafx.scene.Parent root) {
+        if (controllers.FrontendController.getInstance() != null) {
+            controllers.FrontendController.getInstance().loadContentNode(root);
+        } else {
+            javafx.stage.Stage stage = (javafx.stage.Stage) activitiesContainer.getScene().getWindow();
+            stage.getScene().setRoot(root);
+        }
+    }
+
     private void handleViewActivity(Activity activity) {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_activity_detail.fxml"));
@@ -342,8 +356,7 @@ public class ActivityListController extends BaseActivityController {
             ActivityDetailController controller = loader.getController();
             controller.populateDetails(activity, currentCourse);
             
-            javafx.stage.Stage stage = (javafx.stage.Stage) activitiesContainer.getScene().getWindow();
-            stage.getScene().setRoot(root);
+            showInMainOrShell(root);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Navigation Error", "Could not load activity details: " + e.getMessage());
@@ -358,8 +371,7 @@ public class ActivityListController extends BaseActivityController {
             ActivityEditController controller = loader.getController();
             controller.setActivity(activity, currentCourse);
             
-            javafx.stage.Stage stage = (javafx.stage.Stage) activitiesContainer.getScene().getWindow();
-            stage.getScene().setRoot(root);
+            showInMainOrShell(root);
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
@@ -367,24 +379,39 @@ public class ActivityListController extends BaseActivityController {
 
     @FXML
     private void handleBackToCourses() {
-        loadScene("/gestion_cours/frontend_courses.fxml", null, courseTitleLabel);
+        if (fromBackend) {
+            try {
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/TEMPLATE/backend_courses.fxml"));
+                javafx.scene.Parent root = loader.load();
+                javafx.stage.Stage stage = (javafx.stage.Stage) activitiesContainer.getScene().getWindow();
+                stage.getScene().setRoot(root);
+            } catch (java.io.IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            navigateToFrontendCourseList(courseTitleLabel);
+        }
     }
 
     @FXML
     private void handleSmartGenerate() {
-        System.out.println("AI Generation triggered for course: " + currentCourse.getName());
-        // Placeholder for AI logic
+        if (currentCourse != null) {
+            System.out.println("AI Generation triggered for course: " + currentCourse.getName());
+        }
     }
 
     @FXML
     private void handleAddActivity() {
+        if (currentCourse == null) {
+            showAlert("Error", "No course selected. Open activities from a course card.");
+            return;
+        }
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_add_activity.fxml"));
             javafx.scene.Parent root = loader.load();
             ActivityAddController controller = loader.getController();
             controller.setCourse(currentCourse);
-            javafx.stage.Stage stage = (javafx.stage.Stage) activitiesContainer.getScene().getWindow();
-            stage.getScene().setRoot(root);
+            showInMainOrShell(root);
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }

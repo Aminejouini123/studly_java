@@ -167,16 +167,7 @@ public class ExamDetailController extends BaseExamController {
 
     @FXML
     public void handleBack() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestion_examen/frontend_exams.fxml"));
-            Parent root = loader.load();
-            ExamListController controller = loader.getController();
-            controller.setCourse(currentCourse);
-            Stage stage = (Stage) examTitle.getScene().getWindow();
-            stage.getScene().setRoot(root);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        navigateToExamList(examTitle, currentCourse);
     }
 
     @FXML
@@ -186,8 +177,12 @@ public class ExamDetailController extends BaseExamController {
             Parent root = loader.load();
             ExamEditController controller = loader.getController();
             controller.setExam(currentExam, currentCourse);
-            Stage stage = (Stage) examTitle.getScene().getWindow();
-            stage.getScene().setRoot(root);
+            if (controllers.FrontendController.getInstance() != null) {
+                controllers.FrontendController.getInstance().loadContentNode(root);
+            } else {
+                Stage stage = (Stage) examTitle.getScene().getWindow();
+                stage.getScene().setRoot(root);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -195,23 +190,63 @@ public class ExamDetailController extends BaseExamController {
 
     @FXML
     public void handleDelete() {
-        deleteModalOverlay.setVisible(true);
+        showSleekDeleteOverlay();
     }
 
-    @FXML
-    public void closeDeleteModal() {
-        deleteModalOverlay.setVisible(false);
-    }
-
-    @FXML
-    public void confirmDelete() {
-        if (currentExam != null) {
+    private void showSleekDeleteOverlay() {
+        javafx.scene.layout.StackPane overlay = new javafx.scene.layout.StackPane();
+        overlay.setStyle("-fx-background-color: rgba(15, 23, 42, 0.7);");
+        overlay.setOpacity(0);
+        
+        VBox card = new VBox(25);
+        card.setAlignment(javafx.geometry.Pos.CENTER);
+        card.setPadding(new javafx.geometry.Insets(40));
+        card.setMaxSize(340, javafx.scene.layout.Region.USE_PREF_SIZE);
+        card.getStyleClass().add("modern-confirm-card");
+        
+        javafx.scene.shape.SVGPath warnIcon = createIcon("M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z", "#EF4444", 48);
+        
+        VBox textContent = new VBox(8);
+        textContent.setAlignment(javafx.geometry.Pos.CENTER);
+        Label title = new Label("Delete Exam?");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: 800; -fx-text-fill: #1E293B;");
+        Label desc = new Label("This action cannot be undone.\n\"" + currentExam.getTitle() + "\" will be lost.");
+        desc.getStyleClass().add("success-message");
+        textContent.getChildren().addAll(title, desc);
+        
+        javafx.scene.layout.HBox buttons = new javafx.scene.layout.HBox(12);
+        buttons.setAlignment(javafx.geometry.Pos.CENTER);
+        Button cancelBtn = new Button("Keep it");
+        cancelBtn.getStyleClass().add("btn-modern-cancel");
+        cancelBtn.setOnAction(e -> {
+            javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(javafx.util.Duration.millis(200), overlay);
+            ft.setToValue(0);
+            ft.setOnFinished(ev -> ((javafx.scene.layout.StackPane)examTitle.getScene().getRoot()).getChildren().remove(overlay));
+            ft.play();
+        });
+        
+        Button confirmBtn = new Button("Delete Exam");
+        confirmBtn.getStyleClass().add("btn-modern-delete");
+        confirmBtn.setOnAction(e -> {
             try {
                 new services.ExamService().supprimer(currentExam.getId());
+                ((javafx.scene.layout.StackPane)examTitle.getScene().getRoot()).getChildren().remove(overlay);
                 handleBack();
-            } catch (java.sql.SQLException e) {
-                e.printStackTrace();
+            } catch (java.sql.SQLException ex) {
+                ex.printStackTrace();
             }
-        }
+        });
+        
+        buttons.getChildren().addAll(cancelBtn, confirmBtn);
+        card.getChildren().addAll(warnIcon, textContent, buttons);
+        overlay.getChildren().add(card);
+        
+        ((javafx.scene.layout.StackPane)examTitle.getScene().getRoot()).getChildren().add(overlay);
+        
+        javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(javafx.util.Duration.millis(250), overlay);
+        fadeIn.setFromValue(0); fadeIn.setToValue(1); fadeIn.play();
+        
+        javafx.animation.ScaleTransition scaleUp = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(300), card);
+        scaleUp.setFromX(0.85); scaleUp.setFromY(0.85); scaleUp.setToX(1); scaleUp.setToY(1); scaleUp.play();
     }
 }

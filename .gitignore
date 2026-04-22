@@ -1,14 +1,11 @@
-<<<<<<< HEAD
-/target/
-/.idea/
-/.vscode/
-*.classbuild_run.log
-build_run.log
-=======
+# Build output
 target/
-.idea/
 *.class
 *.log
+build_run.log
 cp.txt
 .DS_Store
->>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
+
+# IDE
+.idea/
+.vscode/

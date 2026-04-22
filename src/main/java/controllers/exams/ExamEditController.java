@@ -10,8 +10,11 @@ import models.Course;
 import models.Exam;
 import services.ExamService;
 
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
+import javafx.fxml.FXMLLoader;
+import javafx.stage.Stage;
 
 public class ExamEditController extends BaseExamController {
 
@@ -25,6 +28,20 @@ public class ExamEditController extends BaseExamController {
     private Course currentCourse;
     private Exam currentExam;
     private final ExamService examService = new ExamService();
+    
+    public void setExam(Exam exam) {
+        this.currentExam = exam;
+        this.currentCourse = null;
+        
+        titleField.setText(exam.getTitle());
+        if (exam.getDate() != null) datePicker.setValue(exam.getDate().toLocalDate());
+        durationField.setText(String.valueOf(exam.getDuration()));
+        gradeField.setText(String.valueOf(exam.getGrade()));
+        difficultyCombo.setValue(exam.getDifficulty());
+        statusCombo.setValue(exam.getStatus());
+        fileField.setText(exam.getFile());
+        linkField.setText(exam.getLink());
+    }
 
     @FXML
     public void initialize() {
@@ -62,7 +79,13 @@ public class ExamEditController extends BaseExamController {
             currentExam.setLink(linkField.getText());
 
             examService.modifier(currentExam);
-            showSuccessNotification(rootPane, "Updated!", "Changes saved successfully.", this::handleCancel);
+            showSuccessNotification(rootPane, "Updated!", "Changes saved successfully.", () -> {
+                if (fromBackend) {
+                    returnToDashboard(rootPane);
+                } else {
+                    navigateToExamList(rootPane, currentCourse);
+                }
+            });
         } catch (SQLException e) {
             e.printStackTrace();
             showErrorNotification(rootPane, "Update Error", "Could not update exam: " + e.getMessage());
@@ -73,7 +96,11 @@ public class ExamEditController extends BaseExamController {
 
     @FXML
     public void handleCancel() {
-        navigateToExamList(titleField, currentCourse);
+        if (fromBackend) {
+            returnToDashboard(rootPane);
+        } else {
+            navigateToExamList(titleField, currentCourse);
+        }
     }
 
     private void hideErrors() {
