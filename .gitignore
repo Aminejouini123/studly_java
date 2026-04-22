@@ -4,3 +4,9 @@ target/
 *.log
 cp.txt
 .DS_Store
+studly_api/.env
+**/__pycache__/
+compile_errors.txt
+last_error.txt
+output.log
+full_output.log

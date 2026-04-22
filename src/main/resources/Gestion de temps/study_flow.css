@@ -1,0 +1,88 @@
+.study-flow-shell {
+    -fx-background-color: linear-gradient(to bottom right, #f4f8ff, #eef5ff);
+}
+
+.study-flow-header {
+    -fx-background-color: linear-gradient(to right, #0f4a92, #2f87ea);
+    -fx-background-radius: 20;
+    -fx-padding: 18;
+}
+
+.study-flow-title {
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+}
+
+.study-flow-subtitle {
+    -fx-text-fill: rgba(255, 255, 255, 0.88);
+    -fx-font-size: 13px;
+}
+
+.study-flow-status {
+    -fx-text-fill: #dbeafe;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+.study-flow-scroll {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.study-flow-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.quiz-card,
+.result-step-card {
+    -fx-background-color: white;
+    -fx-background-radius: 18;
+    -fx-border-color: #dbe7f5;
+    -fx-border-radius: 18;
+    -fx-padding: 16;
+}
+
+.quiz-question,
+.result-step-title {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+}
+
+.quiz-option {
+    -fx-text-fill: #334155;
+    -fx-font-size: 13px;
+}
+
+.result-step-action {
+    -fx-text-fill: #1e293b;
+    -fx-font-size: 13px;
+}
+
+.result-step-duration {
+    -fx-text-fill: #2563eb;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+}
+
+.study-flow-button {
+    -fx-background-radius: 14;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-padding: 10 18;
+    -fx-cursor: hand;
+}
+
+.study-flow-primary {
+    -fx-background-color: linear-gradient(to right, #1d4ed8, #3b82f6);
+    -fx-text-fill: white;
+}
+
+.study-flow-secondary {
+    -fx-background-color: linear-gradient(to bottom, #eef2f7, #dfe8f3);
+    -fx-text-fill: #475569;
+    -fx-border-color: #d2dce8;
+    -fx-border-radius: 14;
+}

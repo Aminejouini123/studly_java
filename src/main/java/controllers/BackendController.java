@@ -15,6 +15,7 @@ public class BackendController {
     @FXML private StackPane mainContentHost;
     
     @FXML private Button overviewBtn;
+    @FXML private Button usersBtn;
     @FXML private Button timeBtn;
     @FXML private Button coursesBtn;
 

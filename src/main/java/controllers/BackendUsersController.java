@@ -12,6 +12,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import controllers.user_controller.AddUserController;
+import controllers.user_controller.ListUserController;
 import models.User;
 import java.io.IOException;
 import java.util.List;

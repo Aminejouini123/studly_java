@@ -1,30 +1,35 @@
 package controllers;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Circle;
-import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
+import controllers.courses.BaseCourseController;
 import javafx.fxml.FXMLLoader;
-import models.User;
-import utils.SessionManager;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
+
 import java.io.IOException;
 import java.net.URL;
 
-public class FrontendController extends controllers.courses.BaseCourseController {
+public class FrontendController extends BaseCourseController {
 
-    @FXML private Label dashboardNavLabel;
-    @FXML private Label planningNavLabel;
-    @FXML private Label coursesNavLabel;
-    @FXML private StackPane contentHost;
+    @FXML
+    private Label dashboardNavLabel;
 
-    // Profile header components
-    @FXML private HBox profileSection;
-    @FXML private Label userNameLabel;
-    @FXML private Label userRoleLabel;
-    @FXML private Label avatarInitials;
-    @FXML private Circle avatarCircle;
+    @FXML
+    private Label planningNavLabel;
+
+    @FXML
+    private Label userNameLabel;
+
+    @FXML
+    private Label userRoleLabel;
+
+    @FXML
+    private Label avatarInitials;
+
+    @FXML
+    private StackPane contentHost;
 
     private static FrontendController instance;
 
@@ -36,27 +41,19 @@ public class FrontendController extends controllers.courses.BaseCourseController
     public void initialize() {
         instance = this;
         setActiveNav(dashboardNavLabel);
-        loadUserInfo();
+        refreshUserInfo();
     }
 
-    private void loadUserInfo() {
-        User user = SessionManager.getCurrentUser();
+    public void refreshUserInfo() {
+        models.User user = utils.SessionManager.getCurrentUser();
         if (user != null) {
             String firstName = user.getFirst_name() != null ? user.getFirst_name() : "";
             String lastName = user.getLast_name() != null ? user.getLast_name() : "";
             userNameLabel.setText(firstName + " " + lastName);
             
-            // Set role display
             String roles = user.getRoles() != null ? user.getRoles() : "Member";
-            if (roles.contains("ROLE_ADMIN")) {
-                userRoleLabel.setText("Administrator");
-            } else if (roles.contains("ROLE_TEACHER")) {
-                userRoleLabel.setText("Teacher");
-            } else {
-                userRoleLabel.setText("Student");
-            }
-
-            // Set initials
+            userRoleLabel.setText(roles.contains("ROLE_ADMIN") ? "Administrator" : "Student");
+            
             String initials = "";
             if (!firstName.isEmpty()) initials += firstName.substring(0, 1).toUpperCase();
             if (!lastName.isEmpty()) initials += lastName.substring(0, 1).toUpperCase();
@@ -76,29 +73,17 @@ public class FrontendController extends controllers.courses.BaseCourseController
         setActiveNav(planningNavLabel);
     }
 
-    @Override
-    public void goToCourses(javafx.scene.input.MouseEvent event) {
-        loadContent("/gestion_cours/courses_body.fxml");
-        setActiveNav(coursesNavLabel);
-    }
-
-    @Override
-    public void goToDashboard(javafx.event.Event event) {
-        showDashboard();
-    }
-
-    @FXML
     public void showProfile() {
         loadContent("/getion_user/profile.fxml");
-        setActiveNav(null); // Clear active nav state as we're on profile
+        setActiveNav(null); // No nav label for profile
     }
 
-    @FXML
     public void showEditProfile() {
         loadContent("/getion_user/edit_profile_settings.fxml");
+        setActiveNav(null);
     }
 
-    public void loadContent(String resourcePath) {
+    private void loadContent(String resourcePath) {
         try {
             URL resource = getClass().getResource(resourcePath);
             System.out.println("FrontendController: loading resource -> " + resourcePath + " (url=" + resource + ")");
@@ -106,8 +91,7 @@ public class FrontendController extends controllers.courses.BaseCourseController
                 throw new IOException("Missing FXML resource: " + resourcePath);
             }
 
-            FXMLLoader loader = new FXMLLoader(resource);
-            Node content = loader.load();
+            Node content = FXMLLoader.load(resource);
             System.out.println("FrontendController: loaded content for " + resourcePath + ", nodes=" + (content == null ? "null" : content.getClass().getSimpleName()));
             contentHost.getChildren().setAll(content);
         } catch (IOException e) {
@@ -125,12 +109,17 @@ public class FrontendController extends controllers.courses.BaseCourseController
     private void setActiveNav(Label activeLabel) {
         updateNavStyle(dashboardNavLabel, dashboardNavLabel == activeLabel);
         updateNavStyle(planningNavLabel, planningNavLabel == activeLabel);
-        updateNavStyle(coursesNavLabel, coursesNavLabel == activeLabel);
     }
 
     private void updateNavStyle(Label label, boolean active) {
-        if (label == null) return;
+        if (label == null) {
+            return;
+        }
+
         label.getStyleClass().removeAll("nav-link", "nav-link-active");
         label.getStyleClass().add(active ? "nav-link-active" : "nav-link");
     }
+
+    // Navigation methods are inherited from BaseCourseController
+    // but we can override or add dashboard-specific ones here
 }
