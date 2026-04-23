@@ -1,14 +1,14 @@
-package controllers;
+﻿package controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.SVGPath;
+
 import java.io.IOException;
-import java.util.List;
-import controllers.user_controller.ListUserController;
-import controllers.user_controller.AddUserController;
 
 public class BackendController {
 
@@ -21,41 +21,44 @@ public class BackendController {
 
     @FXML
     public void initialize() {
-        System.out.println("Initializing BackendController Shell...");
-        // Load Users by default
         showUsers();
     }
 
     @FXML
     public void showOverview() {
-        System.out.println("Navigating to Overview...");
         setActiveButton(overviewBtn);
-        // Implement overview content if needed, or clear host
-        mainContentHost.getChildren().clear();
+        if (mainContentHost != null) {
+            mainContentHost.getChildren().clear();
+        }
     }
 
     @FXML
     public void showUsers() {
-        System.out.println("Navigating to Users Management...");
         setActiveButton(usersBtn);
         loadContent("/TEMPLATE/backend_users.fxml");
     }
 
     @FXML
     public void showTimeManagement() {
-        System.out.println("Navigating to Time Management...");
         setActiveButton(timeBtn);
         loadContent("/TEMPLATE/backend_time.fxml");
     }
 
+    @FXML
+    public void handleShowCourses() {
+        setActiveButton(coursesBtn);
+        loadContent("/gestion_cours/backend_courses.fxml");
+    }
+
     private void loadContent(String fxmlPath) {
+        if (mainContentHost == null) {
+            return;
+        }
         try {
-            System.out.println("Loading content: " + fxmlPath);
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Node content = loader.load();
             mainContentHost.getChildren().setAll(content);
         } catch (IOException e) {
-            System.err.println("Error loading FXML content: " + fxmlPath);
             e.printStackTrace();
         }
     }
@@ -63,47 +66,30 @@ public class BackendController {
     private void setActiveButton(Button activeBtn) {
         Button[] buttons = {overviewBtn, usersBtn, timeBtn, coursesBtn};
         for (Button btn : buttons) {
-            if (btn != null) {
-                btn.getStyleClass().remove("nav-button-active");
-                if (!btn.getStyleClass().contains("nav-button")) {
-                    btn.getStyleClass().add("nav-button");
-                }
-                // Reset icon color
-                if (btn.getGraphic() instanceof javafx.scene.shape.SVGPath) {
-                    javafx.scene.shape.SVGPath svg = (javafx.scene.shape.SVGPath) btn.getGraphic();
-                    if (svg.getStroke() != null && svg.getStroke() != javafx.scene.paint.Color.TRANSPARENT) {
-                        svg.setStroke(javafx.scene.paint.Color.web("#64748B"));
-                    } else {
-                        svg.setFill(javafx.scene.paint.Color.web("#64748B"));
-                    }
-                }
+            if (btn == null) continue;
+            btn.getStyleClass().remove("nav-button-active");
+            if (!btn.getStyleClass().contains("nav-button")) {
+                btn.getStyleClass().add("nav-button");
             }
-        }
-        if (activeBtn != null) {
-            activeBtn.getStyleClass().remove("nav-button");
-            activeBtn.getStyleClass().add("nav-button-active");
-            // Set active icon color
-            if (activeBtn.getGraphic() instanceof javafx.scene.shape.SVGPath) {
-                javafx.scene.shape.SVGPath svg = (javafx.scene.shape.SVGPath) activeBtn.getGraphic();
-                if (svg.getStroke() != null && svg.getStroke() != javafx.scene.paint.Color.TRANSPARENT) {
-                    svg.setStroke(javafx.scene.paint.Color.web("#004fb0"));
+            if (btn.getGraphic() instanceof SVGPath) {
+                SVGPath svg = (SVGPath) btn.getGraphic();
+                if (svg.getStroke() != null && svg.getStroke() != Color.TRANSPARENT) {
+                    svg.setStroke(Color.web("#64748B"));
                 } else {
-                    svg.setFill(javafx.scene.paint.Color.web("#38bdf8"));
+                    svg.setFill(Color.web("#64748B"));
                 }
             }
         }
-    }
-
-    @FXML
-    public void handleExportExcel() {
-        // This might be called from descendants if not handled there
-        System.out.println("Export logic should be handled by sub-controllers.");
-    }
-
-    @FXML
-    public void handleShowCourses() {
-        System.out.println("Navigating to courses...");
-        setActiveButton(coursesBtn);
-        loadContent("/gestion_cours/backend_courses.fxml");
+        if (activeBtn == null) return;
+        activeBtn.getStyleClass().remove("nav-button");
+        activeBtn.getStyleClass().add("nav-button-active");
+        if (activeBtn.getGraphic() instanceof SVGPath) {
+            SVGPath svg = (SVGPath) activeBtn.getGraphic();
+            if (svg.getStroke() != null && svg.getStroke() != Color.TRANSPARENT) {
+                svg.setStroke(Color.web("#004fb0"));
+            } else {
+                svg.setFill(Color.web("#38bdf8"));
+            }
+        }
     }
 }

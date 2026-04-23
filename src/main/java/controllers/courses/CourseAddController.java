@@ -56,8 +56,19 @@ public class CourseAddController extends BaseCourseController {
         if (priorityComboBox != null && priorityComboBox.getItems().isEmpty()) {
             priorityComboBox.getItems().addAll("Low", "Medium", "High", "Urgent");
         }
-        if (statusComboBox != null && statusComboBox.getItems().isEmpty()) {
-            statusComboBox.getItems().addAll("Pending", "Active", "Archived");
+        if (statusComboBox != null) {
+            statusComboBox.getItems().setAll("Active", "Pending");
+            // Après setAll, une ancienne valeur (ex. Archived) peut rester hors liste : forcer une valeur valide.
+            String v = statusComboBox.getValue();
+            if (v == null || v.isBlank()) {
+                statusComboBox.setValue("Active");
+            } else if (v.equalsIgnoreCase("pending")) {
+                statusComboBox.setValue("Pending");
+            } else if (v.equalsIgnoreCase("active")) {
+                statusComboBox.setValue("Active");
+            } else {
+                statusComboBox.setValue("Active");
+            }
         }
 
         // Real-time validation listeners
@@ -225,7 +236,7 @@ public class CourseAddController extends BaseCourseController {
         course.setDifficulty_level(difficultyComboBox.getValue());
         course.setType(typeComboBox.getValue());
         course.setPriority(priorityComboBox.getValue());
-        course.setStatus(statusComboBox.getValue());
+        course.setStatus(normalizeCourseStatus(statusComboBox.getValue()));
         course.setCourse_file(courseFileField.getText().isEmpty() ? "" : courseFileField.getText());
         course.setCourse_link(courseLinkField.getText().isEmpty() ? "" : courseLinkField.getText());
         course.setComment(commentArea.getText() == null ? "" : commentArea.getText());
@@ -271,7 +282,21 @@ public class CourseAddController extends BaseCourseController {
         scaleUp.setToY(1.0);
         fadeIn.play();
         scaleUp.play();
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1.5), e -> returnToDashboard(rootPane)));
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1.5), e -> {
+            if (fromBackend && backendController != null) {
+                backendController.restoreDashboard();
+            } else if (fromBackend) {
+                loadScene("/gestion_cours/backend_courses.fxml", null, rootPane);
+            } else {
+                // Frontend : recharger la liste dans le shell + onglet Cours actif.
+                controllers.FrontendController fc = controllers.FrontendController.getInstance();
+                if (fc != null) {
+                    fc.goToCourses(null);
+                } else {
+                    returnToDashboard(rootPane);
+                }
+            }
+        }));
         timeline.play();
     }
 
@@ -313,6 +338,16 @@ public class CourseAddController extends BaseCourseController {
         try { return Integer.parseInt(durationField.getText()); } catch (Exception e) { return 0; }
     }
 
+    private static String normalizeCourseStatus(String v) {
+        if (v == null || v.isBlank()) {
+            return "Active";
+        }
+        if (v.equalsIgnoreCase("pending")) {
+            return "Pending";
+        }
+        return "Active";
+    }
+
     @FXML
     public void handleBrowseFile(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
@@ -327,7 +362,7 @@ public class CourseAddController extends BaseCourseController {
     }
 
     @FXML
-    public void handleBack(javafx.scene.input.MouseEvent event) {
+    public void handleBack(javafx.event.Event event) {
         returnToCourses(event);
     }
 }

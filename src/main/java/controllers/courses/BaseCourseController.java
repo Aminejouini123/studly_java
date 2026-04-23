@@ -1,6 +1,5 @@
 package controllers.courses;
 
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Node;
@@ -12,7 +11,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.control.Label;
 import javafx.geometry.Pos;
 import java.io.IOException;
-import java.net.URL;
 
 import controllers.BackendCourseController;
 
@@ -47,12 +45,7 @@ public abstract class BaseCourseController {
 
     protected void loadScene(String fxmlPath, javafx.event.Event event, Node fallbackNode) {
         try {
-            URL resource = getClass().getResource(fxmlPath);
-            System.out.println("BaseCourseController: loadScene -> " + fxmlPath + " (url=" + resource + ")");
-            if (resource == null) {
-                throw new IOException("Missing FXML resource: " + fxmlPath);
-            }
-            FXMLLoader loader = new FXMLLoader(resource);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
             Stage stage;
             if (event != null) {
@@ -63,18 +56,9 @@ public abstract class BaseCourseController {
             stage.getScene().setRoot(root);
         } catch (IOException e) {
             e.printStackTrace();
-            // Show alert since this is usually called from an event handler
-            javafx.application.Platform.runLater(() -> {
-                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-                alert.setTitle("Navigation Error");
-                alert.setHeaderText("Unable to load page");
-                alert.setContentText("Resource: " + fxmlPath + "\nError: " + e.getMessage());
-                alert.showAndWait();
-            });
         }
     }
 
-    @FXML
     public void goToDashboard(javafx.event.Event event) {
         loadScene("/TEMPLATE/frontend_dashboard.fxml", event, null);
     }

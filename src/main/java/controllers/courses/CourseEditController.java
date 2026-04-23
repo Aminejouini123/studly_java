@@ -40,11 +40,15 @@ public class CourseEditController extends BaseCourseController {
     private static Course courseToEdit;
 
     public static void startEdit(Course course, Stage stage) {
-        courseToEdit = course; // FIX: Ensure the course data is passed to the static field for the controller to use
+        courseToEdit = course;
         try {
             FXMLLoader loader = new FXMLLoader(CourseEditController.class.getResource("/gestion_cours/frontend_edit_course.fxml"));
             Parent root = loader.load();
-            stage.getScene().setRoot(root);
+            if (controllers.FrontendController.getInstance() != null) {
+                controllers.FrontendController.getInstance().loadContentNode(root);
+            } else {
+                stage.getScene().setRoot(root);
+            }
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
@@ -63,7 +67,9 @@ public class CourseEditController extends BaseCourseController {
         difficultyComboBox.setItems(FXCollections.observableArrayList("Beginner", "Intermediate", "Advanced", "Expert"));
         typeComboBox.setItems(FXCollections.observableArrayList("In-Person", "Online", "Hybrid", "Recorded"));
         priorityComboBox.setItems(FXCollections.observableArrayList("Low", "Medium", "High", "Critical"));
-        statusComboBox.setItems(FXCollections.observableArrayList("Active", "Pending", "Archived", "Draft"));
+        if (statusComboBox != null) {
+            statusComboBox.setItems(FXCollections.observableArrayList("Active", "Pending"));
+        }
     }
 
     private void populateForm(Course course) {
@@ -76,7 +82,14 @@ public class CourseEditController extends BaseCourseController {
         if (difficultyComboBox != null) difficultyComboBox.setValue(course.getDifficulty_level());
         if (typeComboBox != null) typeComboBox.setValue(course.getType());
         if (priorityComboBox != null) priorityComboBox.setValue(course.getPriority());
-        if (statusComboBox != null) statusComboBox.setValue(course.getStatus());
+        if (statusComboBox != null) {
+            String st = course.getStatus();
+            if (st != null && st.equalsIgnoreCase("Pending")) {
+                statusComboBox.setValue("Pending");
+            } else {
+                statusComboBox.setValue("Active");
+            }
+        }
         if (coefficientField != null) coefficientField.setText(String.valueOf(course.getCoefficient()));
         if (durationField != null) durationField.setText(String.valueOf(course.getDuration()));
         if (courseFileField != null) courseFileField.setText(course.getCourse_file());

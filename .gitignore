@@ -1,7 +1,8 @@
+# Build output
 target/
-.idea/
 *.class
 *.log
+build_run.log
 cp.txt
 .DS_Store
 studly_api/.env

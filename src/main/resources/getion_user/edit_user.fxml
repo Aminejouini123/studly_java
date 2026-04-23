@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefWidth="450.0" spacing="20.0" styleClass="glass-card" stylesheets="@../TEMPLATE/backend_style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.user_controller.EditUserController">
+<VBox prefWidth="450.0" spacing="20.0" styleClass="glass-card" stylesheets="@../TEMPLATE/backend_style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.EditUserController">
    <padding>
       <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
    </padding>
@@ -25,14 +25,12 @@
                      <children>
                         <Label styleClass="stat-label" text="FIRST NAME" />
                         <TextField fx:id="firstNameField" promptText="Enter first name" styleClass="search-field" style="-fx-background-radius: 8;" />
-                        <Label fx:id="firstNameError" managed="false" styleClass="error-label" visible="false" />
                      </children>
                   </VBox>
                   <VBox spacing="8.0" HBox.hgrow="ALWAYS">
                      <children>
                         <Label styleClass="stat-label" text="LAST NAME" />
                         <TextField fx:id="lastNameField" promptText="Enter last name" styleClass="search-field" style="-fx-background-radius: 8;" />
-                        <Label fx:id="lastNameError" managed="false" styleClass="error-label" visible="false" />
                      </children>
                   </VBox>
                </children>
@@ -42,7 +40,6 @@
                <children>
                   <Label styleClass="stat-label" text="EMAIL ADDRESS" />
                   <TextField fx:id="emailField" promptText="email@example.com" styleClass="search-field" style="-fx-background-radius: 8;" />
-                  <Label fx:id="emailError" managed="false" styleClass="error-label" visible="false" />
                </children>
             </VBox>
             
@@ -50,7 +47,6 @@
                <children>
                   <Label styleClass="stat-label" text="PASSWORD" />
                   <PasswordField fx:id="passwordField" promptText="Leave empty to keep current" styleClass="search-field" style="-fx-background-radius: 8;" />
-                  <Label fx:id="passwordError" managed="false" styleClass="error-label" visible="false" />
                </children>
             </VBox>
             

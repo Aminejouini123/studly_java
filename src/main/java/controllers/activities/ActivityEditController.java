@@ -31,19 +31,28 @@ public class ActivityEditController extends BaseActivityController {
         populateFields(activity);
     }
 
+    @FXML
+    public void initialize() {
+        typeComboBox.getItems().setAll("Workshop", "Assignment", "Practical Work", "Course Material");
+        statusComboBox.getItems().setAll("To Do", "In Progress", "Completed");
+        difficultyComboBox.getItems().setAll("Easy", "Medium", "Hard");
+        levelComboBox.getItems().setAll("Beginner", "Intermediate", "Advanced");
+    }
+
     private void populateFields(Activity activity) {
-        titleField.setText(activity.getTitle());
-        descriptionArea.setText(activity.getDescription());
-        fileField.setText(activity.getFile());
-        linkField.setText(activity.getLink());
+        if (activity == null) return;
+        titleField.setText(activity.getTitle() != null ? activity.getTitle() : "");
+        descriptionArea.setText(activity.getDescription() != null ? activity.getDescription() : "");
+        fileField.setText(activity.getFile() != null ? activity.getFile() : "");
+        linkField.setText(activity.getLink() != null ? activity.getLink() : "");
         durationField.setText(String.valueOf(activity.getDuration()));
         statusComboBox.setValue(activity.getStatus());
         difficultyComboBox.setValue(activity.getDifficulty());
         levelComboBox.setValue(activity.getLevel());
         typeComboBox.setValue(activity.getType());
-        instructionsArea.setText(activity.getInstructions());
-        outputArea.setText(activity.getExpected_output());
-        hintsArea.setText(activity.getHints());
+        instructionsArea.setText(activity.getInstructions() != null ? activity.getInstructions() : "");
+        outputArea.setText(activity.getExpected_output() != null ? activity.getExpected_output() : "");
+        hintsArea.setText(activity.getHints() != null ? activity.getHints() : "");
     }
 
     @FXML
@@ -65,7 +74,11 @@ public class ActivityEditController extends BaseActivityController {
             currentActivity.setHints(hintsArea.getText());
 
             activityService.modifier(currentActivity);
-            returnToDashboard(updateBtn);
+            if (fromBackend) {
+                returnToDashboard(updateBtn);
+            } else {
+                navigateToActivityList(updateBtn, currentCourse);
+            }
 
         } catch (SQLException | NumberFormatException e) {
             e.printStackTrace();
@@ -79,16 +92,7 @@ public class ActivityEditController extends BaseActivityController {
             returnToDashboard(updateBtn);
             return;
         }
-        try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_activities.fxml"));
-            javafx.scene.Parent root = loader.load();
-            ActivityListController controller = loader.getController();
-            controller.setCourse(currentCourse);
-            javafx.stage.Stage stage = (javafx.stage.Stage) updateBtn.getScene().getWindow();
-            stage.getScene().setRoot(root);
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
+        navigateToActivityList(updateBtn, currentCourse);
     }
 
 

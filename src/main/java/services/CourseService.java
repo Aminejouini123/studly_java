@@ -8,6 +8,7 @@ import java.util.List;
 
 public class CourseService implements IService<Course> {
     private Connection connection;
+
     public CourseService() {
         connection = MyDatabase.getInstance().getConnection();
         applySelfHealing();
@@ -37,7 +38,7 @@ public class CourseService implements IService<Course> {
     public void ajouter(Course entity) throws SQLException {
         if (entity.getUser_id() <= 0) {
             try (Statement st = connection.createStatement();
-                 ResultSet rs = st.executeQuery("SELECT id FROM user LIMIT 1")) {
+                    ResultSet rs = st.executeQuery("SELECT id FROM user LIMIT 1")) {
                 if (rs.next()) {
                     entity.setUser_id(rs.getInt("id"));
                 } else {
@@ -57,7 +58,11 @@ public class CourseService implements IService<Course> {
         ps.setString(7, entity.getType());
         ps.setString(8, entity.getPriority());
         ps.setDouble(9, entity.getCoefficient());
-        ps.setString(10, entity.getStatus());
+        String status = entity.getStatus();
+        if (status == null || status.isBlank()) {
+            status = "Active";
+        }
+        ps.setString(10, status);
         ps.setInt(11, entity.getDuration());
         ps.setString(12, entity.getComment());
         ps.setTimestamp(13, entity.getCreated_at());
@@ -89,13 +94,10 @@ public class CourseService implements IService<Course> {
 
     @Override
     public void supprimer(int id) throws SQLException {
-        // 1. Cascade delete exams linked to this course
         new ExamService().supprimerParCours(id);
 
-        // 2. Cascade delete activities linked to this course
         new ActivityService().supprimerParCours(id);
 
-        // 3. Delete the course itself
         String sql = "delete from `course` where id = ?";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setInt(1, id);

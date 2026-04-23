@@ -214,6 +214,182 @@
     -fx-alignment: center-left;
 }
 
+/* Groups Management (admin) */
+.gm-breadcrumb {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.gm-breadcrumb-strong {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.gm-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 15;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 3);
+}
+
+.gm-card-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0F172A;
+}
+
+.gm-search {
+    -fx-background-color: #F1F5F9;
+    -fx-background-radius: 12;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 12;
+    -fx-padding: 6 12;
+    -fx-spacing: 8;
+}
+
+.gm-search-input {
+    -fx-background-color: transparent;
+    -fx-prompt-text-fill: #94A3B8;
+    -fx-text-fill: #0F172A;
+    -fx-border-color: transparent;
+}
+
+.gm-icon-btn {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-min-width: 38px;
+    -fx-min-height: 38px;
+    -fx-cursor: hand;
+}
+
+.gm-icon-btn:hover {
+    -fx-background-color: #F8FAFC;
+}
+
+.gm-add-btn {
+    -fx-background-color: #6366F1;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-padding: 10 18;
+    -fx-cursor: hand;
+}
+
+.gm-add-btn:hover {
+    -fx-background-color: #4F46E5;
+}
+
+.gm-table {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.gm-table .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.gm-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.gm-table .column-header .label {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.gm-table .table-row-cell {
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 64px;
+}
+
+.gm-cell-title {
+    -fx-text-fill: #0F172A;
+    -fx-font-weight: 800;
+    -fx-font-size: 12px;
+}
+
+.gm-cell-sub {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.gm-cat-icon {
+    -fx-background-color: #EEF2FF;
+    -fx-background-radius: 12;
+    -fx-padding: 10 10;
+}
+
+.gm-cat-icon-shape {
+    -fx-fill: #6366F1;
+}
+
+.gm-status-pill {
+    -fx-padding: 4 10;
+    -fx-background-radius: 12;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.gm-status-assigned {
+    -fx-background-color: rgba(74, 222, 128, 0.18);
+    -fx-text-fill: #16a34a;
+}
+
+.gm-status-unassigned {
+    -fx-background-color: rgba(251, 191, 36, 0.22);
+    -fx-text-fill: #a16207;
+}
+
+.gm-action-btn {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-padding: 6 6;
+}
+
+.gm-action-btn-danger {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: rgba(248, 113, 113, 0.4);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-padding: 6 6;
+}
+
+.gm-action-btn:hover {
+    -fx-background-color: #F8FAFC;
+}
+
+.gm-action-btn-danger:hover {
+    -fx-background-color: rgba(248, 113, 113, 0.08);
+}
+
+.gm-icon {
+    -fx-fill: #64748B;
+}
+
+.gm-empty-title {
+    -fx-text-fill: #0F172A;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.gm-empty {
+    -fx-background-color: transparent;
+}
+
 /* Badges / Status Pills */
 .status-pill-active {
     -fx-background-color: rgba(74, 222, 128, 0.1);
@@ -282,6 +458,13 @@
     -fx-background-color: rgba(59, 130, 246, 0.1);
 }
 
+<<<<<<< HEAD
+.btn-view {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 5;
+    -fx-background-radius: 5;
+=======
 /* Time Management Specific Styles */
 .status-badge {
     -fx-font-size: 10px;
@@ -329,14 +512,14 @@
     -fx-background-radius: 12;
     -fx-padding: 30;
     -fx-spacing: 25;
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
 }
 
-.admin-form-section {
-    -fx-spacing: 20;
-    -fx-padding: 0 0 10 0;
-    -fx-border-color: transparent transparent #E2E8F0 transparent;
-    -fx-border-width: 0 0 1 0;
+.btn-view:hover {
+    -fx-background-color: rgba(100, 116, 139, 0.12);
 }
+<<<<<<< HEAD
+=======
 
 .admin-form-section-title {
     -fx-font-size: 16px;
@@ -386,3 +569,4 @@
     -fx-font-weight: bold;
     -fx-padding: 2 0 0 2;
 }
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e

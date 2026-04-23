@@ -4,8 +4,6 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.shape.SVGPath?>
-<?import javafx.collections.FXCollections?>
-<?import java.lang.String?>
 
 <StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="controllers.exams.ExamListController"
@@ -69,22 +67,17 @@
                     <HBox spacing="10">
                         <TextField fx:id="searchField" promptText="Search for an exam..." styleClass="modern-input" prefWidth="250" style="-fx-background-color: transparent; -fx-padding: 8 15;"/>
                         <ComboBox fx:id="statusFilter" prefWidth="150" promptText="All statuses" styleClass="modern-combo"/>
-                        <ComboBox fx:id="sortComboBox" prefWidth="150" promptText="Sort by" styleClass="modern-combo">
-                            <items>
-                                <FXCollections fx:factory="observableArrayList">
-                                    <String fx:value="Title (A-Z)" />
-                                    <String fx:value="Grade (High-Low)" />
-                                    <String fx:value="Date (Soonest)" />
-                                    <String fx:value="Newest First" />
-                                </FXCollections>
-                            </items>
-                        </ComboBox>
+                        <ComboBox fx:id="sortComboBox" prefWidth="150" promptText="Sort by" styleClass="modern-combo" />
                     </HBox>
                 </HBox>
 
                 <Separator style="-fx-opacity: 0.5;"/>
 
-                <FlowPane fx:id="examsContainer" hgap="25.0" vgap="25.0" prefWrapLength="1000.0" />
+                <FlowPane fx:id="examsContainer" alignment="TOP_LEFT" hgap="30.0" prefWrapLength="1000.0" vgap="30.0">
+                    <padding>
+                        <Insets bottom="20" left="5" right="5" top="10" />
+                    </padding>
+                </FlowPane>
 
                 <!-- Empty State -->
                 <VBox fx:id="emptyState" alignment="CENTER" spacing="15" style="-fx-padding: 60 0;">

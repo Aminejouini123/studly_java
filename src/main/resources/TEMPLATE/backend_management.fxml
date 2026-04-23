@@ -14,9 +14,9 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.SVGPath?>
 
-<StackPane prefHeight="800.0" prefWidth="1100.0" styleClass="root" stylesheets="@backend_style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BackendController">
+<StackPane prefHeight="768.0" prefWidth="1024.0" styleClass="root" stylesheets="@backend_style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BackendController">
 
-   <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="800.0" prefWidth="1100.0" style="-fx-background-color: transparent;">
+   <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="768.0" prefWidth="1024.0" style="-fx-background-color: transparent;">
       
       <!-- Left Sidebar -->
       <left>
@@ -40,24 +40,36 @@
 
                <VBox spacing="10.0">
                   <children>
+<<<<<<< HEAD
+                     <Button fx:id="navOverviewBtn" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" onAction="#showOverview" styleClass="nav-button" text="  OVERVIEW">
+=======
                      <Button fx:id="overviewBtn" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" onAction="#showOverview" styleClass="nav-button" text="  OVERVIEW">
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
                         <graphic>
                            <SVGPath content="M 4 4 L 10 4 L 10 10 L 4 10 Z M 14 4 L 20 4 L 20 10 L 14 10 Z M 4 14 L 10 14 L 10 20 L 4 20 Z M 14 14 L 20 14 L 20 20 L 14 20 Z" fill="TRANSPARENT" stroke="#64748B" strokeWidth="1.5" />
                         </graphic>
                      </Button>
+<<<<<<< HEAD
+                     <Button fx:id="navUsersBtn" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" onAction="#showUsers" styleClass="nav-button-active" text="  USERS">
+=======
                      <Button fx:id="usersBtn" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" onAction="#showUsers" styleClass="nav-button-active" text="  USERS">
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
                         <graphic>
                            <SVGPath content="M 12 12 C 14.21 12 16 10.21 16 8 C 16 5.79 14.21 4 12 4 C 9.79 4 8 5.79 8 8 C 8 10.21 9.79 12 12 12 Z M 12 14 C 9.33 14 4 15.34 4 18 L 4 20 L 20 20 L 20 18 C 20 15.34 14.67 14 12 14 Z" fill="#38bdf8" />
                         </graphic>
                      </Button>
+<<<<<<< HEAD
+                     <Button fx:id="navGroupsBtn" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" onAction="#showGroups" styleClass="nav-button" text="  GROUPS">
+=======
                      <Button fx:id="timeBtn" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" onAction="#showTimeManagement" styleClass="nav-button" text="  TIME MANAGEMENT">
                         <graphic>
                            <SVGPath content="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M16.2,16.2L11,13V7h1.5v5.2l4.5,2.8L16.2,16.2z" fill="#64748B" />
                         </graphic>
                      </Button>
                      <Button fx:id="coursesBtn" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" onAction="#handleShowCourses" styleClass="nav-button" text="  COURSES">
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
                         <graphic>
-                           <SVGPath content="M 4 6 h 16 v 16 c 0 1.1 -0.9 2 -2 2 H 4 c -1.1 0 -2 -0.9 -2 -2 V 8 c 0 -1.1 0.9 -2 2 -2 Z m 10 0 c 0 -1.1 0.9 -2 2 -2 h 4 c 1.1 0 2 0.9 2 2 v 16 c 0 1.1 -0.9 2 -2 2 h -4 c -1.1 0 -2 -0.9 -2 -2 Z" fill="TRANSPARENT" scaleX="0.9" scaleY="0.9" stroke="#64748B" strokeWidth="1.5" />
+                           <SVGPath content="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V20h6v-3.5c0-2.33-4.67-3.5-7-3.5z" fill="#64748B" />
                         </graphic>
                      </Button>
                   </children>
@@ -89,7 +101,128 @@
                   </children>
                </HBox>
 
+<<<<<<< HEAD
+               <StackPane prefHeight="716.0" prefWidth="774.0" VBox.vgrow="ALWAYS">
+                  <padding>
+                     <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
+                  </padding>
+                  <children>
+                     <VBox fx:id="usersView" prefHeight="716.0" prefWidth="774.0" spacing="30.0" VBox.vgrow="ALWAYS">
+                        <children>
+                     <!-- Header Section -->
+                     <HBox alignment="CENTER_LEFT" spacing="20.0">
+                        <children>
+                           <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                               <Label styleClass="title-text" text="User Management" />
+                           </VBox>
+                           <Button mnemonicParsing="false" onAction="#handleExportExcel" prefHeight="27.0" styleClass="btn-outline" text="Export Data in EXEL">
+                              <graphic>
+                                 <SVGPath content="M 19 9 h -4 V 3 H 9 v 6 H 5 l 7 7 Z M 5 18 v 2 h 14 v -2 H 5 Z" fill="#64748B" scaleX="0.7" scaleY="0.7" />
+                              </graphic>
+                           </Button>
+                           <Button onAction="#handleCreateNewUser" prefHeight="38.0" styleClass="btn-primary" text=" Create New User" />
+                        </children>
+                     </HBox>
+
+                     <!-- Stat Cards Grid -->
+                     <HBox spacing="20.0">
+                        <children>
+                           <VBox prefHeight="130.0" spacing="15.0" styleClass="glass-card" HBox.hgrow="ALWAYS">
+                              <padding>
+                                 <Insets bottom="20.0" left="25.0" right="25.0" top="20.0" />
+                              </padding>
+                              <children>
+                                 <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <children>
+                                       <SVGPath content="M 16 11 c 1.66 0 2.99 -1.34 2.99 -3 S 17.66 5 16 5 c -1.66 0 -3 1.34 -3 3 s 1.34 3 3 3 Z M 8 11 c 1.66 0 2.99 -1.34 2.99 -3 S 9.66 5 8 5 C 6.34 5 5 6.34 5 8 s 1.34 3 3 3 Z m 0 2 c -2.33 0 -7 1.17 -7 3.5 V 19 h 14 v -2.5 c 0 -2.33 -4.67 -3.5 -7 -3.5 Z m 8 0 c -0.29 0 -0.62 0.02 -0.97 0.05 1.16 0.84 1.97 1.97 1.97 3.45 V 19 h 6 v -2.5 c 0 -2.33 -4.67 -3.5 -7 -3.5 Z" fill="#38bdf8" />
+                                       <Region HBox.hgrow="ALWAYS" />
+                                       <Label style="-fx-text-fill: #4ade80; -fx-font-size: 11px; -fx-font-weight: bold;" text="+12%" />
+                                    </children>
+                                 </HBox>
+                                 <VBox spacing="2.0">
+                                    <children>
+                                       <Label fx:id="totalUsersLabel" styleClass="stat-value" text="0" />
+                                       <Label styleClass="stat-label" text="TOTAL USERS" />
+                                    </children>
+                                 </VBox>
+                              </children>
+                           </VBox>
+
+                           <VBox prefHeight="130.0" spacing="15.0" styleClass="glass-card" HBox.hgrow="ALWAYS">
+                              <padding>
+                                 <Insets bottom="20.0" left="25.0" right="25.0" top="20.0" />
+                              </padding>
+                              <children>
+                                 <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <children>
+                                       <SVGPath content="M 12 2 L 14.5 9 L 22 9 L 16 14.5 L 18 22 L 12 17.5 L 6 22 L 8 14.5 L 2 9 L 9.5 9 Z" fill="#f43f5e" scaleX="0.8" scaleY="0.8" />
+                                       <Region HBox.hgrow="ALWAYS" />
+                                       <Label style="-fx-text-fill: #f43f5e; -fx-font-size: 11px; -fx-font-weight: bold;" text="Critical" />
+                                    </children>
+                                 </HBox>
+                                 <VBox spacing="2.0">
+                                    <children>
+                                       <Label fx:id="flaggedUsersLabel" styleClass="stat-value" text="0" />
+                                       <Label styleClass="stat-label" text="FLAGGED ACCOUNTS" />
+                                    </children>
+                                 </VBox>
+                              </children>
+                           </VBox>
+                        </children>
+                     </HBox>
+                     <HBox alignment="CENTER_LEFT" prefHeight="0.0" prefWidth="546.0" styleClass="search-field">
+                        <children>
+                           <SVGPath content="M 15.5 14 h -0.79 l -0.28 -0.27 C 15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3 5.91 3 3 5.91 3 9.5 3 13.09 5.91 16 9.5 16 c 1.61 0 3.09 -0.59 4.23 -1.57 l 0.27 0.28 v 0.79 l 5 4.99 L 20.49 19 l -4.99 -5 Z m -6 0 C 7.01 14 5 11.99 5 9.5 5 7.01 7.01 5 9.5 5 11.99 5 14 7.01 14 9.5 14 11.99 11.99 14 9.5 14 Z" fill="#64748B" />
+                           <TextField fx:id="searchField" prefHeight="0.0" prefWidth="378.0" promptText="Search system entities..." style="-fx-background-color: transparent; -fx-text-fill: black;" HBox.hgrow="ALWAYS" />
+                        </children>
+                        <VBox.margin>
+                           <Insets />
+                        </VBox.margin>
+                     </HBox>
+
+                     <VBox maxWidth="1.7976931348623157E308" prefHeight="386.0" prefWidth="694.0" styleClass="table-container" VBox.vgrow="ALWAYS">
+                        <children>
+                           <HBox alignment="CENTER_LEFT" spacing="20.0">
+                              <padding>
+                                 <Insets bottom="20.0" />
+                              </padding>
+                              <children>
+                                 <HBox spacing="20.0">
+                                    <children>
+                                       <Label fx:id="filterAll" styleClass="filter-text-active" text="ALL USERS" />
+                                       <Label fx:id="filterAdmins" styleClass="filter-text" text="ADMINISTRATORS" />
+                                       <Label fx:id="filterUsers" styleClass="filter-text" text="USER" />
+                                    </children>
+                                 </HBox>
+                                 <Region HBox.hgrow="ALWAYS" />
+                                 <Button fx:id="sortDateBtn" styleClass="btn-outline" text="Sort: Newest First" />
+                              </children>
+                           </HBox>
+
+                           <TableView fx:id="usersTable" maxWidth="1.7976931348623157E308" styleClass="table-view" VBox.vgrow="ALWAYS">
+                             <columns>
+                               <TableColumn fx:id="colAvatar" prefWidth="55.0" resizable="false" />
+                               <TableColumn fx:id="colUser" minWidth="200.0" prefWidth="-1.0" text="USER" />
+                               <TableColumn fx:id="colRole" minWidth="120.0" prefWidth="-1.0" text="ROLE" />
+                               <TableColumn fx:id="colStatus" minWidth="120.0" prefWidth="-1.0" text="STATUS" />
+                               <TableColumn fx:id="colLastLogin" minWidth="180.0" prefWidth="-1.0" text="CREATED AT" />
+                               <TableColumn fx:id="colActions" prefWidth="130.0" resizable="false" text="ACTIONS" />
+                             </columns>
+                              <columnResizePolicy>
+                                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                              </columnResizePolicy>
+                           </TableView>
+                        </children>
+                     </VBox>
+                        </children>
+                     </VBox>
+
+                     <fx:include fx:id="groupsView" source="/gestion_group/backend_groups_management.fxml" />
+                  </children>
+               </StackPane>
+=======
                <StackPane fx:id="mainContentHost" VBox.vgrow="ALWAYS" />
+>>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
             </children>
          </VBox>
       </center>

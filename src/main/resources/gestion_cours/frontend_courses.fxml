@@ -86,7 +86,7 @@
                               </children>
                            </VBox>
                            <Region HBox.hgrow="ALWAYS" />
-                           <Button mnemonicParsing="false" onMouseClicked="#goToAddCourse" styleClass="btn-primary" text="+ Add a Course" />
+                           <Button mnemonicParsing="false" onAction="#goToAddCourse" styleClass="btn-add-course" text="+ Add a Course" />
                         </children>
                      </HBox>
                      
@@ -108,7 +108,7 @@
                               <padding><Insets bottom="15.0" top="15.0" /></padding>
                               <children>
                                  <Label fx:id="statInProgress" style="-fx-font-size: 28px; -fx-font-weight: 800; -fx-text-fill: white;" text="0" />
-                                 <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: rgba(255,255,255,0.8); -fx-letter-spacing: 1px;" text="IN PROGRESS" />
+                                 <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: rgba(255,255,255,0.8); -fx-letter-spacing: 1px;" text="ACTIVE" />
                               </children>
                            </VBox>
                            
@@ -116,7 +116,7 @@
                               <padding><Insets bottom="15.0" top="15.0" /></padding>
                               <children>
                                  <Label fx:id="statCompleted" style="-fx-font-size: 28px; -fx-font-weight: 800; -fx-text-fill: white;" text="0" />
-                                 <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: rgba(255,255,255,0.8); -fx-letter-spacing: 1px;" text="COMPLETED" />
+                                 <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: rgba(255,255,255,0.8); -fx-letter-spacing: 1px;" text="PENDING" />
                               </children>
                            </VBox>
                            
@@ -124,7 +124,7 @@
                               <padding><Insets bottom="15.0" top="15.0" /></padding>
                               <children>
                                  <Label fx:id="statPending" style="-fx-font-size: 28px; -fx-font-weight: 800; -fx-text-fill: white;" text="0" />
-                                 <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: rgba(255,255,255,0.8); -fx-letter-spacing: 1px;" text="PENDING" />
+                                 <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: rgba(255,255,255,0.8); -fx-letter-spacing: 1px;" text="ARCHIVED" />
                               </children>
                            </VBox>
                         </children>
@@ -147,27 +147,9 @@
                                     </HBox.margin>
                                  </TextField>
                                  
-                                 <ComboBox fx:id="statusFilter" promptText="All statuses" style="-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 5; -fx-padding: 2 10;" minWidth="150.0">
-                                    <items>
-                                       <FXCollections fx:factory="observableArrayList">
-                                          <String fx:value="All statuses" />
-                                          <String fx:value="In Progress" />
-                                          <String fx:value="Completed" />
-                                          <String fx:value="Pending" />
-                                       </FXCollections>
-                                    </items>
-                                 </ComboBox>
+                                 <ComboBox fx:id="statusFilter" promptText="Status" styleClass="modern-combo" minWidth="150.0" />
                                  
-                                 <ComboBox fx:id="sortComboBox" promptText="Sort by" style="-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 5; -fx-padding: 2 10;" minWidth="150.0">
-                                    <items>
-                                       <FXCollections fx:factory="observableArrayList">
-                                          <String fx:value="Name (A-Z)" />
-                                          <String fx:value="Coefficient (High-Low)" />
-                                          <String fx:value="Semester (1-2)" />
-                                          <String fx:value="Duration (Shortest)" />
-                                       </FXCollections>
-                                    </items>
-                                 </ComboBox>
+                                 <ComboBox fx:id="sortComboBox" promptText="Sort by" styleClass="modern-combo" minWidth="150.0" />
                               </children>
                            </HBox>
                            
@@ -195,7 +177,7 @@
                                   </StackPane>
                                   <Label style="-fx-font-size: 20px; -fx-font-weight: 800; -fx-text-fill: #0F172A; -fx-translate-y: -30;" text="No courses found" />
                                   <Label alignment="CENTER" maxWidth="350.0" style="-fx-font-size: 13px; -fx-text-fill: #64748B; -fx-text-alignment: center; -fx-translate-y: -30;" text="You haven't added any courses yet. Start your learning journey now!" textAlignment="CENTER" wrapText="true" />
-                                  <Button mnemonicParsing="false" onMouseClicked="#goToAddCourse" styleClass="btn-primary" style="-fx-padding: 10 25; -fx-translate-y: -15;" text="+ Add my first course" />
+                                  <Button mnemonicParsing="false" onAction="#goToAddCourse" styleClass="btn-add-course" style="-fx-padding: 10 25; -fx-translate-y: -15;" text="+ Add my first course" />
                                </children>
                             </VBox>
                         </children>

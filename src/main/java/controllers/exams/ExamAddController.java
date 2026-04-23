@@ -60,7 +60,13 @@ public class ExamAddController extends BaseExamController {
             );
 
             examService.ajouter(exam);
-            showSuccessNotification(rootPane, "Perfect!", "Examination scheduled successfully.", () -> returnToDashboard(rootPane));
+            showSuccessNotification(rootPane, "Perfect!", "Examination scheduled successfully.", () -> {
+                if (fromBackend) {
+                    returnToDashboard(rootPane);
+                } else {
+                    navigateToExamList(rootPane, currentCourse);
+                }
+            });
         } catch (SQLException e) {
             e.printStackTrace();
             showErrorNotification(rootPane, "Oops!", "Could not save exam: " + e.getMessage());

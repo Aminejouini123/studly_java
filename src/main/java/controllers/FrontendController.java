@@ -61,14 +61,19 @@ public class FrontendController extends BaseCourseController {
         }
     }
 
+    // Called after profile edits to refresh header UI.
+    public void refreshUserHeader() {
+        loadUserInfo();
+    }
+
     @FXML
-    public void showDashboard() {
+    private void showDashboard() {
         contentHost.getChildren().clear();
         setActiveNav(dashboardNavLabel);
     }
 
     @FXML
-    public void showPlanning() {
+    private void showPlanning() {
         loadContent("/Gestion de temps/planning_dashboard.fxml");
         setActiveNav(planningNavLabel);
     }
@@ -86,9 +91,9 @@ public class FrontendController extends BaseCourseController {
     private void loadContent(String resourcePath) {
         try {
             URL resource = getClass().getResource(resourcePath);
-            System.out.println("FrontendController: loading resource -> " + resourcePath + " (url=" + resource + ")");
             if (resource == null) {
-                throw new IOException("Missing FXML resource: " + resourcePath);
+                System.err.println("FXML NOT FOUND: " + resourcePath);
+                return;
             }
 
             Node content = FXMLLoader.load(resource);
@@ -96,14 +101,24 @@ public class FrontendController extends BaseCourseController {
             contentHost.getChildren().setAll(content);
         } catch (IOException e) {
             e.printStackTrace();
-            javafx.application.Platform.runLater(() -> {
-                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-                alert.setTitle("Load Error");
-                alert.setHeaderText("Unable to load component");
-                alert.setContentText("Resource: " + resourcePath + "\nError: " + e.getMessage());
-                alert.showAndWait();
-            });
         }
+    }
+
+    /**
+     * Show an already-built node inside the dashboard (keeps nav/header).
+     * Do not use {@code TOP_LEFT} alignment here: with that alignment, StackPane keeps the child's
+     * preferred size only, so detail views inside the ScrollPane often appear blank or a thin strip.
+     */
+    public void loadContentNode(Node content) {
+        if (contentHost == null || content == null) {
+            return;
+        }
+        if (content instanceof javafx.scene.layout.Region) {
+            javafx.scene.layout.Region r = (javafx.scene.layout.Region) content;
+            r.setMaxWidth(Double.MAX_VALUE);
+            r.setMaxHeight(Double.MAX_VALUE);
+        }
+        contentHost.getChildren().setAll(content);
     }
 
     private void setActiveNav(Label activeLabel) {

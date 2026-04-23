@@ -14,23 +14,21 @@
 <?import javafx.scene.shape.Rectangle?>
 
 <!-- Using the exact same styling classes and background as the auth page -->
-<StackPane prefHeight="800.0" prefWidth="1100.0" styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.user_controller.Sign_upController">
-
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Sign_upController">
     <children>
-        <AnchorPane mouseTransparent="true" prefHeight="800.0" prefWidth="1100.0">
-            <children>
-                <!-- Background decorative elements matching auth page -->
-                <Circle fill="#2464d1" layoutX="120.0" layoutY="120.0" opacity="0.4" radius="150.0" />
-                <Circle fill="#0dcaf0" layoutX="100.0" layoutY="600.0" opacity="0.5" radius="50.0" />
-                <Circle fill="#1d4899" layoutX="850.0" layoutY="200.0" opacity="0.6" radius="120.0" />
+        <!-- Background decorative elements matching auth page -->
+        <Circle fill="#2464d1" layoutX="120.0" layoutY="120.0" opacity="0.4" radius="150.0" />
+        <Circle fill="#0dcaf0" layoutX="100.0" layoutY="600.0" opacity="0.5" radius="50.0" />
+        <Circle fill="#1d4899" layoutX="850.0" layoutY="200.0" opacity="0.6" radius="120.0" />
 
-                <Rectangle arcHeight="60.0" arcWidth="60.0" fill="#377df0" height="60.0" layoutX="100.0" layoutY="350.0" opacity="0.7" rotate="45.0" width="160.0" />
-                <Rectangle arcHeight="60.0" arcWidth="60.0" fill="#00c3ff" height="40.0" layoutX="160.0" layoutY="280.0" opacity="0.4" rotate="45.0" width="80.0" />
-                <Rectangle arcHeight="60.0" arcWidth="60.0" fill="#295bb8" height="60.0" layoutX="-50.0" layoutY="600.0" opacity="0.8" rotate="45.0" width="160.0" />
-            </children>
-        </AnchorPane>
-        <VBox alignment="CENTER_LEFT" maxWidth="450.0" maxHeight="-Infinity" spacing="8.0" styleClass="login-card" StackPane.alignment="CENTER">
-            <padding>
+        <Rectangle arcHeight="60.0" arcWidth="60.0" fill="#377df0" height="60.0" layoutX="100.0" layoutY="350.0" opacity="0.7" rotate="45.0" width="160.0" />
+        <Rectangle arcHeight="60.0" arcWidth="60.0" fill="#00c3ff" height="40.0" layoutX="160.0" layoutY="280.0" opacity="0.4" rotate="45.0" width="80.0" />
+        <Rectangle arcHeight="60.0" arcWidth="60.0" fill="#295bb8" height="60.0" layoutX="-50.0" layoutY="600.0" opacity="0.8" rotate="45.0" width="160.0" />
+
+        <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <VBox alignment="CENTER_LEFT" maxWidth="450.0" maxHeight="-Infinity" spacing="8.0" styleClass="login-card">
+                    <padding>
                         <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
                     </padding>
                     <children>
@@ -46,14 +44,12 @@
                                     <VBox.margin><Insets bottom="3.0" /></VBox.margin>
                                 </Label>
                                 <TextField fx:id="sign_name_id" promptText="First name" styleClass="text-input-modern" />
-                                <Label fx:id="firstNameError" managed="false" styleClass="error-label" visible="false" />
                             </VBox>
                             <VBox HBox.hgrow="ALWAYS">
                                 <Label styleClass="input-label" text="Last name">
                                     <VBox.margin><Insets bottom="3.0" /></VBox.margin>
                                 </Label>
                                 <TextField fx:id="sign_lname_id" promptText="Last name" styleClass="text-input-modern" />
-                                <Label fx:id="lastNameError" managed="false" styleClass="error-label" visible="false" />
                             </VBox>
                         </HBox>
 
@@ -61,13 +57,11 @@
                             <VBox.margin><Insets top="5.0" bottom="3.0" /></VBox.margin>
                         </Label>
                         <TextField fx:id="sign_email_id" promptText="example@email.com" styleClass="text-input-modern" />
-                        <Label fx:id="emailError" managed="false" styleClass="error-label" visible="false" />
 
                         <Label styleClass="input-label" text="Date of birth">
                             <VBox.margin><Insets top="5.0" bottom="3.0" /></VBox.margin>
                         </Label>
                         <TextField fx:id="date_id" promptText="YYYY-MM-DD" styleClass="text-input-modern" />
-                        <Label fx:id="dobError" managed="false" styleClass="error-label" visible="false" />
 
                         <!-- Placed passwords side by side to save vertical height space -->
                         <HBox spacing="15.0">
@@ -78,7 +72,6 @@
                                  </Label>
                                  <!-- Replaced TextField with PasswordField for security/UX -->
                                  <PasswordField fx:id="passw_s_id" promptText="Password" styleClass="text-input-modern" />
-                                 <Label fx:id="passwordError" managed="false" styleClass="error-label" visible="false" />
                              </VBox>
                              <VBox HBox.hgrow="ALWAYS">
                                  <Label styleClass="input-label" text="Confirm Password">
@@ -86,7 +79,6 @@
                                  </Label>
                                  <!-- Replaced TextField with PasswordField for security/UX -->
                                  <PasswordField fx:id="pass_s_id" promptText="Confirm" styleClass="text-input-modern" />
-                                 <Label fx:id="confirmPasswordError" managed="false" styleClass="error-label" visible="false" />
                              </VBox>
                         </HBox>
 
@@ -104,4 +96,6 @@
                     </children>
                 </VBox>
             </children>
-</StackPane>
+        </StackPane>
+    </children>
+</AnchorPane>
