@@ -5,7 +5,9 @@ target/
 build_run.log
 cp.txt
 .DS_Store
-
-# IDE
-.idea/
-.vscode/
+studly_api/.env
+**/__pycache__/
+compile_errors.txt
+last_error.txt
+output.log
+full_output.log
