@@ -17,6 +17,7 @@ public class FrontendController extends controllers.courses.BaseCourseController
     @FXML private Label dashboardNavLabel;
     @FXML private Label planningNavLabel;
     @FXML private Label coursesNavLabel;
+    @FXML private Label groupsNavLabel;
     @FXML private StackPane contentHost;
 
     // Profile header components
@@ -76,9 +77,15 @@ public class FrontendController extends controllers.courses.BaseCourseController
     }
 
     @FXML
-    private void showPlanning() {
+    public void showPlanning() {
         loadContent("/Gestion de temps/planning_dashboard.fxml");
         setActiveNav(planningNavLabel);
+    }
+
+    @FXML
+    public void showGroups() {
+        loadContent("/gestion_group/groups_dashboard.fxml");
+        setActiveNav(groupsNavLabel);
     }
 
     @Override
@@ -140,6 +147,7 @@ public class FrontendController extends controllers.courses.BaseCourseController
         updateNavStyle(dashboardNavLabel, dashboardNavLabel == activeLabel);
         updateNavStyle(planningNavLabel, planningNavLabel == activeLabel);
         updateNavStyle(coursesNavLabel, coursesNavLabel == activeLabel);
+        updateNavStyle(groupsNavLabel, groupsNavLabel != null && groupsNavLabel == activeLabel);
     }
 
     private void updateNavStyle(Label label, boolean active) {

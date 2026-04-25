@@ -1,0 +1,10 @@
+## Copy this file to: openrouter.properties
+## Then fill in your key (do NOT commit the real file).
+openrouter.apiKey=sk-or-...
+
+## Optional:
+openrouter.model=openai/gpt-4o-mini
+openrouter.appUrl=https://your-domain.tld
+openrouter.appTitle=Studly AI
+voicerss.apiKey=d459dac2fb28436eb01d52e6d52099f9
+

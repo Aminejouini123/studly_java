@@ -9,3 +9,6 @@ cp.txt
 # IDE
 .idea/
 .vscode/
+
+# Local API keys (do not commit)
+src/main/resources/openrouter.properties

@@ -5,6 +5,7 @@ import javafx.scene.Parent;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+import java.io.IOException;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.VBox;
@@ -13,7 +14,6 @@ import javafx.geometry.Pos;
 import models.User;
 import services.CourseService;
 import utils.SessionManager;
-import java.io.IOException;
 
 public abstract class BaseCourseController {
 
@@ -46,6 +46,42 @@ public abstract class BaseCourseController {
             controllers.FrontendController.getInstance().loadContent("/gestion_cours/courses_body.fxml");
         } else {
             loadScene("/gestion_cours/frontend_courses.fxml", event, null);
+        }
+    }
+
+    /** Planning from embedded course pages (same shell as dashboard when available). */
+    public void goToPlanning(javafx.event.Event event) {
+        controllers.FrontendController fc = controllers.FrontendController.getInstance();
+        if (fc != null) {
+            fc.showPlanning();
+            return;
+        }
+        openDashboardThen(event, controllers.FrontendController::showPlanning);
+    }
+
+    public void goToGroups(javafx.event.Event event) {
+        controllers.FrontendController fc = controllers.FrontendController.getInstance();
+        if (fc != null) {
+            fc.showGroups();
+            return;
+        }
+        openDashboardThen(event, controllers.FrontendController::showGroups);
+    }
+
+    private void openDashboardThen(javafx.event.Event event, java.util.function.Consumer<controllers.FrontendController> action) {
+        Node source = event != null ? (Node) event.getSource() : null;
+        if (source == null || source.getScene() == null) {
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/TEMPLATE/frontend_dashboard.fxml"));
+            Parent root = loader.load();
+            controllers.FrontendController shell = loader.getController();
+            Stage stage = (Stage) source.getScene().getWindow();
+            stage.getScene().setRoot(root);
+            action.accept(shell);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

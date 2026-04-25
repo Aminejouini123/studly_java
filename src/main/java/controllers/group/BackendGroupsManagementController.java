@@ -235,7 +235,8 @@ public class BackendGroupsManagementController {
         createdAtSortDesc = desc;
         if (colCreatedAt != null && groupsTable != null) {
             colCreatedAt.setSortType(desc ? TableColumn.SortType.DESCENDING : TableColumn.SortType.ASCENDING);
-            groupsTable.getSortOrder().setAll(colCreatedAt);
+            groupsTable.getSortOrder().clear();
+            groupsTable.getSortOrder().add(colCreatedAt);
             groupsTable.sort();
         }
         if (sortCreatedAtBtn != null) {

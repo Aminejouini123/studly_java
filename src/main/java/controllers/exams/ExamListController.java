@@ -286,8 +286,12 @@ public class ExamListController extends BaseExamController {
             ExamDetailController controller = loader.getController();
             controller.setExam(exam, currentCourse);
             showInMainOrShell(root);
-        } catch (IOException e) {
+        } catch (Exception e) {
+            System.err.println("ERROR opening exam detail view");
             e.printStackTrace();
+            if (rootPane != null) {
+                showErrorNotification(rootPane, "Can't open exam details", e.getMessage() != null ? e.getMessage() : e.toString());
+            }
         }
     }
 
