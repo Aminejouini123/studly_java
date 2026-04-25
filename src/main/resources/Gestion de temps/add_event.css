@@ -123,3 +123,27 @@
 .form-button-secondary:hover {
     -fx-background-color: linear-gradient(to bottom, #eef3f8, #dde7f3);
 }
+
+/* Location autocomplete suggestions */
+.location-suggestions {
+    -fx-background-color: white;
+    -fx-border-color: #2a7de1;
+    -fx-border-width: 0 1 1 1;
+    -fx-border-radius: 0 0 10 10;
+    -fx-background-radius: 0 0 10 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(42, 125, 225, 0.18), 10, 0, 0, 4);
+    -fx-font-size: 11px;
+}
+
+.location-suggestions .list-cell {
+    -fx-padding: 6 12;
+    -fx-text-fill: #1e293b;
+    -fx-background-color: white;
+}
+
+.location-suggestions .list-cell:hover,
+.location-suggestions .list-cell:filled:selected {
+    -fx-background-color: #eef4ff;
+    -fx-text-fill: #2a7de1;
+    -fx-cursor: hand;
+}

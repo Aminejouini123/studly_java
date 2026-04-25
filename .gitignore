@@ -12,3 +12,12 @@ cp.txt
 
 # Local API keys (do not commit)
 src/main/resources/openrouter.properties
+
+# Python/Other
+studly_api/.env
+**/__pycache__/
+compile_errors.txt
+last_error.txt
+output.log
+full_output.log
+

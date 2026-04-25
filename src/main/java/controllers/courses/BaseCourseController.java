@@ -14,8 +14,38 @@ import javafx.geometry.Pos;
 import models.User;
 import services.CourseService;
 import utils.SessionManager;
+import java.io.IOException;
+
+import controllers.BackendCourseController;
 
 public abstract class BaseCourseController {
+
+    protected boolean fromBackend = false;
+    protected BackendCourseController backendController;
+
+    public void setFromBackend(boolean fromBackend) {
+        this.fromBackend = fromBackend;
+    }
+
+    public void setBackendController(BackendCourseController backendController) {
+        this.backendController = backendController;
+    }
+
+    public void returnToCourses(MouseEvent event) {
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+        } else {
+            goToCourses(event);
+        }
+    }
+
+    public void returnToDashboard(Node fallbackNode) {
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+        } else {
+            loadScene("/TEMPLATE/frontend_dashboard.fxml", null, fallbackNode);
+        }
+    }
 
     protected void loadScene(String fxmlPath, javafx.event.Event event, Node fallbackNode) {
         try {
@@ -34,10 +64,64 @@ public abstract class BaseCourseController {
     }
 
     public void goToDashboard(javafx.event.Event event) {
-        if (controllers.FrontendController.getInstance() != null) {
-            controllers.FrontendController.getInstance().goToDashboard(event);
-        } else {
-            loadScene("/TEMPLATE/frontend_dashboard.fxml", event, null);
+        loadScene("/TEMPLATE/frontend_dashboard.fxml", event, null);
+    }
+
+    @FXML
+    public void goToCourses(MouseEvent event) {
+        try {
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Node contentHost = stage.getScene().getRoot().lookup("#contentHost");
+            java.net.URL res = getClass().getResource("/gestion_cours/frontend_courses.fxml");
+            if (contentHost instanceof javafx.scene.layout.Pane && res != null) {
+                Parent content = FXMLLoader.load(res);
+                ((javafx.scene.layout.Pane) contentHost).getChildren().setAll(content);
+                return;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        loadScene("/gestion_cours/frontend_courses.fxml", event, null);
+    }
+
+    @FXML
+    public void goToPlanning(MouseEvent event) {
+        try {
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Node contentHost = stage.getScene().getRoot().lookup("#contentHost");
+            java.net.URL res = getClass().getResource("/Gestion de temps/planning_dashboard.fxml");
+            if (contentHost instanceof javafx.scene.layout.Pane && res != null) {
+                Parent content = FXMLLoader.load(res);
+                ((javafx.scene.layout.Pane) contentHost).getChildren().setAll(content);
+                return;
+            }
+
+            // Fallback: load full dashboard and request planning
+            URL resource = getClass().getResource("/TEMPLATE/frontend_dashboard.fxml");
+            System.out.println("BaseCourseController: goToPlanning loading /TEMPLATE/frontend_dashboard.fxml (url=" + resource + ")");
+            if (resource == null) {
+                throw new IOException("Missing FXML resource: /TEMPLATE/frontend_dashboard.fxml");
+            }
+            FXMLLoader loader = new FXMLLoader(resource);
+            Parent root = loader.load();
+
+            Object controller = loader.getController();
+            if (controller instanceof controllers.FrontendController) {
+                ((controllers.FrontendController) controller).showPlanning();
+            }
+
+            stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.getScene().setRoot(root);
+        } catch (IOException e) {
+            e.printStackTrace();
+            javafx.application.Platform.runLater(() -> {
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                alert.setTitle("Navigation Error");
+                alert.setHeaderText("Unable to load Planning");
+                alert.setContentText(e.getMessage());
+                alert.showAndWait();
+            });
         }
     }
 
@@ -93,6 +177,7 @@ public abstract class BaseCourseController {
         }
     }
 
+
     protected SVGPath createIcon(String path, String color, double size) {
         SVGPath svg = new SVGPath();
         svg.setContent(path);
@@ -110,44 +195,5 @@ public abstract class BaseCourseController {
         valLabel.getStyleClass().add("stat-item-label");
         item.getChildren().addAll(icon, valLabel);
         return item;
-    }
-    protected boolean fromBackend = false;
-    protected controllers.BackendCourseController backendController;
-
-    public void setFromBackend(boolean fromBackend) {
-        this.fromBackend = fromBackend;
-    }
-
-    public void setBackendController(controllers.BackendCourseController controller) {
-        this.backendController = controller;
-    }
-
-    /** When the main shell hosts content in {@code contentHost}, reload the course list there; otherwise replace the scene root. */
-    protected void navigateToFrontendCourseList(Node anchor) {
-        if (controllers.FrontendController.getInstance() != null) {
-            controllers.FrontendController.getInstance().loadContent("/gestion_cours/courses_body.fxml");
-        } else {
-            loadScene("/gestion_cours/frontend_courses.fxml", null, anchor);
-        }
-    }
-
-    protected void returnToDashboard(javafx.scene.Node anchor) {
-        if (fromBackend && backendController != null) {
-            backendController.restoreDashboard();
-        } else if (fromBackend) {
-            loadScene("/gestion_cours/backend_courses.fxml", null, anchor);
-        } else {
-            goToCourses(null);
-        }
-    }
-
-    protected void returnToCourses(javafx.event.Event event) {
-        if (fromBackend && backendController != null) {
-            backendController.restoreDashboard();
-        } else if (fromBackend) {
-            loadScene("/gestion_cours/backend_courses.fxml", event, null);
-        } else {
-            goToCourses(event);
-        }
     }
 }
