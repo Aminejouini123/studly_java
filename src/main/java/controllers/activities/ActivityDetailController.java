@@ -17,6 +17,10 @@ import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.control.Button;
+import models.quiz.QuizQuestion;
+import java.util.List;
+import java.util.Map;
+import utils.JsonUtils;
 
 public class ActivityDetailController extends BaseActivityController {
 
@@ -27,6 +31,9 @@ public class ActivityDetailController extends BaseActivityController {
     @FXML private VBox resourceLinkBox, resourceFileBox;
     @FXML private Arc durationArc;
     @FXML private javafx.scene.layout.StackPane rootPane;
+    @FXML private VBox quizDetailsBox;
+    @FXML private VBox questionsPreview;
+    @FXML private Button viewCorrectionBtn;
 
     private Activity currentActivity;
     private Course currentCourse;
@@ -41,9 +48,24 @@ public class ActivityDetailController extends BaseActivityController {
         // Basic Info
         detailTitle.setText(activity.getTitle() != null ? activity.getTitle() : "Untitled");
         detailDescription.setText(activity.getDescription() != null && !activity.getDescription().isEmpty() ? activity.getDescription() : "No overview provided.");
-        detailInstructions.setText(activity.getInstructions() != null && !activity.getInstructions().isEmpty() ? activity.getInstructions() : "No specific instructions provided.");
         detailExpectedOutput.setText(activity.getExpected_output() != null && !activity.getExpected_output().isEmpty() ? activity.getExpected_output() : "No output defined.");
         detailHints.setText(activity.getHints() != null && !activity.getHints().isEmpty() ? activity.getHints() : "No hints available.");
+        
+        // Handle Quiz specifically
+        if ("Quiz".equalsIgnoreCase(activity.getType())) {
+            detailInstructions.setVisible(false);
+            detailInstructions.setManaged(false);
+            quizDetailsBox.setVisible(true);
+            quizDetailsBox.setManaged(true);
+            renderQuizPreview(activity.getInstructions());
+            viewCorrectionBtn.setOnAction(e -> handleViewCorrection(activity));
+        } else {
+            detailInstructions.setVisible(true);
+            detailInstructions.setManaged(true);
+            quizDetailsBox.setVisible(false);
+            quizDetailsBox.setManaged(false);
+            detailInstructions.setText(activity.getInstructions() != null && !activity.getInstructions().isEmpty() ? activity.getInstructions() : "No specific instructions provided.");
+        }
         
         // Badges
         detailType.setText(activity.getType() != null ? activity.getType().toUpperCase() : "ACTIVITY");
@@ -172,5 +194,67 @@ public class ActivityDetailController extends BaseActivityController {
         
         ScaleTransition st = new ScaleTransition(Duration.millis(300), card);
         st.setFromX(0.85); st.setFromY(0.85); st.setToX(1); st.setToY(1); st.play();
+    }
+
+    private void renderQuizPreview(String json) {
+        questionsPreview.getChildren().clear();
+        if (json == null || json.isEmpty()) return;
+        
+        try {
+            Object parsed = JsonUtils.parse(json);
+            List<Object> rawQuestions;
+            if (parsed instanceof Map<?, ?>) {
+                rawQuestions = JsonUtils.asArray(((Map<?, ?>) parsed).get("questions"));
+            } else {
+                rawQuestions = JsonUtils.asArray(parsed);
+            }
+            
+            int count = 0;
+            for (Object item : rawQuestions) {
+                Map<String, Object> q = JsonUtils.asObject(item);
+                if (count++ >= 3) break; // Only show first 3
+                
+                HBox qRow = new HBox(10);
+                qRow.setAlignment(Pos.CENTER_LEFT);
+                qRow.setStyle("-fx-background-color: white; -fx-padding: 10; -fx-background-radius: 8; -fx-border-color: #F1F5F9; -fx-border-radius: 8;");
+                
+                SVGPath qIcon = createIcon("M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z", "#6366F1", 16);
+                Label qText = new Label(JsonUtils.asString(q.get("prompt")));
+                qText.setStyle("-fx-text-fill: #475569; -fx-font-weight: 600; -fx-font-size: 13px;");
+                qText.setWrapText(true);
+                
+                qRow.getChildren().addAll(qIcon, qText);
+                questionsPreview.getChildren().add(qRow);
+            }
+            
+            if (rawQuestions.size() > 3) {
+                Label more = new Label("+ " + (rawQuestions.size() - 3) + " more questions...");
+                more.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-style: italic; -fx-padding: 0 0 0 30;");
+                questionsPreview.getChildren().add(more);
+            }
+            
+        } catch (Exception e) {
+            Label err = new Label("Unable to parse quiz questions.");
+            err.setStyle("-fx-text-fill: #EF4444;");
+            questionsPreview.getChildren().add(err);
+        }
+    }
+
+    private void handleViewCorrection(Activity activity) {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_quiz_generator.fxml"));
+            javafx.scene.Parent root = loader.load();
+            QuizController controller = loader.getController();
+            controller.setQuizActivity(activity);
+            
+            if (controllers.FrontendController.getInstance() != null) {
+                controllers.FrontendController.getInstance().loadContentNode(root);
+            } else {
+                javafx.stage.Stage stage = (javafx.stage.Stage) detailTitle.getScene().getWindow();
+                stage.getScene().setRoot(root);
+            }
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
     }
 }

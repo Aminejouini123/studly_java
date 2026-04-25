@@ -40,7 +40,7 @@
                      <Label fx:id="navDashboard" onMouseClicked="#goToDashboard" styleClass="nav-link" text="Dashboard" />
                      <Label onMouseClicked="#goToPlanning" styleClass="nav-link" text="Planning" />
                      <Label fx:id="navCourses" styleClass="nav-link-active" text="Courses" />
-                     <Label styleClass="nav-link" text="Groups" />
+                     <Label onMouseClicked="#goToGroups" styleClass="nav-link" text="Groups" />
                      <Label styleClass="nav-link" text="Tasks" />
                   </children>
                </HBox>

@@ -4,8 +4,10 @@
 <?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
@@ -18,7 +20,7 @@
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.web.WebView?>
 
-<StackPane fx:id="rootPane" prefHeight="900.0" prefWidth="1200.0" style="-fx-background-color: #f8f9fa;" stylesheets="@../TEMPLATE/frontend_style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.courses.CourseDetailController">
+<StackPane fx:id="rootPane" prefHeight="900.0" prefWidth="1200.0" style="-fx-background-color: #f8f9fa;" stylesheets="@../TEMPLATE/frontend_style.css,@../TEMPLATE/studly_ai_chat.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.courses.CourseDetailController">
     <children>
         <BorderPane styleClass="course-detail-container">
             <top>
@@ -167,7 +169,7 @@
                                                             </children>
                                                         </HBox>
 
-                                                        <!-- Course file attachment: filename, type badge, preview or empty state -->
+                                                        <!-- Course file attachment -->
                                                         <VBox fx:id="filePreviewBox" spacing="0.0" style="-fx-border-color: #CBD5E1; -fx-border-radius: 16; -fx-background-radius: 16; -fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,51,102,0.12), 20, 0, 0, 6);">
                                                             <children>
                                                                 <HBox alignment="CENTER_LEFT" spacing="14.0" style="-fx-background-color: linear-gradient(to right, #1E293B, #334155); -fx-background-radius: 16 16 0 0; -fx-padding: 14 20;">
@@ -193,70 +195,80 @@
                                                                         </HBox>
                                                                     </children>
                                                                 </HBox>
-                                                                <VBox fx:id="previewContentArea" minHeight="320.0" prefHeight="520.0" style="-fx-background-color: #0F172A; -fx-background-radius: 0 0 16 16;">
+
+                                                                <!-- Advanced PDF Viewer Navigation & Zoom -->
+                                                                <HBox fx:id="pdfControlsBox" alignment="CENTER" spacing="15.0" style="-fx-background-color: #1E293B; -fx-padding: 8 20; -fx-border-color: rgba(255,255,255,0.05); -fx-border-width: 0 0 1 0;">
                                                                    <children>
-                                                                      <!-- PDF viewer toolbar (navigation / zoom / fit / fullscreen) -->
-                                                                      <HBox fx:id="pdfToolbar" alignment="CENTER_LEFT" spacing="10.0" style="-fx-padding: 10 14; -fx-background-color: rgba(15,23,42,0.55); -fx-border-color: rgba(148,163,184,0.18); -fx-border-width: 0 0 1 0;">
+                                                                      <HBox spacing="5.0" alignment="CENTER">
                                                                          <children>
-                                                                            <Button fx:id="pdfPrevBtn" mnemonicParsing="false" onAction="#handlePdfPrevPage" minWidth="36.0" style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: #E2E8F0; -fx-background-radius: 10; -fx-font-weight: 800; -fx-font-size: 12px; -fx-padding: 8 10; -fx-cursor: hand;" text="◀" />
-                                                                            <Button fx:id="pdfNextBtn" mnemonicParsing="false" onAction="#handlePdfNextPage" minWidth="36.0" style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: #E2E8F0; -fx-background-radius: 10; -fx-font-weight: 800; -fx-font-size: 12px; -fx-padding: 8 10; -fx-cursor: hand;" text="▶" />
-                                                                            <Label fx:id="pdfPageIndicator" minWidth="88.0" style="-fx-text-fill: #E2E8F0; -fx-font-size: 12px; -fx-font-weight: 800;" text="1 / 1" />
-
-                                                                            <Separator orientation="VERTICAL" style="-fx-opacity: 0.25;">
-                                                                               <padding><Insets left="4.0" right="4.0" /></padding>
-                                                                            </Separator>
-
-                                                                            <Button fx:id="pdfZoomOutBtn" mnemonicParsing="false" onAction="#handlePdfZoomOut" minWidth="36.0" style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: #E2E8F0; -fx-background-radius: 10; -fx-font-weight: 900; -fx-font-size: 12px; -fx-padding: 8 10; -fx-cursor: hand;" text="−" />
-                                                                            <Label fx:id="pdfZoomLabel" minWidth="56.0" alignment="CENTER" style="-fx-text-fill: #94A3B8; -fx-font-size: 12px; -fx-font-weight: 800;" text="100%" />
-                                                                            <Button fx:id="pdfZoomInBtn" mnemonicParsing="false" onAction="#handlePdfZoomIn" minWidth="36.0" style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: #E2E8F0; -fx-background-radius: 10; -fx-font-weight: 900; -fx-font-size: 12px; -fx-padding: 8 10; -fx-cursor: hand;" text="+" />
-                                                                            <Separator orientation="VERTICAL" style="-fx-opacity: 0.35;">
-                                                                               <padding><Insets left="6.0" right="6.0" /></padding>
-                                                                            </Separator>
-                                                                            <Button fx:id="pdfFitWidthBtn" mnemonicParsing="false" onAction="#handlePdfFitWidth" minWidth="62.0" style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: #E2E8F0; -fx-background-radius: 10; -fx-font-weight: 700; -fx-font-size: 12px; -fx-padding: 8 10; -fx-cursor: hand;" text="Fit W" />
-                                                                            <Button fx:id="pdfFitPageBtn" mnemonicParsing="false" onAction="#handlePdfFitPage" minWidth="62.0" style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: #E2E8F0; -fx-background-radius: 10; -fx-font-weight: 700; -fx-font-size: 12px; -fx-padding: 8 10; -fx-cursor: hand;" text="Fit P" />
-                                                                            <Region HBox.hgrow="ALWAYS" />
-                                                                            <Button fx:id="pdfFullscreenBtn" mnemonicParsing="false" onAction="#handlePdfFullscreen" minWidth="92.0" style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: #E2E8F0; -fx-background-radius: 10; -fx-font-weight: 700; -fx-font-size: 12px; -fx-padding: 8 12; -fx-cursor: hand;" text="Fullscreen" />
+                                                                            <Button fx:id="pdfPrevBtn" mnemonicParsing="false" onAction="#handlePdfPrevPage" styleClass="pdf-nav-btn" text="◀" />
+                                                                            <Label fx:id="pdfPageIndicator" style="-fx-text-fill: #F8FAFC; -fx-font-weight: 800; -fx-font-size: 13px;" text="Page 1 of 1" />
+                                                                            <Button fx:id="pdfNextBtn" mnemonicParsing="false" onAction="#handlePdfNextPage" styleClass="pdf-nav-btn" text="▶" />
                                                                          </children>
                                                                       </HBox>
+                                                                      <Separator orientation="VERTICAL" style="-fx-opacity: 0.2;" />
+                                                                      <HBox spacing="8.0" alignment="CENTER">
+                                                                         <children>
+                                                                            <Button fx:id="pdfZoomOutBtn" mnemonicParsing="false" onAction="#handlePdfZoomOut" styleClass="pdf-nav-btn" text="−" />
+                                                                            <Label fx:id="pdfZoomLabel" style="-fx-text-fill: #F8FAFC; -fx-font-weight: 800; -fx-font-size: 13px; -fx-min-width: 50;" text="100%" alignment="CENTER" />
+                                                                            <Button fx:id="pdfZoomInBtn" mnemonicParsing="false" onAction="#handlePdfZoomIn" styleClass="pdf-nav-btn" text="+" />
+                                                                         </children>
+                                                                      </HBox>
+                                                                      <Separator orientation="VERTICAL" style="-fx-opacity: 0.2;" />
+                                                                      <HBox spacing="8.0" alignment="CENTER">
+                                                                         <children>
+                                                                            <Button fx:id="pdfFitWidthBtn" mnemonicParsing="false" onAction="#handlePdfFitWidth" styleClass="pdf-nav-btn" text="↔" />
+                                                                            <Button fx:id="pdfFitPageBtn" mnemonicParsing="false" onAction="#handlePdfFitPage" styleClass="pdf-nav-btn" text="⛶" />
+                                                                            <Button fx:id="pdfFullscreenBtn" mnemonicParsing="false" onAction="#handlePdfFullscreen" styleClass="pdf-nav-btn" text="⛶" />
+                                                                         </children>
+                                                                      </HBox>
+                                                                      <Separator orientation="VERTICAL" style="-fx-opacity: 0.2;" />
+                                                                      <Button fx:id="ttsBtn" mnemonicParsing="false" onAction="#handleReadAloud" styleClass="pdf-nav-btn" text="🔊" />
+                                                                   </children>
+                                                                </HBox>
+                                                                <VBox fx:id="previewContentArea" minHeight="320.0" prefHeight="520.0" style="-fx-background-color: #0F172A; -fx-background-radius: 0 0 16 16;">
+                                                                   <children>
                                                                       <StackPane minHeight="320.0" prefHeight="520.0" VBox.vgrow="ALWAYS" style="-fx-background-color: #0F172A;">
                                                                          <children>
                                                                             <WebView fx:id="pdfWebView" prefHeight="520.0" prefWidth="-1.0" />
-                                                                            <ScrollPane fx:id="pdfFxScroll" fitToWidth="false" fitToHeight="false" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED" visible="false" managed="false" prefHeight="520.0" pannable="true" style="-fx-background: #0F172A; -fx-background-color: #0F172A;">
+                                                                            <ScrollPane fx:id="pdfFxScroll" fitToWidth="false" fitToHeight="false" visible="false" managed="false" prefHeight="520.0" pannable="true" style="-fx-background: #0F172A; -fx-background-color: #0F172A;">
                                                                                <content>
                                                                                   <StackPane fx:id="pdfCenterPane" alignment="CENTER" style="-fx-padding: 22; -fx-background-color: #0F172A;">
                                                                                      <children>
-                                                                                        <StackPane style="-fx-background-color: #111827; -fx-background-radius: 12; -fx-padding: 12;">
-                                                                                           <children>
-                                                                                              <javafx.scene.image.ImageView fx:id="pdfPageImageView" preserveRatio="true" smooth="true" cache="true" />
-                                                                                           </children>
-                                                                                        </StackPane>
+                                                                                        <javafx.scene.image.ImageView fx:id="pdfPageImageView" preserveRatio="true" smooth="true" cache="true" />
                                                                                      </children>
                                                                                   </StackPane>
                                                                                </content>
                                                                             </ScrollPane>
                                                                          </children>
                                                                       </StackPane>
-                                                                      <VBox fx:id="filePlaceholderLabel" alignment="CENTER" spacing="16.0" visible="false" managed="false" style="-fx-background-color: #0F172A; -fx-background-radius: 0 0 16 16;" minHeight="320.0" prefHeight="520.0" VBox.vgrow="ALWAYS">
-                                                                         <children>
-                                                                            <StackPane style="-fx-background-color: rgba(148,163,184,0.12); -fx-background-radius: 999; -fx-padding: 28;">
-                                                                               <children>
-                                                                                  <SVGPath content="M13 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V9l-7-7zm0 1.5L18.5 9H13V3.5z" fill="#64748B" scaleX="2.2" scaleY="2.2" />
-                                                                               </children>
-                                                                            </StackPane>
-                                                                            <VBox alignment="CENTER" spacing="6.0">
-                                                                               <children>
-                                                                                  <Label fx:id="placeholderTitleLabel" style="-fx-text-fill: #E2E8F0; -fx-font-weight: 800; -fx-font-size: 17px;" text="No preview available" />
-                                                                                  <Label fx:id="placeholderSubtitleLabel" style="-fx-text-fill: #94A3B8; -fx-font-size: 13px; -fx-wrap-text: true; -fx-text-alignment: center; -fx-max-width: 360;" text="This file type cannot be shown inline. Use Open file to view it on your device." />
-                                                                               </children>
-                                                                            </VBox>
-                                                                            <Button fx:id="placeholderOpenBtn" mnemonicParsing="false" onAction="#handleOpenExternally" style="-fx-background-color: #3B82F6; -fx-text-fill: white; -fx-background-radius: 10; -fx-font-weight: 700; -fx-font-size: 13px; -fx-padding: 10 22; -fx-cursor: hand;" text="Open file" />
-                                                                         </children>
-                                                                         <padding><Insets top="48.0" bottom="48.0" left="32.0" right="32.0" /></padding>
-                                                                      </VBox>
                                                                    </children>
                                                                 </VBox>
                                                             </children>
+                                                         </VBox>
+                                                     </children>
+                                                 </VBox>
+                                             </children>
+                                         </VBox>
+
+                                        <!-- AI Assessments & Quizzes -->
+                                        <VBox spacing="20.0" styleClass="glass-card" style="-fx-padding: 30;">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT" spacing="15.0">
+                                                    <children>
+                                                        <SVGPath content="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="#6366F1" scaleX="1.2" scaleY="1.2" />
+                                                        <VBox spacing="2">
+                                                            <children>
+                                                                <Label styleClass="section-title" text="AI Assessments &amp; Quizzes" />
+                                                                <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight: 700;" text="NEURAL KNOWLEDGE EVALUATIONS" />
+                                                            </children>
                                                         </VBox>
+                                                    </children>
+                                                </HBox>
+                                                
+                                                <VBox fx:id="quizListContainer" spacing="15.0">
+                                                    <children>
+                                                        <Label fx:id="noQuizLabel" style="-fx-text-fill: #94A3B8; -fx-font-style: italic; -fx-padding: 10 0;" text="No AI assessments generated yet. Use the Chat to generate one." />
                                                     </children>
                                                 </VBox>
                                             </children>
@@ -344,6 +356,58 @@
                 </ScrollPane>
             </center>
         </BorderPane>
+
+        <!-- Floating Studly AI Chat (button + drawer panel) -->
+        <StackPane fx:id="chatOverlay" alignment="BOTTOM_RIGHT" pickOnBounds="false">
+            <padding>
+                <Insets bottom="26.0" right="26.0" />
+            </padding>
+            <children>
+                <VBox fx:id="chatPanel" visible="false" managed="false" spacing="0.0"
+                      styleClass="studly-ai-panel" StackPane.alignment="BOTTOM_RIGHT" prefWidth="380.0" prefHeight="520.0">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="studly-ai-header">
+                            <children>
+                                <StackPane style="-fx-background-color: rgba(99,102,241,0.18); -fx-background-radius: 999; -fx-padding: 6;">
+                                    <children>
+                                        <SVGPath content="M12 2a4 4 0 0 0-4 4v1H6a3 3 0 0 0-3 3v5a3 3 0 0 0 3 3h1v2a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2h1a3 3 0 0 0 3-3v-5a3 3 0 0 0-3-3h-2V6a4 4 0 0 0-4-4zm-2 5V6a2 2 0 1 1 4 0v1h-4zm-2 5a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm8 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" fill="#A5B4FC" scaleX="0.9" scaleY="0.9" />
+                                    </children>
+                                </StackPane>
+                                <VBox spacing="1.0">
+                                    <children>
+                                        <Label styleClass="studly-ai-title" text="Studly AI Assistant" />
+                                        <Label styleClass="studly-ai-subtitle" text="Ask anything about your course" />
+                                    </children>
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label fx:id="chatStatusLabel" style="-fx-text-fill: #94A3B8; -fx-font-weight: 800; -fx-font-size: 11px;" text="" />
+                                <Button mnemonicParsing="false" onAction="#summarizeCoursePdf" styleClass="studly-ai-header-btn" text="Résumé" />
+                                <Button mnemonicParsing="false" onAction="#minimizeChat" styleClass="studly-ai-header-btn" text="—" />
+                                <Button mnemonicParsing="false" onAction="#toggleChatFullscreen" styleClass="studly-ai-header-btn" text="⤢" />
+                                <Button mnemonicParsing="false" onAction="#closeChat" styleClass="studly-ai-header-btn,studly-ai-close-btn" text="✕" />
+                            </children>
+                        </HBox>
+
+                        <ListView fx:id="chatListView" VBox.vgrow="ALWAYS" styleClass="studly-ai-list" />
+
+                        <HBox spacing="10.0" styleClass="studly-ai-input-bar">
+                            <children>
+                                <TextField fx:id="chatInputField" HBox.hgrow="ALWAYS" promptText="Message Studly AI..."
+                                           styleClass="studly-ai-input" onAction="#handleSendChat" />
+                                <Button fx:id="chatSendButton" mnemonicParsing="false" onAction="#handleSendChat" styleClass="studly-ai-send" text="Send" />
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+
+                <Button fx:id="chatFabButton" mnemonicParsing="false" onAction="#toggleChatPanel"
+                        styleClass="studly-ai-fab" StackPane.alignment="BOTTOM_RIGHT">
+                    <graphic>
+                        <SVGPath content="M12 2a4 4 0 0 0-4 4v1H6a3 3 0 0 0-3 3v5a3 3 0 0 0 3 3h1v2a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2h1a3 3 0 0 0 3-3v-5a3 3 0 0 0-3-3h-2V6a4 4 0 0 0-4-4zm-2 5V6a2 2 0 1 1 4 0v1h-4zm-2 5a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm8 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" fill="WHITE" scaleX="1.05" scaleY="1.05" />
+                    </graphic>
+                </Button>
+            </children>
+        </StackPane>
 
         <!-- Premium Delete Modal Overlay -->
         <StackPane fx:id="deleteModalOverlay" managed="false" styleClass="modal-overlay" visible="false">

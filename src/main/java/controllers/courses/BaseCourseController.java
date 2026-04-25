@@ -5,11 +5,15 @@ import javafx.scene.Parent;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+import java.io.IOException;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Label;
 import javafx.geometry.Pos;
+import models.User;
+import services.CourseService;
+import utils.SessionManager;
 import java.io.IOException;
 
 import controllers.BackendCourseController;
@@ -121,10 +125,58 @@ public abstract class BaseCourseController {
         }
     }
 
-    @FXML
-    public void goToAddCourse(MouseEvent event) {
-        loadScene("/gestion_cours/frontend_add_course.fxml", event, null);
+    public void goToCourses(javafx.event.Event event) {
+        if (controllers.FrontendController.getInstance() != null) {
+            controllers.FrontendController.getInstance().loadContent("/gestion_cours/courses_body.fxml");
+        } else {
+            loadScene("/gestion_cours/frontend_courses.fxml", event, null);
+        }
     }
+
+    /** Planning from embedded course pages (same shell as dashboard when available). */
+    public void goToPlanning(javafx.event.Event event) {
+        controllers.FrontendController fc = controllers.FrontendController.getInstance();
+        if (fc != null) {
+            fc.showPlanning();
+            return;
+        }
+        openDashboardThen(event, controllers.FrontendController::showPlanning);
+    }
+
+    public void goToGroups(javafx.event.Event event) {
+        controllers.FrontendController fc = controllers.FrontendController.getInstance();
+        if (fc != null) {
+            fc.showGroups();
+            return;
+        }
+        openDashboardThen(event, controllers.FrontendController::showGroups);
+    }
+
+    private void openDashboardThen(javafx.event.Event event, java.util.function.Consumer<controllers.FrontendController> action) {
+        Node source = event != null ? (Node) event.getSource() : null;
+        if (source == null || source.getScene() == null) {
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/TEMPLATE/frontend_dashboard.fxml"));
+            Parent root = loader.load();
+            controllers.FrontendController shell = loader.getController();
+            Stage stage = (Stage) source.getScene().getWindow();
+            stage.getScene().setRoot(root);
+            action.accept(shell);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void goToAddCourse(javafx.event.Event event) {
+        if (controllers.FrontendController.getInstance() != null) {
+            controllers.FrontendController.getInstance().loadContent("/gestion_cours/add_course_body.fxml");
+        } else {
+            loadScene("/gestion_cours/add_course_body.fxml", event, null);
+        }
+    }
+
 
     protected SVGPath createIcon(String path, String color, double size) {
         SVGPath svg = new SVGPath();

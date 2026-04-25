@@ -15,13 +15,21 @@ public class MainFX extends Application {
     public void start(Stage stage) throws Exception {
         // Set global exception handler for the FX thread
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-            System.err.println("Uncaught exception: " + throwable.getMessage());
-            throwable.printStackTrace();
+            // Find the root cause (often useful for InvocationTargetException)
+            Throwable root = throwable;
+            while (root.getCause() != null && root.getCause() != root) {
+                root = root.getCause();
+            }
+            
+            final String message = root.getMessage() != null ? root.getMessage() : root.toString();
+            System.err.println("Uncaught exception: " + message);
+            root.printStackTrace();
+
             javafx.application.Platform.runLater(() -> {
                 javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText("An unexpected error occurred");
-                alert.setContentText(throwable.getMessage() != null ? throwable.getMessage() : throwable.toString());
+                alert.setContentText(message);
                 alert.showAndWait();
             });
         });

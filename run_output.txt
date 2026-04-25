@@ -1,0 +1,37 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< tn.esprit:Projet_PI_Java >----------------------
+[INFO] Building Projet_PI_Java 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> javafx:0.0.8:run (default-cli) > process-classes @ Projet_PI_Java >>>
+[WARNING] 6 problems were encountered while building the effective model for org.openjfx:javafx-fxml:jar:17.0.2 during dependency collection step for project (use -X to see details)
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ Projet_PI_Java ---
+[INFO] Copying 62 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ Projet_PI_Java ---
+[WARNING] ***************************************************************************************************************************************************
+[WARNING] * Required filename-based automodules detected: [mysql-connector-j-8.2.0.jar]. Please don't publish this project to a public artifact repository! *
+[WARNING] ***************************************************************************************************************************************************
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 109 source files with javac [debug target 11 module-path] to target\classes
+[WARNING] location of system modules is not set in conjunction with -source 11
+  not setting the location of system modules may lead to class files that cannot run on JDK 11
+    --release 11 is recommended instead of -source 11 -target 11 because it sets the location of system modules automatically
+[INFO] /C:/Users/azizr/studly_java/src/main/java/services/audio/TtsService.java: C:\Users\azizr\studly_java\src\main\java\services\audio\TtsService.java uses or overrides a deprecated API.
+[INFO] /C:/Users/azizr/studly_java/src/main/java/services/audio/TtsService.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] <<< javafx:0.0.8:run (default-cli) < process-classes @ Projet_PI_Java <<<
+[INFO] 
+[INFO] 
+[INFO] --- javafx:0.0.8:run (default-cli) @ Projet_PI_Java ---
+[WARNING] Required filename-based automodules detected. Please don't publish this project to a public artifact repository!
+[WARNING] Module name not found in <mainClass>. Module name will be assumed from module-info.java
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.624 s
+[INFO] Finished at: 2026-04-25T02:25:39+01:00
+[INFO] ------------------------------------------------------------------------

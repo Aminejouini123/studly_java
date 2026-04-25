@@ -22,6 +22,7 @@ import javafx.stage.Stage;
 import models.Course;
 import models.Activity;
 import services.ActivityService;
+import services.chat.QuizGeneratorService;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,7 @@ public class ActivityListController extends BaseActivityController {
     private Course currentCourse;
     private List<Activity> allActivities = new ArrayList<>();
     private final ActivityService activityService = new ActivityService();
+    private final QuizGeneratorService quizGeneratorService = new QuizGeneratorService();
 
     @FXML
     public void initialize() {
@@ -395,8 +397,19 @@ public class ActivityListController extends BaseActivityController {
 
     @FXML
     private void handleSmartGenerate() {
-        if (currentCourse != null) {
-            System.out.println("AI Generation triggered for course: " + currentCourse.getName());
+        if (currentCourse == null) {
+            showAlert("Error", "No course selected.");
+            return;
+        }
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_quiz_generator.fxml"));
+            javafx.scene.Parent root = loader.load();
+            QuizController controller = loader.getController();
+            controller.setCourse(currentCourse);
+            showInMainOrShell(root);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error", "Could not open quiz generator: " + e.getMessage());
         }
     }
 

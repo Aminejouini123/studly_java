@@ -1,3 +1,5 @@
+package utils;
+
 public class TestDb {
     public static void main(String[] args) {
         String URL = "jdbc:mysql://localhost:3306/projet_db";

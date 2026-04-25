@@ -3,6 +3,12 @@ package controllers.courses;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.application.Platform;
+import javafx.animation.FadeTransition;
+import javafx.animation.TranslateTransition;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -12,6 +18,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.shape.Arc;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.Priority;
+import javafx.util.Duration;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.web.WebView;
 import javafx.scene.Scene;
@@ -20,14 +28,26 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import javafx.scene.Node;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import services.audio.TtsService;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.FileChooser;
 import models.Course;
+import models.chat.ChatMessage;
 import services.CourseService;
+import services.chat.ChatService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import utils.PdfTextExtractor;
+import models.Activity;
+import services.ActivityService;
+import java.util.List;
 
 import java.awt.Desktop;
 import java.awt.image.BufferedImage;
@@ -36,6 +56,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.concurrent.CompletableFuture;
 
 public class CourseDetailController extends BaseCourseController {
 
@@ -78,6 +99,10 @@ public class CourseDetailController extends BaseCourseController {
     @FXML
     private Button pdfFullscreenBtn;
     @FXML
+    private HBox pdfControlsBox;
+    @FXML
+    private Button ttsBtn;
+    @FXML
     private VBox previewContentArea;
     @FXML
     private Button togglePreviewBtn;
@@ -102,7 +127,36 @@ public class CourseDetailController extends BaseCourseController {
     @FXML
     private Button placeholderOpenBtn;
 
+    @FXML
+    private VBox quizListContainer;
+    @FXML
+    private Label noQuizLabel;
+
     private Course displayedCourse;
+    private final ActivityService activityService = new ActivityService();
+
+    // ---- AI chat ----
+    @FXML
+    private ListView<ChatMessage> chatListView;
+    @FXML
+    private javafx.scene.control.TextField chatInputField;
+    @FXML
+    private Button chatSendButton;
+    @FXML
+    private Label chatStatusLabel;
+    @FXML
+    private VBox chatPanel;
+    @FXML
+    private Button chatFabButton;
+    @FXML
+    private StackPane chatOverlay;
+
+    private final ObservableList<ChatMessage> chatMessages = FXCollections.observableArrayList();
+    private boolean chatFullscreen = false;
+    private ChatMessage pendingAiBubble;
+
+    private final ChatService chatService = new ChatService();
+    private volatile CompletableFuture<?> chatInFlight;
 
     // ---- PDF viewer state (single-page viewer) ----
     private enum FitMode { NONE, WIDTH, PAGE }
@@ -119,6 +173,10 @@ public class CourseDetailController extends BaseCourseController {
     private static final double PDF_ZOOM_MIN = 0.5;
     private static final double PDF_ZOOM_MAX = 3.0;
     private static final double PDF_ZOOM_STEP = 0.15;
+
+    // TTS Support
+    private final TtsService ttsService = new TtsService();
+    private MediaPlayer mediaPlayer;
 
     @FXML
     public void handleBackToCoursesAction(javafx.event.ActionEvent event) {
@@ -137,6 +195,7 @@ public class CourseDetailController extends BaseCourseController {
         if (course == null) {
             return;
         }
+        loadQuizzes();
 
         if (detailTitle != null) {
             detailTitle.setText(course.getName() != null ? course.getName() : "—");
@@ -233,6 +292,8 @@ public class CourseDetailController extends BaseCourseController {
         } catch (RuntimeException ex) {
             ex.printStackTrace();
         }
+
+        ensureChatWelcome();
     }
 
     @FXML
@@ -266,6 +327,420 @@ public class CourseDetailController extends BaseCourseController {
             pdfPageImageView.setCache(true);
         }
         updatePdfControls();
+
+        if (chatListView != null) {
+            chatListView.setItems(chatMessages);
+            chatListView.setFocusTraversable(false);
+            chatListView.setCellFactory(lv -> new ChatBubbleCell());
+        }
+        if (chatStatusLabel != null) {
+            chatStatusLabel.setText("");
+        }
+        if (chatSendButton != null) {
+            chatSendButton.setDisable(false);
+        }
+        if (chatPanel != null) {
+            chatPanel.setVisible(false);
+            chatPanel.setManaged(false);
+        }
+        ensureChatWelcome();
+    }
+
+    @FXML
+    public void toggleChatPanel() {
+        if (chatPanel == null) {
+            return;
+        }
+        boolean show = !chatPanel.isVisible();
+        if (show) {
+            openChatAnimated();
+        } else {
+            closeChatAnimated();
+        }
+        if (show) {
+            ensureChatWelcome();
+            if (chatInputField != null) {
+                Platform.runLater(() -> chatInputField.requestFocus());
+            }
+        }
+    }
+
+    @FXML
+    public void minimizeChat() {
+        if (chatPanel == null || !chatPanel.isVisible()) return;
+        closeChatAnimated();
+    }
+
+    @FXML
+    public void closeChat() {
+        if (chatPanel == null) return;
+        closeChatAnimated();
+    }
+
+    @FXML
+    public void toggleChatFullscreen() {
+        if (chatPanel == null) return;
+        chatFullscreen = !chatFullscreen;
+        applyChatSizeMode();
+    }
+
+    @FXML
+    public void handleSendChat() {
+        if (chatInputField == null || chatListView == null) {
+            return;
+        }
+        if (!chatService.hasApiKeyConfigured()) {
+            chatMessages.add(new ChatMessage(
+                    ChatMessage.Role.AI,
+                    "Studly AI is not configured yet.\n" +
+                    "Add your OpenRouter key in: src/main/resources/openrouter.properties\n" +
+                    "Example: openrouter.apiKey=sk-or-..."
+            ));
+            scrollChatToBottom();
+            return;
+        }
+        String msg = chatInputField.getText() == null ? "" : chatInputField.getText().trim();
+        if (msg.isEmpty()) {
+            return;
+        }
+        chatInputField.clear();
+
+        chatMessages.add(new ChatMessage(ChatMessage.Role.USER, msg));
+        scrollChatToBottom();
+        setChatBusy(true, "Thinking...");
+
+        String systemPrompt = buildSystemPrompt(displayedCourse);
+        pendingAiBubble = new ChatMessage(ChatMessage.Role.AI, "…");
+        chatMessages.add(pendingAiBubble);
+        scrollChatToBottom();
+
+        CompletableFuture<?> fut = CompletableFuture.supplyAsync(() -> {
+            try {
+                return chatService.chat(systemPrompt, msg);
+            } catch (Exception e) {
+                return "Error: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
+            }
+        }).thenAccept(answer -> Platform.runLater(() -> {
+            replacePendingAi(answer);
+            setChatBusy(false, "");
+        }));
+
+        chatInFlight = fut;
+    }
+
+    private void ensureChatWelcome() {
+        if (chatMessages.isEmpty()) {
+            String title = displayedCourse != null && displayedCourse.getName() != null ? displayedCourse.getName().trim() : "";
+            String welcome = title.isEmpty()
+                    ? "Welcome! I’m Studly AI. Ask me anything about this course."
+                    : "Welcome! I’m Studly AI. Ask me anything about \"" + title + "\".";
+            chatMessages.add(new ChatMessage(ChatMessage.Role.AI, welcome));
+            scrollChatToBottom();
+        }
+    }
+
+    private void replacePendingAi(String answer) {
+        String safe = answer == null ? "" : answer.trim();
+        if (safe.isEmpty()) safe = "I didn’t get a response. Please try again.";
+        int idx = pendingAiBubble == null ? -1 : chatMessages.indexOf(pendingAiBubble);
+        if (idx >= 0) {
+            chatMessages.set(idx, new ChatMessage(ChatMessage.Role.AI, safe));
+        } else {
+            chatMessages.add(new ChatMessage(ChatMessage.Role.AI, safe));
+        }
+        pendingAiBubble = null;
+        scrollChatToBottom();
+    }
+
+    private void setChatBusy(boolean busy, String status) {
+        if (chatSendButton != null) {
+            chatSendButton.setDisable(busy);
+        }
+        if (chatInputField != null) {
+            chatInputField.setDisable(busy);
+        }
+        if (chatStatusLabel != null) {
+            chatStatusLabel.setText(status == null ? "" : status);
+        }
+        if (chatFabButton != null) {
+            chatFabButton.setDisable(busy);
+            chatFabButton.setOpacity(busy ? 0.85 : 1.0);
+        }
+    }
+
+    private void scrollChatToBottom() {
+        if (chatListView == null) return;
+        int size = chatMessages.size();
+        if (size <= 0) return;
+        Platform.runLater(() -> chatListView.scrollTo(size - 1));
+    }
+
+    private void openChatAnimated() {
+        if (chatPanel == null) return;
+        applyChatSizeMode();
+        chatPanel.setManaged(true);
+        chatPanel.setVisible(true);
+        chatPanel.setOpacity(0);
+        chatPanel.setTranslateY(16);
+
+        FadeTransition fade = new FadeTransition(Duration.millis(170), chatPanel);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+
+        TranslateTransition slide = new TranslateTransition(Duration.millis(170), chatPanel);
+        slide.setFromY(16);
+        slide.setToY(0);
+
+        fade.play();
+        slide.play();
+    }
+
+    private void closeChatAnimated() {
+        if (chatPanel == null) return;
+        FadeTransition fade = new FadeTransition(Duration.millis(140), chatPanel);
+        fade.setFromValue(chatPanel.getOpacity());
+        fade.setToValue(0);
+
+        TranslateTransition slide = new TranslateTransition(Duration.millis(140), chatPanel);
+        slide.setFromY(chatPanel.getTranslateY());
+        slide.setToY(16);
+
+        fade.setOnFinished(e -> {
+            chatPanel.setVisible(false);
+            chatPanel.setManaged(false);
+            chatPanel.setOpacity(1);
+            chatPanel.setTranslateY(0);
+        });
+
+        fade.play();
+        slide.play();
+    }
+
+    private void applyChatSizeMode() {
+        if (chatPanel == null) return;
+        if (chatOverlay != null) {
+            StackPane.setAlignment(chatPanel, chatFullscreen ? Pos.CENTER : Pos.BOTTOM_RIGHT);
+            StackPane.setAlignment(chatFabButton, Pos.BOTTOM_RIGHT);
+        }
+        if (chatFullscreen) {
+            chatPanel.setPrefWidth(720);
+            chatPanel.setPrefHeight(720);
+            chatPanel.setMaxWidth(900);
+            chatPanel.setMaxHeight(900);
+        } else {
+            chatPanel.setPrefWidth(380);
+            chatPanel.setPrefHeight(520);
+            chatPanel.setMaxWidth(420);
+            chatPanel.setMaxHeight(620);
+        }
+    }
+
+    private final class ChatBubbleCell extends ListCell<ChatMessage> {
+        @Override
+        protected void updateItem(ChatMessage msg, boolean empty) {
+            super.updateItem(msg, empty);
+            if (empty || msg == null) {
+                setText(null);
+                setGraphic(null);
+                return;
+            }
+
+            TextFlow flow = new TextFlow();
+            double max = 320;
+            if (getListView() != null) {
+                max = Math.max(220, getListView().getWidth() * 0.78);
+            }
+            flow.setMaxWidth(max);
+            
+            // Professional Parsing (Bold, Italic, Bullets)
+            parseMarkdownToFlow(msg.getContent(), flow, msg.getRole() == ChatMessage.Role.USER);
+
+            VBox bubble = new VBox(flow);
+            bubble.getStyleClass().add(msg.getRole() == ChatMessage.Role.USER ? "studly-bubble-user" : "studly-bubble-ai");
+
+            HBox row = new HBox(bubble);
+            row.setAlignment(msg.getRole() == ChatMessage.Role.USER ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+            HBox.setHgrow(bubble, Priority.NEVER);
+            setGraphic(row);
+        }
+
+        private void parseMarkdownToFlow(String raw, TextFlow flow, boolean isUser) {
+            if (raw == null) return;
+            String text = raw.replace("\r\n", "\n").trim();
+            
+            // Simple regex based parsing for **bold**, *italic*, and bullets
+            String[] lines = text.split("\n");
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i];
+                if (line.trim().startsWith("* ") || line.trim().startsWith("- ")) {
+                    Text bullet = new Text("• ");
+                    bullet.getStyleClass().add(isUser ? "studly-bubble-text-user" : "studly-bubble-text");
+                    bullet.setStyle("-fx-font-weight: bold;");
+                    flow.getChildren().add(bullet);
+                    line = line.trim().substring(2);
+                }
+                
+                processLineWithStyles(line, flow, isUser);
+                
+                if (i < lines.length - 1) {
+                    flow.getChildren().add(new Text("\n"));
+                }
+            }
+        }
+
+        private void processLineWithStyles(String line, TextFlow flow, boolean isUser) {
+            // Regex for **bold** and *italic*
+            java.util.regex.Pattern p = java.util.regex.Pattern.compile("(\\*\\*.*?\\*\\*|\\*.*?\\*)");
+            java.util.regex.Matcher m = p.matcher(line);
+            int lastEnd = 0;
+            while (m.find()) {
+                if (m.start() > lastEnd) {
+                    addText(line.substring(lastEnd, m.start()), flow, isUser, false, false);
+                }
+                String match = m.group();
+                if (match.startsWith("**")) {
+                    addText(match.substring(2, match.length() - 2), flow, isUser, true, false);
+                } else {
+                    addText(match.substring(1, match.length() - 1), flow, isUser, false, true);
+                }
+                lastEnd = m.end();
+            }
+            if (lastEnd < line.length()) {
+                addText(line.substring(lastEnd), flow, isUser, false, false);
+            }
+        }
+
+        private void addText(String content, TextFlow flow, boolean isUser, boolean bold, boolean italic) {
+            Text t = new Text(content);
+            t.getStyleClass().add(isUser ? "studly-bubble-text-user" : "studly-bubble-text");
+            if (bold) t.setStyle(t.getStyle() + "-fx-font-weight: 900;");
+            if (italic) t.setStyle(t.getStyle() + "-fx-font-style: italic;");
+            flow.getChildren().add(t);
+        }
+    }
+
+    private static String formatForDisplay(String raw) {
+        if (raw == null) return "";
+        String s = raw.replace("\r\n", "\n").trim();
+
+        // Make markdown-ish headings/bullets look cleaner in a plain Label.
+        s = s.replaceAll("(?m)^#{2,6}\\s*", "");      // remove ### headings markers
+        s = s.replaceAll("(?m)^\\*\\s+", "• ");       // * bullet -> •
+        s = s.replaceAll("(?m)^-\\s+", "• ");         // - bullet -> •
+
+        // Prevent horizontal scrolling caused by very long tokens (URLs, code, etc.)
+        s = insertSoftBreaks(s, 26);
+
+        return s;
+    }
+
+    private static String insertSoftBreaks(String s, int chunk) {
+        if (s == null || s.isEmpty()) return "";
+        StringBuilder out = new StringBuilder(s.length() + 64);
+        int run = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            boolean breakable = Character.isWhitespace(c) || c == '/' || c == '-' || c == '_' || c == '.' || c == ',' || c == ';' || c == ':';
+            if (breakable) run = 0;
+            else run++;
+            out.append(c);
+            if (!breakable && run >= chunk) {
+                out.append('\u200B'); // zero-width space
+                run = 0;
+            }
+        }
+        return out.toString();
+    }
+
+    @FXML
+    public void summarizeCoursePdf() {
+        if (chatListView == null) return;
+        if (!chatService.hasApiKeyConfigured()) {
+            chatMessages.add(new ChatMessage(
+                    ChatMessage.Role.AI,
+                    "Studly AI is not configured yet.\n" +
+                    "Add your OpenRouter key in: src/main/resources/openrouter.properties\n" +
+                    "Example: openrouter.apiKey=sk-or-..."
+            ));
+            scrollChatToBottom();
+            return;
+        }
+        if (displayedCourse == null || displayedCourse.getCourse_file() == null || displayedCourse.getCourse_file().trim().isEmpty()) {
+            chatMessages.add(new ChatMessage(ChatMessage.Role.AI, "No course file attached. Add a PDF to this course to summarize it."));
+            scrollChatToBottom();
+            return;
+        }
+        File f = new File(displayedCourse.getCourse_file().trim());
+        if (!f.exists() || !f.isFile()) {
+            chatMessages.add(new ChatMessage(ChatMessage.Role.AI, "Course file not found on this device:\n" + f.getAbsolutePath()));
+            scrollChatToBottom();
+            return;
+        }
+        String name = f.getName().toLowerCase();
+        if (!name.endsWith(".pdf")) {
+            chatMessages.add(new ChatMessage(ChatMessage.Role.AI, "Summary is supported for PDF files only."));
+            scrollChatToBottom();
+            return;
+        }
+
+        setChatBusy(true, "Reading PDF...");
+        ChatMessage pending = new ChatMessage(ChatMessage.Role.AI, "Summarizing your PDF…");
+        chatMessages.add(pending);
+        pendingAiBubble = pending;
+        scrollChatToBottom();
+
+        String systemPrompt = buildSystemPrompt(displayedCourse);
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                String text = PdfTextExtractor.extractText(f, 35_000);
+                if (text.isBlank()) {
+                    return "I couldn’t extract text from this PDF. It looks like a scanned PDF (images). " +
+                           "To summarize scanned PDFs, we need OCR (e.g., Tesseract).";
+                }
+                String userPrompt =
+                        "Act as a Senior Academic Researcher and Pedagogical Expert. " +
+                        "Synthesize a highly professional, structured academic summary from the PDF content below.\n\n" +
+                        "Use the following professional structure:\n" +
+                        "1) **EXECUTIVE SUMMARY**: A high-level 2-3 sentence academic overview.\n" +
+                        "2) **STRATEGIC LEARNING OBJECTIVES**: What the student should master (3-5 items).\n" +
+                        "3) **CORE THEORETICAL FRAMEWORK**: Key concepts and their relationships.\n" +
+                        "4) **CRITICAL VOCABULARY**: Definitions of essential terms.\n" +
+                        "5) **EVALUATION PREPARATION**: 5 sophisticated exam questions ranging from application to synthesis.\n" +
+                        "6) **ACCELERATED REVISION SHEET**: A condensed 10-line mastery guide.\n\n" +
+                        "Maintain a formal, authoritative, and educational tone throughout. Use **bolding** for emphasis and *italics* for technical terms.\n\n" +
+                        "PDF content:\n" + text;
+
+                return chatService.chat(systemPrompt, userPrompt);
+            } catch (Exception e) {
+                return "Error: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
+            }
+        }).thenAccept(answer -> Platform.runLater(() -> {
+            replacePendingAi(answer);
+            setChatBusy(false, "");
+        }));
+    }
+
+    private static String buildSystemPrompt(Course course) {
+        String base =
+                "You are Studly AI, a highly capable academic assistant for students.\n" +
+                "Scope: Professional education, research, and study assistance.\n" +
+                "Core Directive: Always be helpful, detailed, and professional. If the user asks for a summary, synthesize one using the provided course data (notes, title, link).\n" +
+                "If the user asks something completely unrelated to education (e.g., politics, gossip), politely redirect them to academic topics.\n" +
+                "Language: Always reply in the same language as the user (e.g., French if they ask in French).";
+        if (course == null) {
+            return base;
+        }
+        String name = course.getName() != null ? course.getName().trim() : "";
+        String comment = course.getComment() != null ? course.getComment().trim() : "";
+        String link = course.getCourse_link() != null ? course.getCourse_link().trim() : "";
+
+        StringBuilder sb = new StringBuilder(base);
+        sb.append(" You are the dedicated assistant for this course.");
+        if (!name.isEmpty()) sb.append(" [COURSE TITLE]: ").append(name).append(".");
+        if (!comment.isEmpty()) sb.append(" [COURSE NOTES/CONTENT]: ").append(comment).append(".");
+        if (!link.isEmpty()) sb.append(" [REFERENCE LINK]: ").append(link).append(".");
+        sb.append(" You can use these notes to provide summaries, explain concepts, or answer questions. If the information is missing, use your general knowledge to assist the student while staying relevant to the course theme.");
+        return sb.toString();
     }
 
     private static String displayUpper(String value) {
@@ -623,12 +1098,20 @@ public class CourseDetailController extends BaseCourseController {
                 pdfWebView.setManaged(false);
                 pdfFxScroll.setVisible(true);
                 pdfFxScroll.setManaged(true);
+                if (pdfControlsBox != null) {
+                    pdfControlsBox.setVisible(true);
+                    pdfControlsBox.setManaged(true);
+                }
             } else {
                 pdfWebView.setVisible(true);
                 pdfWebView.setManaged(true);
                 if (pdfFxScroll != null) {
                     pdfFxScroll.setVisible(false);
                     pdfFxScroll.setManaged(false);
+                }
+                if (pdfControlsBox != null) {
+                    pdfControlsBox.setVisible(false);
+                    pdfControlsBox.setManaged(false);
                 }
             }
         } else {
@@ -637,6 +1120,10 @@ public class CourseDetailController extends BaseCourseController {
             if (pdfFxScroll != null) {
                 pdfFxScroll.setVisible(false);
                 pdfFxScroll.setManaged(false);
+            }
+            if (pdfControlsBox != null) {
+                pdfControlsBox.setVisible(false);
+                pdfControlsBox.setManaged(false);
             }
             if (filePlaceholderLabel != null) {
                 filePlaceholderLabel.setVisible(true);
@@ -973,22 +1460,88 @@ public class CourseDetailController extends BaseCourseController {
 
     @FXML
     public void handleTogglePreview() {
-        if (previewContentArea == null || togglePreviewBtn == null) {
-            return;
-        }
-        if (previewContentArea.isVisible()) {
-            previewContentArea.setVisible(false);
-            previewContentArea.setManaged(false);
-            togglePreviewBtn.setText("Show preview");
-        } else {
-            previewContentArea.setVisible(true);
-            previewContentArea.setManaged(true);
-            togglePreviewBtn.setText("Hide preview");
-            updateFilePreview(displayedCourse);
-            if (pdfFitMode != FitMode.NONE) {
-                Platform.runLater(this::applyFitModeNow);
+        if (previewContentArea != null && togglePreviewBtn != null) {
+            boolean visible = !previewContentArea.isVisible();
+            previewContentArea.setVisible(visible);
+            previewContentArea.setManaged(visible);
+            
+            if (pdfControlsBox != null) {
+                // Show controls if preview is visible AND we are using the PDFBox viewer
+                boolean usingPdfBox = pdfFxScroll != null && pdfFxScroll.isVisible();
+                pdfControlsBox.setVisible(visible && usingPdfBox);
+                pdfControlsBox.setManaged(visible && usingPdfBox);
+            }
+            
+            if (visible) {
+                togglePreviewBtn.setText("Hide preview");
+                updateFilePreview(displayedCourse);
+            } else {
+                togglePreviewBtn.setText("Show preview");
             }
         }
+    }
+
+
+
+    @FXML
+    public void handleReadAloud() {
+        if (displayedCourse == null || displayedCourse.getCourse_file() == null) return;
+        File file = new File(displayedCourse.getCourse_file());
+        if (!file.exists()) return;
+
+        if (mediaPlayer != null && mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+            mediaPlayer.stop();
+            if (ttsBtn != null) ttsBtn.setText("🔊");
+            return;
+        }
+
+        if (ttsBtn != null) {
+            ttsBtn.setDisable(true);
+            ttsBtn.setText("⌛");
+        }
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                // 1. Extract text
+                String text = PdfTextExtractor.extractText(file, 5000);
+                if (text == null || text.isBlank()) throw new Exception("No text found");
+
+                // 2. Call VoiceRSS
+                String lang = detectLanguage(text);
+                File audio = ttsService.speak(text, lang);
+
+                // 3. Play
+                Platform.runLater(() -> {
+                    try {
+                        Media hit = new Media(audio.toURI().toString());
+                        mediaPlayer = new MediaPlayer(hit);
+                        mediaPlayer.setOnEndOfMedia(() -> {
+                            if (ttsBtn != null) ttsBtn.setText("🔊");
+                            if (ttsBtn != null) ttsBtn.setDisable(false);
+                        });
+                        mediaPlayer.play();
+                        if (ttsBtn != null) ttsBtn.setText("⏹");
+                        if (ttsBtn != null) ttsBtn.setDisable(false);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        if (ttsBtn != null) ttsBtn.setText("🔊");
+                        if (ttsBtn != null) ttsBtn.setDisable(false);
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> {
+                    if (ttsBtn != null) ttsBtn.setText("🔊");
+                    if (ttsBtn != null) ttsBtn.setDisable(false);
+                });
+            }
+        });
+    }
+
+    private String detectLanguage(String text) {
+        String lower = text.toLowerCase();
+        if (lower.contains(" le ") || lower.contains(" la ") || lower.contains(" et ")) return "fr-fr";
+        return "en-us";
     }
 
     @FXML
@@ -1048,6 +1601,84 @@ public class CourseDetailController extends BaseCourseController {
                 stage.getScene().setRoot(root);
             }
         } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadQuizzes() {
+        if (displayedCourse == null || quizListContainer == null) return;
+        
+        try {
+            List<Activity> quizzes = activityService.recupererParCours(displayedCourse.getId());
+            // Filter only type "Quiz"
+            quizzes.removeIf(a -> !"Quiz".equalsIgnoreCase(a.getType()));
+            
+            Platform.runLater(() -> renderQuizCards(quizzes));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void renderQuizCards(List<Activity> quizzes) {
+        quizListContainer.getChildren().clear();
+        
+        if (quizzes.isEmpty()) {
+            if (noQuizLabel != null) quizListContainer.getChildren().add(noQuizLabel);
+            return;
+        }
+        
+        for (Activity q : quizzes) {
+            HBox card = new HBox(20);
+            card.setAlignment(Pos.CENTER_LEFT);
+            card.setStyle("-fx-background-color: rgba(255,255,255,0.03); -fx-background-radius: 12; -fx-padding: 15 20; -fx-border-color: rgba(255,255,255,0.05); -fx-border-radius: 12;");
+            
+            VBox info = new VBox(5);
+            Label title = new Label(q.getTitle());
+            title.setStyle("-fx-text-fill: #F8FAFC; -fx-font-weight: 800; -fx-font-size: 14px;");
+            
+            HBox meta = new HBox(10);
+            meta.setAlignment(Pos.CENTER_LEFT);
+            Label statusBadge = new Label(q.getStatus().toUpperCase());
+            String statusColor = "Completed".equalsIgnoreCase(q.getStatus()) ? "#10B981" : "#F59E0B";
+            statusBadge.setStyle("-fx-text-fill: " + statusColor + "; -fx-font-size: 10px; -fx-font-weight: 900; -fx-background-color: " + statusColor + "22; -fx-padding: 2 8; -fx-background-radius: 4;");
+            
+            Label score = new Label("Completed".equalsIgnoreCase(q.getStatus()) ? ("Score: " + q.getExpected_output()) : "Pending");
+            score.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 12px; -fx-font-weight: 600;");
+            
+            meta.getChildren().addAll(statusBadge, score);
+            info.getChildren().addAll(title, meta);
+            
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            
+            Button actionBtn = new Button("Completed".equalsIgnoreCase(q.getStatus()) ? "View Correction" : "Resume Quiz");
+            actionBtn.setStyle("-fx-background-color: " + ("Completed".equalsIgnoreCase(q.getStatus()) ? "rgba(99, 102, 241, 0.15)" : "#6366F1") + "; -fx-text-fill: " + ("Completed".equalsIgnoreCase(q.getStatus()) ? "#A5B4FC" : "white") + "; -fx-font-weight: 800; -fx-font-size: 12px; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand;");
+            
+            actionBtn.setOnAction(e -> openQuizActivity(q));
+            
+            card.getChildren().addAll(info, spacer, actionBtn);
+            
+            // Hover effect
+            card.setOnMouseEntered(e -> card.setStyle("-fx-background-color: rgba(255,255,255,0.06); -fx-background-radius: 12; -fx-padding: 15 20; -fx-border-color: rgba(99, 102, 241, 0.3); -fx-border-radius: 12; -fx-cursor: hand;"));
+            card.setOnMouseExited(e -> card.setStyle("-fx-background-color: rgba(255,255,255,0.03); -fx-background-radius: 12; -fx-padding: 15 20; -fx-border-color: rgba(255,255,255,0.05); -fx-border-radius: 12;"));
+
+            quizListContainer.getChildren().add(card);
+        }
+    }
+
+    private void openQuizActivity(Activity q) {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_quiz_generator.fxml"));
+            javafx.scene.Parent root = loader.load();
+            controllers.activities.QuizController controller = loader.getController();
+            controller.setQuizActivity(q);
+            
+            if (controllers.FrontendController.getInstance() != null) {
+                controllers.FrontendController.getInstance().loadContentNode(root);
+            } else {
+                rootPane.getScene().setRoot(root);
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

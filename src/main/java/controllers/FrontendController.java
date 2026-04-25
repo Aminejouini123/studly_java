@@ -13,8 +13,11 @@ import java.net.URL;
 
 public class FrontendController extends BaseCourseController {
 
-    @FXML
-    private Label dashboardNavLabel;
+    @FXML private Label dashboardNavLabel;
+    @FXML private Label planningNavLabel;
+    @FXML private Label coursesNavLabel;
+    @FXML private Label groupsNavLabel;
+    @FXML private StackPane contentHost;
 
     @FXML
     private Label planningNavLabel;
@@ -73,11 +76,29 @@ public class FrontendController extends BaseCourseController {
     }
 
     @FXML
-    private void showPlanning() {
+    public void showPlanning() {
         loadContent("/Gestion de temps/planning_dashboard.fxml");
         setActiveNav(planningNavLabel);
     }
 
+    @FXML
+    public void showGroups() {
+        loadContent("/gestion_group/groups_dashboard.fxml");
+        setActiveNav(groupsNavLabel);
+    }
+
+    @Override
+    public void goToCourses(javafx.event.Event event) {
+        loadContent("/gestion_cours/courses_body.fxml");
+        setActiveNav(coursesNavLabel);
+    }
+
+    @Override
+    public void goToDashboard(javafx.event.Event event) {
+        showDashboard();
+    }
+
+    @FXML
     public void showProfile() {
         loadContent("/getion_user/profile.fxml");
         setActiveNav(null); // No nav label for profile
@@ -124,6 +145,8 @@ public class FrontendController extends BaseCourseController {
     private void setActiveNav(Label activeLabel) {
         updateNavStyle(dashboardNavLabel, dashboardNavLabel == activeLabel);
         updateNavStyle(planningNavLabel, planningNavLabel == activeLabel);
+        updateNavStyle(coursesNavLabel, coursesNavLabel == activeLabel);
+        updateNavStyle(groupsNavLabel, groupsNavLabel != null && groupsNavLabel == activeLabel);
     }
 
     private void updateNavStyle(Label label, boolean active) {
