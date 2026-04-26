@@ -362,7 +362,7 @@ public class CourseAddController extends BaseCourseController {
     }
 
     @FXML
-    public void handleBack(javafx.event.Event event) {
+    public void handleBack(javafx.scene.input.MouseEvent event) {
         returnToCourses(event);
     }
 }

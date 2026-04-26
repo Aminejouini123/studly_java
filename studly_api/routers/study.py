@@ -29,12 +29,13 @@ def analyze_style(request: LearningStyleRequest):
 
 
 @router.get("/quiz/level/question")
-def get_level_question(subject: str, difficulty: str = "moyenne"):
+def get_level_question(subject: str, difficulty: str = "moyenne", previous_correct: bool = None):
     """
     Génère une question adaptive.
     difficulty : 'facile' | 'moyenne' | 'difficile'
+    previous_correct : true si bonne réponse, false si mauvaise, null si première question
     """
-    return ai_service.generate_level_question(subject, difficulty)
+    return ai_service.generate_level_question(subject, difficulty, previous_correct)
 
 
 @router.post("/quiz/level/estimate")

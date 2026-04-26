@@ -10,7 +10,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -166,6 +165,7 @@ public class EventListController {
         FlowPane actionsRow = new FlowPane();
         actionsRow.setHgap(8);
         actionsRow.setVgap(8);
+        
         Button motivationButton = new Button("Motivation");
         motivationButton.getStyleClass().add("event-motivation-button");
         motivationButton.setOnAction(actionEvent -> showMotivationDialog(event));
@@ -179,6 +179,14 @@ public class EventListController {
         deleteButton.setOnAction(actionEvent -> deleteEvent(event));
 
         actionsRow.getChildren().addAll(motivationButton, editButton, deleteButton);
+        
+        // Add "Voir Plan" button if event has a study plan
+        if ("Etude".equalsIgnoreCase(event.getType()) && event.getNotes() != null && !event.getNotes().trim().isEmpty()) {
+            Button viewPlanButton = new Button("Voir Plan");
+            viewPlanButton.getStyleClass().add("event-plan-button");
+            viewPlanButton.setOnAction(actionEvent -> showStudyPlan(event));
+            actionsRow.getChildren().add(0, viewPlanButton); // Add at the beginning
+        }
 
         card.getChildren().addAll(header, descriptionLabel, locationLabel, pillsRow, actionsRow);
         return card;
@@ -306,6 +314,45 @@ public class EventListController {
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalStateException("Unable to load motivation dialog.", e);
+        }
+    }
+
+    private void showStudyPlan(Event event) {
+        try {
+            // Parse the study plan from notes
+            org.json.JSONObject planJson = new org.json.JSONObject(event.getNotes());
+            
+            URL resource = getClass().getResource("/Gestion de temps/study_plan_result.fxml");
+            if (resource == null) {
+                throw new IllegalStateException("Missing FXML resource: /Gestion de temps/study_plan_result.fxml");
+            }
+
+            FXMLLoader loader = new FXMLLoader(resource);
+            AnchorPane content = loader.load();
+            StudyPlanResultController controller = loader.getController();
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.setTitle("Plan d'Étude - " + event.getTitle());
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(content);
+            stage.setScene(scene);
+            stage.setWidth(960);
+            stage.setHeight(600);
+
+            // Extract learning style and level from plan
+            String learningStyle = planJson.optString("style_apprentissage", "non déterminé");
+            String level = planJson.optString("niveau", "non estimé");
+            
+            controller.configure(event, planJson, learningStyle, level);
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText("Impossible d'afficher le plan d'étude.\n" + e.getMessage());
+            alert.showAndWait();
         }
     }
 

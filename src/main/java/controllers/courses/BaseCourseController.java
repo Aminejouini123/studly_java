@@ -1,5 +1,6 @@
 package controllers.courses;
 
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Node;
@@ -15,6 +16,7 @@ import models.User;
 import services.CourseService;
 import utils.SessionManager;
 import java.io.IOException;
+import java.net.URL;
 
 import controllers.BackendCourseController;
 
@@ -195,5 +197,9 @@ public abstract class BaseCourseController {
         valLabel.getStyleClass().add("stat-item-label");
         item.getChildren().addAll(icon, valLabel);
         return item;
+    }
+
+    protected void navigateToFrontendCourseList(Node source) {
+        controllers.FrontendController.getInstance().loadContent("/gestion_cours/courses_body.fxml");
     }
 }

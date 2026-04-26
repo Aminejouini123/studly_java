@@ -152,9 +152,7 @@ public class CourseListController extends BaseCourseController {
                 coursesContainer.setDisable(false);
             }
             updateCourseDisplay();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     // --- Core Logic: Search & Filter ---
