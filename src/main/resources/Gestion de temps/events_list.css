@@ -3,23 +3,40 @@
     -fx-font-family: "Segoe UI", Arial, sans-serif;
 }
 
-.events-title {
-    -fx-text-fill: #0f172a;
-    -fx-font-size: 28px;
-    -fx-font-weight: 800;
+/* ========================================
+   CONTENEUR PRINCIPAL - Empêche chevauchement
+   ======================================== */
+
+.events-list-container {
+    -fx-background-color: transparent;
 }
 
+/* ========================================
+   SECTION LISTE DES ÉVÉNEMENTS (sous les stats)
+   ======================================== */
+
+/* Titre principal - padding réduit car le conteneur a déjà du padding */
+.events-title {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 22px;
+    -fx-font-weight: 700;
+    -fx-letter-spacing: -0.5px;
+    -fx-padding: 0;
+}
+
+/* Sous-titre et badges - collés sous le titre */
 .events-subtitle {
     -fx-text-fill: #1F2937;
-    -fx-font-size: 14px;
-    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 0;
 }
 
 .filter-badge {
-    -fx-padding: 8 14;
+    -fx-padding: 6 12;
     -fx-background-radius: 999;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
 }
 
 .filter-badge-date {
@@ -39,6 +56,7 @@
     -fx-border-color: #d7e2ef;
     -fx-border-radius: 14;
     -fx-padding: 11 14;
+    -fx-font-size: 13px;
 }
 
 .events-search-field:focused,
@@ -58,51 +76,57 @@
 
 .empty-state {
     -fx-text-fill: #64748B;
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
     -fx-padding: 12 4;
 }
+
+/* ========================================
+   CARTES ÉVÉNEMENTS - Plus d'espace et ombre
+   ======================================== */
 
 .event-card {
     -fx-background-color: linear-gradient(to bottom right, #ffffff, #f7fbff 65%, #eef5ff);
     -fx-background-radius: 22;
     -fx-border-color: #dbe6f2;
     -fx-border-radius: 22;
-    -fx-padding: 22;
+    -fx-padding: 24;
     -fx-min-width: 340;
     -fx-max-width: 340;
-    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.08), 18, 0, 0, 6);
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.12), 22, 0, 0, 8);
 }
 
 .event-card-title {
-    -fx-text-fill: #18212F;
-    -fx-font-size: 18px;
-    -fx-font-weight: 800;
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-letter-spacing: -0.3px;
 }
 
 .event-date-badge {
     -fx-background-color: #F1F5F9;
-    -fx-text-fill: #64748B;
+    -fx-text-fill: #475569;
     -fx-background-radius: 999;
-    -fx-padding: 8 12;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
+    -fx-padding: 6 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
 }
 
 .event-description {
-    -fx-text-fill: #64748B;
-    -fx-font-size: 14px;
+    -fx-text-fill: #475569;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 1.5px;
 }
 
 .info-pill {
-    -fx-padding: 7 12;
+    -fx-padding: 6 11;
     -fx-background-radius: 999;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
 }
 
 .pill-neutral {
     -fx-background-color: #EEF2F7;
-    -fx-text-fill: #64748B;
+    -fx-text-fill: #475569;
 }
 
 .pill-priority {
@@ -116,17 +140,18 @@
 }
 
 .event-sessions {
-    -fx-text-fill: #FF5A36;
-    -fx-font-size: 14px;
-    -fx-font-weight: 800;
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
 }
 
 .event-motivation-button {
     -fx-background-color: linear-gradient(to right, #0b6cae, #15a8ea);
     -fx-text-fill: white;
     -fx-background-radius: 999;
-    -fx-padding: 10 16;
-    -fx-font-weight: 800;
+    -fx-padding: 9 15;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
     -fx-cursor: hand;
 }
 
@@ -134,12 +159,33 @@
     -fx-background-color: linear-gradient(to right, #0a5f99, #1298d2);
 }
 
+/* Pomodoro Button */
+.event-pomodoro-button {
+    -fx-background-color: linear-gradient(to right, #FF6B6B, #FF8E53);
+    -fx-text-fill: white;
+    -fx-background-radius: 999;
+    -fx-padding: 9 15;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+}
+
+.event-pomodoro-button:hover {
+    -fx-background-color: linear-gradient(to right, #EE5A52, #FF7A3D);
+}
+
+.event-pomodoro-button:pressed {
+    -fx-background-color: linear-gradient(to right, #DC4C43, #EE6A2D);
+    -fx-translate-y: 1;
+}
+
 .event-edit-button {
     -fx-background-color: linear-gradient(to right, #DBEAFE, #BFDBFE);
     -fx-text-fill: #0B63CE;
     -fx-background-radius: 999;
-    -fx-padding: 10 16;
-    -fx-font-weight: 800;
+    -fx-padding: 9 15;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
     -fx-cursor: hand;
 }
 
@@ -151,8 +197,9 @@
     -fx-background-color: linear-gradient(to right, #FECACA, #FBCFE8);
     -fx-text-fill: #C81E1E;
     -fx-background-radius: 999;
-    -fx-padding: 10 16;
-    -fx-font-weight: 800;
+    -fx-padding: 9 15;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
     -fx-cursor: hand;
 }
 
@@ -165,8 +212,8 @@
     -fx-background-color: linear-gradient(to right, #667eea, #764ba2);
     -fx-text-fill: white;
     -fx-font-size: 11px;
-    -fx-font-weight: 700;
-    -fx-padding: 7 14;
+    -fx-font-weight: 600;
+    -fx-padding: 7 13;
     -fx-background-radius: 10;
     -fx-cursor: hand;
     -fx-effect: dropshadow(three-pass-box, rgba(102, 126, 234, 0.3), 8, 0, 0, 2);
@@ -179,5 +226,85 @@
 
 .event-plan-button:pressed {
     -fx-background-color: linear-gradient(to right, #4a5bc4, #5d3680);
+    -fx-translate-y: 1;
+}
+
+/* ========================================
+   PAGINATION - Centrage parfait
+   ======================================== */
+
+.pagination-container {
+    -fx-padding: 15 0;
+    -fx-alignment: center;
+}
+
+.pagination-info {
+    -fx-text-fill: #475569;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-alignment: center;
+}
+
+.pagination-button {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f8fafc);
+    -fx-text-fill: #334155;
+    -fx-background-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 12;
+    -fx-padding: 9 18;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.05), 8, 0, 0, 2);
+}
+
+.pagination-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+    -fx-border-color: #cbd5e1;
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.1), 12, 0, 0, 3);
+}
+
+.pagination-button:pressed {
+    -fx-background-color: #e2e8f0;
+    -fx-translate-y: 1;
+}
+
+.pagination-button:disabled {
+    -fx-opacity: 0.4;
+    -fx-cursor: default;
+}
+
+.pagination-page-button {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f8fafc);
+    -fx-text-fill: #334155;
+    -fx-background-radius: 10;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 10;
+    -fx-padding: 7 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-min-width: 38;
+    -fx-pref-width: 38;
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.04), 6, 0, 0, 1);
+}
+
+.pagination-page-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #f1f5f9, #e2e8f0);
+    -fx-border-color: #cbd5e1;
+}
+
+.pagination-page-active {
+    -fx-background-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+    -fx-effect: dropshadow(three-pass-box, rgba(102, 126, 234, 0.4), 10, 0, 0, 3);
+}
+
+.pagination-page-active:hover {
+    -fx-background-color: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+}
+
+.pagination-page-button:pressed {
     -fx-translate-y: 1;
 }

@@ -61,6 +61,11 @@ public class PlanningDashboardController {
     }
 
     @FXML
+    private void showCalendarView() {
+        loadIntoHost("/Gestion de temps/calendar_view.fxml");
+    }
+
+    @FXML
     private void showAddEventForm() {
         loadIntoHost("/Gestion de temps/add_event.fxml");
     }
@@ -118,11 +123,15 @@ public class PlanningDashboardController {
         header.getChildren().addAll(title, spacer, date);
 
         HBox actionsRow = new HBox(12);
+        Button pomodoroButton = new Button("🍅 Pomodoro");
+        pomodoroButton.getStyleClass().add("planning-pomodoro-button");
+        pomodoroButton.setOnAction(actionEvent -> showPomodoroForm(event));
+        
         Button motivationButton = new Button("Motivation");
         motivationButton.getStyleClass().add("planning-motivation-button");
         motivationButton.setOnAction(actionEvent -> showMotivationForm(event));
 
-        actionsRow.getChildren().add(motivationButton);
+        actionsRow.getChildren().addAll(pomodoroButton, motivationButton);
         card.getChildren().addAll(header, description, metaRow, sessions, actionsRow);
         return new HBox(card);
     }
@@ -202,6 +211,35 @@ public class PlanningDashboardController {
                 alert.setContentText(msg);
                 alert.showAndWait();
             });
+        }
+    }
+
+    private void showPomodoroForm(Event event) {
+        try {
+            URL resource = getClass().getResource("/Gestion de temps/pomodoro.fxml");
+            if (resource == null) {
+                final String msg = "Missing FXML resource: /Gestion de temps/pomodoro.fxml";
+                System.err.println(msg);
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(resource);
+            javafx.scene.layout.StackPane content = loader.load();
+            PomodoroController controller = loader.getController();
+            controller.setEvent(event);
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.setTitle("🍅 Pomodoro - " + event.getTitle());
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(content);
+            stage.setScene(scene);
+            stage.setWidth(550);
+            stage.setHeight(650);
+
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

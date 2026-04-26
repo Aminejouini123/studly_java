@@ -18,21 +18,9 @@ public class FrontendController extends BaseCourseController {
     @FXML private Label coursesNavLabel;
     @FXML private Label groupsNavLabel;
     @FXML private StackPane contentHost;
-
-    @FXML
-    private Label planningNavLabel;
-
-    @FXML
-    private Label userNameLabel;
-
-    @FXML
-    private Label userRoleLabel;
-
-    @FXML
-    private Label avatarInitials;
-
-    @FXML
-    private StackPane contentHost;
+    @FXML private Label userNameLabel;
+    @FXML private Label userRoleLabel;
+    @FXML private Label avatarInitials;
 
     private static FrontendController instance;
 

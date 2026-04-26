@@ -4,6 +4,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -35,19 +36,20 @@ import java.util.stream.Collectors;
 
 public class EventListController {
 
-    @FXML
-    private TextField searchField;
-
-    @FXML
-    private ComboBox<String> sortComboBox;
-
-    @FXML
-    private FlowPane cardsContainer;
-
-    @FXML
-    private Label emptyStateLabel;
+    @FXML private TextField searchField;
+    @FXML private ComboBox<String> sortComboBox;
+    @FXML private FlowPane cardsContainer;
+    @FXML private Label emptyStateLabel;
+    @FXML private HBox paginationContainer;
+    @FXML private Label pageInfoLabel;
 
     private final ObservableList<Event> masterData = EventStore.getInstance().getEvents();
+    private List<Event> filteredEvents = new ArrayList<>();
+    
+    // Pagination
+    private static final int ITEMS_PER_PAGE = 6;
+    private int currentPage = 0;
+    private int totalPages = 0;
 
     @FXML
     private void initialize() {
@@ -60,15 +62,25 @@ public class EventListController {
         );
         sortComboBox.setValue("Date (Plus proche d'abord)");
 
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> refreshCards());
-        sortComboBox.valueProperty().addListener((observable, oldValue, newValue) -> refreshCards());
-        masterData.addListener((javafx.collections.ListChangeListener<Event>) change -> refreshCards());
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            currentPage = 0;
+            refreshCards();
+        });
+        sortComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            currentPage = 0;
+            refreshCards();
+        });
+        masterData.addListener((javafx.collections.ListChangeListener<Event>) change -> {
+            currentPage = 0;
+            refreshCards();
+        });
 
         refreshCards();
     }
 
     private void refreshCards() {
-        List<Event> filteredEvents = new ArrayList<>(masterData);
+        // Filter events
+        filteredEvents = new ArrayList<>(masterData);
         String filterText = searchField.getText();
 
         if (filterText != null && !filterText.trim().isEmpty()) {
@@ -78,16 +90,107 @@ public class EventListController {
                     .collect(Collectors.toList());
         }
 
+        // Sort events
         filteredEvents.sort(resolveComparator(sortComboBox.getValue()));
 
+        // Calculate pagination
+        totalPages = (int) Math.ceil((double) filteredEvents.size() / ITEMS_PER_PAGE);
+        if (totalPages == 0) totalPages = 1;
+        if (currentPage >= totalPages) currentPage = totalPages - 1;
+        if (currentPage < 0) currentPage = 0;
+
+        // Get current page items
+        int startIndex = currentPage * ITEMS_PER_PAGE;
+        int endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredEvents.size());
+        List<Event> pageEvents = filteredEvents.subList(startIndex, endIndex);
+
+        // Display cards
         cardsContainer.getChildren().setAll(
-                filteredEvents.stream()
+                pageEvents.stream()
                         .map(this::buildEventCard)
                         .collect(Collectors.toList())
         );
 
+        // Update pagination controls
+        updatePaginationControls();
+
+        // Show/hide empty state
         emptyStateLabel.setVisible(filteredEvents.isEmpty());
         emptyStateLabel.setManaged(filteredEvents.isEmpty());
+    }
+
+    private void updatePaginationControls() {
+        paginationContainer.getChildren().clear();
+        
+        if (filteredEvents.isEmpty()) {
+            paginationContainer.setVisible(false);
+            paginationContainer.setManaged(false);
+            return;
+        }
+
+        paginationContainer.setVisible(true);
+        paginationContainer.setManaged(true);
+        paginationContainer.setAlignment(Pos.CENTER);
+        paginationContainer.setSpacing(10);
+
+        // Previous button
+        Button prevBtn = new Button("◀ Précédent");
+        prevBtn.getStyleClass().add("pagination-button");
+        prevBtn.setDisable(currentPage == 0);
+        prevBtn.setOnAction(e -> {
+            if (currentPage > 0) {
+                currentPage--;
+                refreshCards();
+            }
+        });
+
+        // Page info
+        int startItem = currentPage * ITEMS_PER_PAGE + 1;
+        int endItem = Math.min((currentPage + 1) * ITEMS_PER_PAGE, filteredEvents.size());
+        pageInfoLabel.setText(String.format("Page %d sur %d  |  Événements %d-%d sur %d", 
+                currentPage + 1, totalPages, startItem, endItem, filteredEvents.size()));
+        pageInfoLabel.getStyleClass().add("pagination-info");
+
+        // Page number buttons (show max 5 pages)
+        HBox pageNumbers = new HBox(5);
+        pageNumbers.setAlignment(Pos.CENTER);
+        
+        int startPage = Math.max(0, currentPage - 2);
+        int endPage = Math.min(totalPages, startPage + 5);
+        
+        if (endPage - startPage < 5) {
+            startPage = Math.max(0, endPage - 5);
+        }
+
+        for (int i = startPage; i < endPage; i++) {
+            final int pageIndex = i;
+            Button pageBtn = new Button(String.valueOf(i + 1));
+            pageBtn.getStyleClass().add("pagination-page-button");
+            
+            if (i == currentPage) {
+                pageBtn.getStyleClass().add("pagination-page-active");
+            }
+            
+            pageBtn.setOnAction(e -> {
+                currentPage = pageIndex;
+                refreshCards();
+            });
+            
+            pageNumbers.getChildren().add(pageBtn);
+        }
+
+        // Next button
+        Button nextBtn = new Button("Suivant ▶");
+        nextBtn.getStyleClass().add("pagination-button");
+        nextBtn.setDisable(currentPage >= totalPages - 1);
+        nextBtn.setOnAction(e -> {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                refreshCards();
+            }
+        });
+
+        paginationContainer.getChildren().addAll(prevBtn, pageNumbers, nextBtn);
     }
 
     private boolean matchesFilter(Event event, String filter) {
@@ -166,6 +269,10 @@ public class EventListController {
         actionsRow.setHgap(8);
         actionsRow.setVgap(8);
         
+        Button pomodoroButton = new Button("🍅 Pomodoro");
+        pomodoroButton.getStyleClass().add("event-pomodoro-button");
+        pomodoroButton.setOnAction(actionEvent -> showPomodoroDialog(event));
+        
         Button motivationButton = new Button("Motivation");
         motivationButton.getStyleClass().add("event-motivation-button");
         motivationButton.setOnAction(actionEvent -> showMotivationDialog(event));
@@ -178,7 +285,7 @@ public class EventListController {
         deleteButton.getStyleClass().add("event-delete-button");
         deleteButton.setOnAction(actionEvent -> deleteEvent(event));
 
-        actionsRow.getChildren().addAll(motivationButton, editButton, deleteButton);
+        actionsRow.getChildren().addAll(pomodoroButton, motivationButton, editButton, deleteButton);
         
         // Add "Voir Plan" button if event has a study plan
         if ("Etude".equalsIgnoreCase(event.getType()) && event.getNotes() != null && !event.getNotes().trim().isEmpty()) {
@@ -314,6 +421,33 @@ public class EventListController {
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalStateException("Unable to load motivation dialog.", e);
+        }
+    }
+
+    private void showPomodoroDialog(Event event) {
+        try {
+            URL resource = getClass().getResource("/Gestion de temps/pomodoro.fxml");
+            if (resource == null) {
+                throw new IllegalStateException("Missing FXML resource: /Gestion de temps/pomodoro.fxml");
+            }
+
+            FXMLLoader loader = new FXMLLoader(resource);
+            VBox content = loader.load();
+            PomodoroController controller = loader.getController();
+            controller.setEvent(event);
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.setTitle("🍅 Pomodoro - " + event.getTitle());
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(content, 550, 650);
+            stage.setScene(scene);
+            stage.setResizable(false);
+
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Unable to load pomodoro dialog.", e);
         }
     }
 

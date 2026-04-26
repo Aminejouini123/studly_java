@@ -11,6 +11,8 @@ module studly.java {
     requires java.xml;
     requires java.net.http;
     requires com.fasterxml.jackson.databind;
+    requires org.json;
+    requires jdk.jsobject;
 
     // Open packages for FXML injection
     opens controllers to javafx.fxml;

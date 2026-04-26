@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.FlowPane?>
@@ -12,9 +11,11 @@
 
 <AnchorPane prefHeight="620.0" prefWidth="940.0" stylesheets="@events_list.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.gestiondetemps.EventListController">
    <children>
-      <VBox spacing="18.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox spacing="18.0" styleClass="events-list-container" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <padding>
+            <Insets top="20.0" />
+         </padding>
          <children>
-            <Label styleClass="events-title" text="Liste des événements" />
             <HBox alignment="CENTER_LEFT" spacing="14.0">
                <children>
                   <Label styleClass="events-subtitle" text="Vos événements" />
@@ -28,19 +29,28 @@
                   <ComboBox fx:id="sortComboBox" prefWidth="240.0" styleClass="events-sort-box" />
                </children>
             </HBox>
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="events-scroll" VBox.vgrow="ALWAYS">
-               <content>
-                  <VBox spacing="16.0">
-                     <padding>
-                        <Insets bottom="10.0" top="4.0" />
-                     </padding>
-                     <children>
-                        <Label fx:id="emptyStateLabel" managed="false" styleClass="empty-state" text="Aucun événement trouvé." visible="false" />
-                        <FlowPane fx:id="cardsContainer" hgap="18.0" prefWrapLength="900.0" vgap="18.0" />
-                     </children>
-                  </VBox>
-               </content>
-            </ScrollPane>
+            
+            <!-- Cards Container (no ScrollPane) -->
+            <VBox spacing="16.0" VBox.vgrow="ALWAYS">
+               <padding>
+                  <Insets bottom="10.0" top="12.0" />
+               </padding>
+               <children>
+                  <Label fx:id="emptyStateLabel" managed="false" styleClass="empty-state" text="Aucun événement trouvé." visible="false" />
+                  <FlowPane fx:id="cardsContainer" hgap="24.0" prefWrapLength="900.0" vgap="24.0" VBox.vgrow="ALWAYS" />
+               </children>
+            </VBox>
+            
+            <!-- Pagination Controls -->
+            <VBox spacing="12.0" alignment="CENTER">
+               <children>
+                  <Label fx:id="pageInfoLabel" styleClass="pagination-info" text="Page 1 sur 1" />
+                  <HBox fx:id="paginationContainer" alignment="CENTER" spacing="10.0" styleClass="pagination-container" />
+               </children>
+               <padding>
+                  <Insets top="10.0" bottom="10.0" />
+               </padding>
+            </VBox>
          </children>
       </VBox>
    </children>

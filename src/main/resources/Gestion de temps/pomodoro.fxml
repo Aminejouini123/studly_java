@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="mainContainer" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="controllers.gestiondetemps.PomodoroController"
+      minWidth="550" minHeight="650" prefWidth="550" prefHeight="650">
+</VBox>
