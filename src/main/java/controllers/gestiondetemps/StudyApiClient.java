@@ -17,9 +17,12 @@ import java.time.LocalDate;
 public class StudyApiClient {
 
     private static final String API_BASE = "http://127.0.0.1:8000";
-    private static final HttpClient HTTP = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(5))
-            .build();
+    
+    private HttpClient createClient() {
+        return HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+    }
 
     public JSONArray getLearningStyleQuestions() throws Exception {
         JSONObject response = sendGet("/study/quiz/learning-style/questions");
@@ -64,7 +67,8 @@ public class StudyApiClient {
                 .timeout(Duration.ofSeconds(15))
                 .GET()
                 .build();
-        return parseResponse(HTTP.send(request, HttpResponse.BodyHandlers.ofString()), path);
+        HttpClient client = createClient();
+        return parseResponse(client.send(request, HttpResponse.BodyHandlers.ofString()), path);
     }
 
     private JSONObject sendPost(String path, JSONObject payload) throws Exception {
@@ -75,7 +79,8 @@ public class StudyApiClient {
                 .timeout(Duration.ofSeconds(15))
                 .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
                 .build();
-        return parseResponse(HTTP.send(request, HttpResponse.BodyHandlers.ofString()), path);
+        HttpClient client = createClient();
+        return parseResponse(client.send(request, HttpResponse.BodyHandlers.ofString()), path);
     }
 
     private JSONObject parseResponse(HttpResponse<String> response, String path) throws Exception {

@@ -1,4 +1,4 @@
-package controllers;
+package controllers.user_controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

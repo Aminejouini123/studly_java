@@ -254,24 +254,53 @@ public class StudyQuizController {
             JSONObject plan = result.getJSONObject("plan");
             event.setNotes(plan.toString(2));
             EventStore.getInstance().addEvent(event);
-            openPlanResultScreen(plan);
+            
+            // Show success message
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Succès");
+            alert.setHeaderText("Plan d'étude généré !");
+            alert.setContentText("Votre plan d'étude personnalisé a été créé.\nVous pouvez le consulter en cliquant sur 'Voir Plan' dans la liste des événements.");
+            alert.showAndWait();
+            
+            // Return to events list
+            loadScreen("/Gestion de temps/events_list.fxml");
         }));
     }
 
     private void openPlanResultScreen(JSONObject plan) {
         try {
+            System.out.println("=== Opening Plan Result Screen ===");
+            System.out.println("Plan JSON: " + plan.toString(2));
+            System.out.println("Learning Style: " + learningStyle);
+            System.out.println("Estimated Level: " + estimatedLevel);
+            
             URL resource = getClass().getResource("/Gestion de temps/study_plan_result.fxml");
             if (resource == null) {
                 throw new IOException("Missing FXML resource: /Gestion de temps/study_plan_result.fxml");
             }
 
+            System.out.println("FXML Resource found: " + resource);
+            
             FXMLLoader loader = new FXMLLoader(resource);
             Parent content = loader.load();
+            System.out.println("FXML loaded successfully");
+            
             StudyPlanResultController controller = loader.getController();
+            System.out.println("Controller obtained: " + controller);
+            
             controller.configure(event, plan, learningStyle, estimatedLevel);
+            System.out.println("Controller configured");
+            
             replaceCurrentContent(content);
+            System.out.println("Content replaced successfully");
         } catch (IOException e) {
+            System.err.println("Error opening plan result screen: " + e.getMessage());
+            e.printStackTrace();
             showError(e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
+            e.printStackTrace();
+            showError("Erreur inattendue: " + e.getMessage());
         }
     }
 

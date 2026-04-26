@@ -64,7 +64,12 @@
                         <TextField fx:id="endTimeField" promptText="Ex: 11:30" styleClass="form-field" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
                         <Label styleClass="form-label" text="Lieu" GridPane.rowIndex="5" />
-                        <TextField fx:id="locationField" promptText="Rechercher un lieu avec la carte..." styleClass="form-field" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                           <children>
+                              <TextField fx:id="locationField" promptText="Rechercher un lieu avec la carte..." styleClass="form-field" HBox.hgrow="ALWAYS" />
+                              <Button fx:id="mapButton" onAction="#handleOpenMap" styleClass="map-button" text="🗺️" />
+                           </children>
+                        </HBox>
 
                         <Label styleClass="form-label" text="Priorite" GridPane.rowIndex="6" />
                         <ComboBox fx:id="priorityComboBox" prefWidth="420.0" promptText="Niveau de priorite" styleClass="form-field form-combo" GridPane.columnIndex="1" GridPane.rowIndex="6">

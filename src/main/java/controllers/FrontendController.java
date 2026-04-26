@@ -66,6 +66,10 @@ public class FrontendController extends BaseCourseController {
         loadUserInfo();
     }
 
+    private void loadUserInfo() {
+        refreshUserHeader();
+    }
+
     @FXML
     private void showDashboard() {
         contentHost.getChildren().clear();
@@ -73,7 +77,7 @@ public class FrontendController extends BaseCourseController {
     }
 
     @FXML
-    private void showPlanning() {
+    public void showPlanning() {
         loadContent("/Gestion de temps/planning_dashboard.fxml");
         setActiveNav(planningNavLabel);
     }
@@ -88,7 +92,7 @@ public class FrontendController extends BaseCourseController {
         setActiveNav(null);
     }
 
-    private void loadContent(String resourcePath) {
+    public void loadContent(String resourcePath) {
         try {
             URL resource = getClass().getResource(resourcePath);
             if (resource == null) {
@@ -119,6 +123,10 @@ public class FrontendController extends BaseCourseController {
             r.setMaxHeight(Double.MAX_VALUE);
         }
         contentHost.getChildren().setAll(content);
+    }
+
+    public void navigateToFrontendCourseList(Node source) {
+        loadContent("/gestion_cours/courses_body.fxml");
     }
 
     private void setActiveNav(Label activeLabel) {

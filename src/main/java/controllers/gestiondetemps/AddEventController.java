@@ -5,13 +5,17 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import models.Event;
 import services.EventStore;
 
@@ -36,6 +40,7 @@ public class AddEventController {
     @FXML private TextField startTimeField;
     @FXML private TextField endTimeField;
     @FXML private TextField locationField;
+    @FXML private Button mapButton;
     @FXML private ComboBox<String> priorityComboBox;
     @FXML private TextArea descriptionArea;
     @FXML private TextField reminderField;
@@ -78,6 +83,33 @@ public class AddEventController {
     @FXML
     private void handleCancel(ActionEvent actionEvent) {
         loadScreen("/Gestion de temps/events_list.fxml");
+    }
+
+    @FXML
+    private void handleOpenMap(ActionEvent actionEvent) {
+        try {
+            URL resource = getClass().getResource("/Gestion de temps/map_picker.fxml");
+            if (resource == null) {
+                throw new IOException("Missing FXML resource: /Gestion de temps/map_picker.fxml");
+            }
+
+            FXMLLoader loader = new FXMLLoader(resource);
+            Parent mapRoot = loader.load();
+            MapPickerController mapController = loader.getController();
+
+            mapController.setCallback((name, lat, lng) -> {
+                locationField.setText(name);
+            });
+
+            Stage mapStage = new Stage();
+            mapStage.setTitle("Sélectionner un Lieu");
+            mapStage.initModality(Modality.APPLICATION_MODAL);
+            Scene scene = new Scene(mapRoot, 750, 650);
+            mapStage.setScene(scene);
+            mapStage.showAndWait();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la carte: " + e.getMessage());
+        }
     }
 
     private void openStudyQuizFlow(Event event) {
@@ -156,43 +188,77 @@ public class AddEventController {
 
     private boolean validateInput() {
         StringBuilder err = new StringBuilder();
+        
+        // Titre obligatoire
         if (titleField.getText() == null || titleField.getText().trim().isEmpty()) {
             err.append("- Le titre est obligatoire.\n");
         }
-        if (typeComboBox.getValue() == null) {
+        
+        // Type obligatoire
+        if (typeComboBox.getValue() == null || typeComboBox.getValue().trim().isEmpty()) {
             err.append("- Le type est obligatoire.\n");
         }
+        
+        // Date obligatoire
         if (datePicker.getValue() == null) {
             err.append("- La date est obligatoire.\n");
         } else if (datePicker.getValue().isBefore(LocalDate.now())) {
             err.append("- La date ne peut pas etre dans le passe.\n");
         }
 
-        boolean startOk = startTimeField.getText().trim().isEmpty()
-                || startTimeField.getText().trim().matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$");
-        boolean endOk = endTimeField.getText().trim().isEmpty()
-                || endTimeField.getText().trim().matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$");
-
-        if (!startOk) {
-            err.append("- Heure de debut invalide (HH:mm).\n");
-        }
-        if (!endOk) {
-            err.append("- Heure de fin invalide (HH:mm).\n");
+        // Heure de début obligatoire
+        String startTime = startTimeField.getText().trim();
+        if (startTime.isEmpty()) {
+            err.append("- L'heure de debut est obligatoire.\n");
+        } else if (!startTime.matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")) {
+            err.append("- Heure de debut invalide (format HH:mm).\n");
         }
 
-        if (startOk && endOk
-                && !startTimeField.getText().trim().isEmpty()
-                && !endTimeField.getText().trim().isEmpty()) {
-            if (!parseTime(endTimeField.getText().trim()).isAfter(parseTime(startTimeField.getText().trim()))) {
-                err.append("- L'heure de fin doit etre apres l'heure de debut.\n");
+        // Heure de fin obligatoire
+        String endTime = endTimeField.getText().trim();
+        if (endTime.isEmpty()) {
+            err.append("- L'heure de fin est obligatoire.\n");
+        } else if (!endTime.matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")) {
+            err.append("- Heure de fin invalide (format HH:mm).\n");
+        }
+
+        // Vérifier que l'heure de fin est après l'heure de début
+        if (!startTime.isEmpty() && !endTime.isEmpty() && 
+            startTime.matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$") && 
+            endTime.matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")) {
+            try {
+                LocalTime start = parseTime(startTime);
+                LocalTime end = parseTime(endTime);
+                if (!end.isAfter(start)) {
+                    err.append("- L'heure de fin doit etre apres l'heure de debut.\n");
+                }
+            } catch (DateTimeParseException e) {
+                err.append("- Format d'heure invalide.\n");
             }
         }
 
-        if (!reminderField.getText().trim().isEmpty()) {
+        // Lieu obligatoire
+        if (locationField.getText() == null || locationField.getText().trim().isEmpty()) {
+            err.append("- Le lieu est obligatoire.\n");
+        }
+
+        // Priorité obligatoire
+        if (priorityComboBox.getValue() == null || priorityComboBox.getValue().trim().isEmpty()) {
+            err.append("- La priorite est obligatoire.\n");
+        }
+
+        // Rappel obligatoire et doit être un nombre
+        String reminder = reminderField.getText().trim();
+        if (reminder.isEmpty()) {
+            err.append("- Le rappel est obligatoire.\n");
+        } else {
             try {
-                Integer.parseInt(reminderField.getText().trim());
+                int reminderValue = Integer.parseInt(reminder);
+                if (reminderValue < 0) {
+                    err.append("- Le rappel doit etre un nombre positif.\n");
+                }
             } catch (NumberFormatException e) {
-                err.append("- Le rappel doit etre un entier.\n");
+                err.append("- Le rappel doit etre un nombre entier.\n");
             }
         }
 
