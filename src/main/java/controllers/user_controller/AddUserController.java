@@ -51,7 +51,7 @@ public class AddUserController {
         newUser.setFirst_name(firstName);
         newUser.setLast_name(lastName);
         newUser.setEmail(email);
-        newUser.setPassword(password);
+        newUser.setPassword(utils.PasswordUtil.hash(password));
         newUser.setRoles("[\"" + role + "\"]");
         newUser.setStatut("Active");
         newUser.setIs_verified(1);

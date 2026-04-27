@@ -53,6 +53,12 @@ public class ExamListController extends BaseExamController {
     private List<Exam> allExams = new ArrayList<>();
     private final ExamService examService = new ExamService();
 
+    private boolean fromBackend = false;
+
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
+    }
+
     @FXML
     public void initialize() {
         if (statusFilter != null) {

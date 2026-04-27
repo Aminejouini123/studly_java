@@ -7,6 +7,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Circle;
+import models.User;
+import utils.SessionManager;
 
 import java.io.IOException;
 import java.net.URL;
@@ -21,8 +24,14 @@ public class FrontendController extends BaseCourseController {
     @FXML private Label userNameLabel;
     @FXML private Label userRoleLabel;
     @FXML private Label avatarInitials;
+    @FXML private Circle avatarCircle; // Linked to Circle in FXML
+    @FXML private Circle profileAvatar; // Alias for consistency if needed
 
     private static FrontendController instance;
+
+    public FrontendController() {
+        instance = this;
+    }
 
     public static FrontendController getInstance() {
         return instance;
@@ -36,34 +45,61 @@ public class FrontendController extends BaseCourseController {
     }
 
     public void refreshUserInfo() {
-        models.User user = utils.SessionManager.getCurrentUser();
-        if (user != null) {
-            String firstName = user.getFirst_name() != null ? user.getFirst_name() : "";
-            String lastName = user.getLast_name() != null ? user.getLast_name() : "";
-            userNameLabel.setText(firstName + " " + lastName);
-            
-            String roles = user.getRoles() != null ? user.getRoles() : "Member";
-            userRoleLabel.setText(roles.contains("ROLE_ADMIN") ? "Administrator" : "Student");
-            
+        User user = SessionManager.getCurrentUser();
+        if (user == null) return;
+
+        String firstName = user.getFirst_name() != null ? user.getFirst_name() : "";
+        String lastName = user.getLast_name() != null ? user.getLast_name() : "";
+        String fullName = (firstName + " " + lastName).trim();
+        
+        if (userNameLabel != null) {
+            userNameLabel.setText(fullName.isEmpty() ? "User" : fullName);
+        }
+
+        if (userRoleLabel != null) {
+            String roles = user.getRoles() != null ? user.getRoles() : "";
+            if (roles.contains("ROLE_ADMIN")) {
+                userRoleLabel.setText("Administrator");
+            } else if (roles.contains("ROLE_TEACHER")) {
+                userRoleLabel.setText("Teacher");
+            } else {
+                userRoleLabel.setText("Student");
+            }
+        }
+
+        if (avatarInitials != null) {
             String initials = "";
             if (!firstName.isEmpty()) initials += firstName.substring(0, 1).toUpperCase();
             if (!lastName.isEmpty()) initials += lastName.substring(0, 1).toUpperCase();
-            avatarInitials.setText(initials);
+            avatarInitials.setText(initials.isEmpty() ? "U" : initials);
+        }
+        
+        // Set profile avatar color based on role
+        Circle targetCircle = avatarCircle != null ? avatarCircle : profileAvatar;
+        if (targetCircle != null) {
+            String roles = user.getRoles() != null ? user.getRoles() : "";
+            if (roles.contains("ROLE_ADMIN")) {
+                targetCircle.setStyle("-fx-fill: #ef4444;");
+            } else if (roles.contains("ROLE_TEACHER")) {
+                targetCircle.setStyle("-fx-fill: #f59e0b;");
+            } else {
+                targetCircle.setStyle("-fx-fill: #004fb0;");
+            }
         }
     }
 
-    // Called after profile edits to refresh header UI.
+    /**
+     * @deprecated Use refreshUserInfo()
+     */
     public void refreshUserHeader() {
-        loadUserInfo();
-    }
-
-    private void loadUserInfo() {
-        refreshUserHeader();
+        refreshUserInfo();
     }
 
     @FXML
     private void showDashboard() {
-        contentHost.getChildren().clear();
+        if (contentHost != null) {
+            contentHost.getChildren().clear();
+        }
         setActiveNav(dashboardNavLabel);
     }
 
@@ -76,6 +112,12 @@ public class FrontendController extends BaseCourseController {
     @FXML
     public void showGroups() {
         loadContent("/gestion_group/groups_dashboard.fxml");
+        setActiveNav(groupsNavLabel);
+    }
+
+    @FXML
+    public void showInvitations() {
+        loadContent("/gestion_group/invitations_inbox.fxml");
         setActiveNav(groupsNavLabel);
     }
 
@@ -110,18 +152,15 @@ public class FrontendController extends BaseCourseController {
             }
 
             Node content = FXMLLoader.load(resource);
-            System.out.println("FrontendController: loaded content for " + resourcePath + ", nodes=" + (content == null ? "null" : content.getClass().getSimpleName()));
-            contentHost.getChildren().setAll(content);
+            if (contentHost != null) {
+                contentHost.getChildren().setAll(content);
+            }
         } catch (IOException e) {
+            System.err.println("Error loading FXML content: " + resourcePath);
             e.printStackTrace();
         }
     }
 
-    /**
-     * Show an already-built node inside the dashboard (keeps nav/header).
-     * Do not use {@code TOP_LEFT} alignment here: with that alignment, StackPane keeps the child's
-     * preferred size only, so detail views inside the ScrollPane often appear blank or a thin strip.
-     */
     public void loadContentNode(Node content) {
         if (contentHost == null || content == null) {
             return;
@@ -146,14 +185,8 @@ public class FrontendController extends BaseCourseController {
     }
 
     private void updateNavStyle(Label label, boolean active) {
-        if (label == null) {
-            return;
-        }
-
+        if (label == null) return;
         label.getStyleClass().removeAll("nav-link", "nav-link-active");
         label.getStyleClass().add(active ? "nav-link-active" : "nav-link");
     }
-
-    // Navigation methods are inherited from BaseCourseController
-    // but we can override or add dashboard-specific ones here
 }

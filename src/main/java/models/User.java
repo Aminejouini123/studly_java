@@ -6,7 +6,7 @@ public class User {
     private int is_verified;
     private String verification_code;
     private String email;
-    private String roles;
+    private Role role;  // Changed from String roles to Role object
     private String password;
     private String first_name;
     private String last_name;
@@ -29,12 +29,12 @@ public class User {
 
     public User() {}
 
-    public User(String google_id, int is_verified, String verification_code, String email, String roles, String password, String first_name, String last_name, java.sql.Date date_of_birth, String phone_number, String address, java.sql.Timestamp created_at, java.sql.Timestamp updated_at, String statut, String profile_picture, String education_level, String job_title, String website, String bio, String skills, int score, String google_access_token, String google_refresh_token, java.sql.Timestamp google_token_expires_at) {
+    public User(String google_id, int is_verified, String verification_code, String email, Role role, String password, String first_name, String last_name, java.sql.Date date_of_birth, String phone_number, String address, java.sql.Timestamp created_at, java.sql.Timestamp updated_at, String statut, String profile_picture, String education_level, String job_title, String website, String bio, String skills, int score, String google_access_token, String google_refresh_token, java.sql.Timestamp google_token_expires_at) {
         this.google_id = google_id;
         this.is_verified = is_verified;
         this.verification_code = verification_code;
         this.email = email;
-        this.roles = roles;
+        this.role = role;
         this.password = password;
         this.first_name = first_name;
         this.last_name = last_name;
@@ -56,13 +56,13 @@ public class User {
         this.google_token_expires_at = google_token_expires_at;
     }
 
-    public User(int id, String google_id, int is_verified, String verification_code, String email, String roles, String password, String first_name, String last_name, java.sql.Date date_of_birth, String phone_number, String address, java.sql.Timestamp created_at, java.sql.Timestamp updated_at, String statut, String profile_picture, String education_level, String job_title, String website, String bio, String skills, int score, String google_access_token, String google_refresh_token, java.sql.Timestamp google_token_expires_at) {
+    public User(int id, String google_id, int is_verified, String verification_code, String email, Role role, String password, String first_name, String last_name, java.sql.Date date_of_birth, String phone_number, String address, java.sql.Timestamp created_at, java.sql.Timestamp updated_at, String statut, String profile_picture, String education_level, String job_title, String website, String bio, String skills, int score, String google_access_token, String google_refresh_token, java.sql.Timestamp google_token_expires_at) {
         this.id = id;
         this.google_id = google_id;
         this.is_verified = is_verified;
         this.verification_code = verification_code;
         this.email = email;
-        this.roles = roles;
+        this.role = role;
         this.password = password;
         this.first_name = first_name;
         this.last_name = last_name;
@@ -94,8 +94,33 @@ public class User {
     public void setVerification_code(String verification_code) { this.verification_code = verification_code; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
-    public String getRoles() { return roles; }
-    public void setRoles(String roles) { this.roles = roles; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+    
+    /**
+     * Backward compatibility method - returns role name as string
+     */
+    public String getRoles() {
+        return role != null ? role.getRoleName() : "ROLE_USER";
+    }
+    
+    /**
+     * Backward compatibility method - sets role from role name string
+     */
+    public void setRoles(String roleString) {
+        if (roleString != null) {
+            if (roleString.contains("ADMIN")) {
+                this.role = new Admin();
+            } else if (roleString.contains("TEACHER")) {
+                this.role = new Teacher();
+            } else {
+                this.role = new Student();
+            }
+        } else {
+            this.role = new Student();
+        }
+    }
+    
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
     public String getFirst_name() { return first_name; }
@@ -143,7 +168,7 @@ public class User {
  + ", is_verified=" + is_verified
  + ", verification_code=" + verification_code
  + ", email=" + email
- + ", roles=" + roles
+ + ", role=" + role
  + ", password=" + password
  + ", first_name=" + first_name
  + ", last_name=" + last_name

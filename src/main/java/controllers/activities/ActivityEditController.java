@@ -19,12 +19,23 @@ public class ActivityEditController extends BaseActivityController {
     private Course currentCourse;
     private Activity currentActivity;
     private final ActivityService activityService = new ActivityService();
+    private boolean fromBackend = false;
+    private controllers.backend.BackendActivityController backendController;
+
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
+    }
+
+    public void setBackendController(controllers.backend.BackendActivityController controller) {
+        this.backendController = controller;
+    }
+
     public void setActivity(Activity activity) {
         this.currentActivity = activity;
         this.currentCourse = null;
         populateFields(activity);
     }
-    
+
     public void setActivity(Activity activity, Course course) {
         this.currentActivity = activity;
         this.currentCourse = course;
@@ -95,26 +106,30 @@ public class ActivityEditController extends BaseActivityController {
         navigateToActivityList(updateBtn, currentCourse);
     }
 
-
     private void hideErrors() {
-        if (titleError != null) {
-            titleError.setVisible(false); titleError.setManaged(false); titleField.setStyle("");
-            typeError.setVisible(false); typeError.setManaged(false); typeComboBox.setStyle("");
-            statusError.setVisible(false); statusError.setManaged(false); statusComboBox.setStyle("");
-            difficultyError.setVisible(false); difficultyError.setManaged(false); difficultyComboBox.setStyle("");
-            levelError.setVisible(false); levelError.setManaged(false); levelComboBox.setStyle("");
-            descriptionError.setVisible(false); descriptionError.setManaged(false); descriptionArea.setStyle("");
-            instructionsError.setVisible(false); instructionsError.setManaged(false); instructionsArea.setStyle("");
-            outputError.setVisible(false); outputError.setManaged(false); outputArea.setStyle("");
-            hintsError.setVisible(false); hintsError.setManaged(false); hintsArea.setStyle("");
+        Label[] labels = {titleError, typeError, statusError, durationError, difficultyError, levelError, descriptionError, instructionsError, outputError, hintsError};
+        Control[] fields = {titleField, typeComboBox, statusComboBox, durationField, difficultyComboBox, levelComboBox, descriptionArea, instructionsArea, outputArea, hintsArea};
+        
+        for (int i = 0; i < labels.length; i++) {
+            if (labels[i] != null) {
+                labels[i].setVisible(false);
+                labels[i].setManaged(false);
+            }
+            if (fields[i] != null) {
+                fields[i].setStyle("");
+            }
         }
     }
 
     private void showError(Label errorLabel, javafx.scene.control.Control field, String message) {
-        errorLabel.setText(message);
-        errorLabel.setVisible(true);
-        errorLabel.setManaged(true);
-        field.setStyle("-fx-border-color: transparent transparent #ef4444 transparent; -fx-border-width: 0 0 2 0;");
+        if (errorLabel != null) {
+            errorLabel.setText(message);
+            errorLabel.setVisible(true);
+            errorLabel.setManaged(true);
+        }
+        if (field != null) {
+            field.setStyle("-fx-border-color: transparent transparent #ef4444 transparent; -fx-border-width: 0 0 2 0;");
+        }
     }
 
     private boolean validateInput() {
@@ -185,5 +200,4 @@ public class ActivityEditController extends BaseActivityController {
             fileField.setText(selectedFile.getAbsolutePath());
         }
     }
-
 }

@@ -237,7 +237,11 @@ public class BackendActivityController {
             javafx.scene.Parent formRoot = loader.load();
             controllers.activities.ActivityEditController controller = loader.getController();
             controller.setFromBackend(true);
-            controller.setActivity(activity);
+            if (filteredCourse != null) {
+                controller.setActivity(activity, filteredCourse);
+            } else {
+                controller.setActivity(activity, new Course());
+            }
             controller.setBackendController(this);
             
             if (activitiesTable.getScene() != null) {

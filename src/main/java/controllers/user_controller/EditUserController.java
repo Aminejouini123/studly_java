@@ -70,7 +70,7 @@ public class EditUserController {
         
         // Only update password if a new one is provided
         if (!password.isEmpty()) {
-            currentUser.setPassword(password);
+            currentUser.setPassword(utils.PasswordUtil.hash(password));
         }
         
         currentUser.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
