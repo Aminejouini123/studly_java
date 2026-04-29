@@ -190,18 +190,18 @@ public class Sign_upController {
         if (hasError) return;
 
         User newUser = new User();
-        newUser.setFirst_name(firstName);
-        newUser.setLast_name(lastName);
+        newUser.setFirstName(firstName);
+        newUser.setLastName(lastName);
         newUser.setEmail(email);
         newUser.setPassword(utils.PasswordUtil.hash(password));
-        newUser.setDate_of_birth(Date.valueOf(dobValue));
+        newUser.setDateOfBirth(Date.valueOf(dobValue));
         newUser.setRole(new models.Student());
-        newUser.setIs_verified(1);   // email was verified
+        newUser.setIsVerified(1);   // email was verified
         newUser.setStatut("active");
         newUser.setScore(0);
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
-        newUser.setCreated_at(now);
-        newUser.setUpdated_at(now);
+        newUser.setCreatedAt(now);
+        newUser.setUpdatedAt(now);
 
         try {
             userService.ajouter(newUser);

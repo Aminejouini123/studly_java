@@ -68,8 +68,8 @@ public class EmailService {
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(from, password);
+            protected jakarta.mail.PasswordAuthentication getPasswordAuthentication() {
+                return new jakarta.mail.PasswordAuthentication(from, password);
             }
         });
 

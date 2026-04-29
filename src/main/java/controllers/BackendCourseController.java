@@ -224,7 +224,7 @@ public class BackendCourseController {
             User currentUser = SessionManager.getCurrentUser();
             if (currentUser != null) {
                 List<Course> courses;
-                if (currentUser.getRoles() != null && currentUser.getRoles().contains("ROLE_ADMIN")) {
+                if (currentUser.isAdmin()) {
                     courses = courseService.recuperer();
                 } else {
                     courses = courseService.recupererParUser(currentUser.getId());
