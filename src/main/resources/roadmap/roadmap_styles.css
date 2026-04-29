@@ -1,0 +1,252 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Studly – Smart Skill Roadmaps stylesheet
+   Glassmorphism on dark (#0F172A) background
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Panel header ───────────────────────────────────────────────────────── */
+.roadmap-panel-title {
+    -fx-text-fill: #F1F5F9;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.roadmap-panel-subtitle {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 13px;
+}
+
+/* ── Search field ───────────────────────────────────────────────────────── */
+.roadmap-search-field {
+    -fx-background-color: rgba(30, 41, 59, 0.9);
+    -fx-text-fill: #E2E8F0;
+    -fx-prompt-text-fill: #475569;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(99, 102, 241, 0.35);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-font-size: 14px;
+    -fx-padding: 12 16 12 16;
+}
+
+.roadmap-search-field:focused {
+    -fx-border-color: #6366F1;
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.35), 12, 0, 0, 0);
+}
+
+/* ── Change-key link (always visible next to Generate button) ───────────── */
+.change-key-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-underline: true;
+    -fx-padding: 8 4 8 4;
+    -fx-border-width: 0;
+}
+
+.change-key-btn:hover {
+    -fx-text-fill: #6366F1;
+}
+
+/* ── Generate button ────────────────────────────────────────────────────── */
+.roadmap-generate-btn {
+    -fx-background-color: linear-gradient(to right, #6366F1, #A855F7);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-padding: 12 28 12 28;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.45), 14, 0, 0, 4);
+}
+
+.roadmap-generate-btn:hover {
+    -fx-background-color: linear-gradient(to right, #7274f4, #b566f8);
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.65), 18, 0, 0, 6);
+}
+
+.roadmap-generate-btn:disabled {
+    -fx-background-color: rgba(99, 102, 241, 0.3);
+    -fx-effect: none;
+    -fx-cursor: default;
+}
+
+/* ── Loading overlay ────────────────────────────────────────────────────── */
+.roadmap-loading-overlay {
+    -fx-background-color: rgba(15, 23, 42, 0.88);
+    -fx-background-radius: 20;
+}
+
+.roadmap-loading-text {
+    -fx-text-fill: #CBD5E1;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.roadmap-loading-subtext {
+    -fx-text-fill: #475569;
+    -fx-font-size: 12px;
+}
+
+/* ── Step card – glassmorphism effect ───────────────────────────────────── */
+/*
+ * JavaFX does not support backdrop-filter: blur().
+ * We simulate the glass look with a semi-transparent background,
+ * a subtle white border (rgba), and a layered drop-shadow.
+ */
+.step-card {
+    -fx-background-color:
+        linear-gradient(
+            to bottom right,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.04)
+        );
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(255, 255, 255, 0.12);
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 20, 0, 0, 6);
+}
+
+.step-card:hover {
+    -fx-border-color: rgba(99, 102, 241, 0.45);
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.2), 24, 0, 0, 8);
+}
+
+/* ── Timeline elements ──────────────────────────────────────────────────── */
+.step-circle {
+    -fx-background-color: linear-gradient(to bottom right, #6366F1, #A855F7);
+    -fx-background-radius: 22;     /* half of 44px → perfect circle */
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.6), 12, 0, 0, 2);
+}
+
+.step-number {
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.timeline-connector {
+    -fx-background-color: linear-gradient(to bottom, #6366F1, rgba(168, 85, 247, 0.15));
+}
+
+/* ── Step card content ──────────────────────────────────────────────────── */
+.step-title {
+    -fx-text-fill: #F1F5F9;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.step-description {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 3;
+}
+
+/* ── Resource link buttons ──────────────────────────────────────────────── */
+.resource-btn {
+    -fx-background-color: rgba(99, 102, 241, 0.12);
+    -fx-text-fill: #818CF8;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(99, 102, 241, 0.35);
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-padding: 5 12 5 12;
+}
+
+.resource-btn:hover {
+    -fx-background-color: rgba(99, 102, 241, 0.25);
+    -fx-border-color: #6366F1;
+    -fx-text-fill: #A5B4FC;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.3), 8, 0, 0, 2);
+}
+
+/* ══ API Key Setup Card ══════════════════════════════════════════════════ */
+.api-setup-card {
+    -fx-background-color: #FFFBEB;
+    -fx-background-radius: 14;
+    -fx-border-color: #F59E0B;
+    -fx-border-radius: 14;
+    -fx-border-width: 1.5;
+    -fx-padding: 20 24 20 24;
+    -fx-effect: dropshadow(gaussian, rgba(245, 158, 11, 0.15), 12, 0, 0, 4);
+}
+
+.api-setup-title {
+    -fx-text-fill: #B45309;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.api-setup-subtitle {
+    -fx-text-fill: #78350F;
+    -fx-font-size: 13px;
+}
+
+.api-setup-note {
+    -fx-text-fill: #A16207;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+}
+
+/* "Get a free key" link button */
+.api-link-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #D97706;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-underline: true;
+    -fx-cursor: hand;
+    -fx-padding: 0 0 0 0;
+    -fx-border-width: 0;
+}
+
+.api-link-btn:hover {
+    -fx-text-fill: #B45309;
+}
+
+/* API key text field (amber theme) */
+.api-key-field {
+    -fx-background-color: white;
+    -fx-text-fill: #1E293B;
+    -fx-prompt-text-fill: #94A3B8;
+    -fx-background-radius: 10;
+    -fx-border-color: #F59E0B;
+    -fx-border-radius: 10;
+    -fx-border-width: 1.5;
+    -fx-font-size: 13px;
+    -fx-padding: 10 14 10 14;
+}
+
+.api-key-field:focused {
+    -fx-border-color: #D97706;
+    -fx-effect: dropshadow(gaussian, rgba(245, 158, 11, 0.3), 8, 0, 0, 0);
+}
+
+/* Save Key button (amber gradient) */
+.api-save-btn {
+    -fx-background-color: linear-gradient(to right, #F59E0B, #D97706);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-padding: 10 22 10 22;
+    -fx-effect: dropshadow(gaussian, rgba(217, 119, 6, 0.35), 10, 0, 0, 3);
+}
+
+.api-save-btn:hover {
+    -fx-background-color: linear-gradient(to right, #FBBF24, #F59E0B);
+}
+
+/* ── Section label ("Your Roadmap") ─────────────────────────────────────── */
+.roadmap-section-label {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 1.5;
+}

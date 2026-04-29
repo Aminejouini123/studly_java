@@ -29,28 +29,24 @@ public final class MockUsers {
         return users;
     }
 
-    /**
-     * Creates a minimal {@link User}. We store "name" into first_name/last_name for now.
-     * // TODO remplacer par vrai User quand module pret
-     */
     public static User createUser(int id, String name) {
         User u = new User();
         u.setId(id);
 
         String trimmed = name == null ? "" : name.trim();
         if (trimmed.isEmpty()) {
-            u.setFirst_name("User");
-            u.setLast_name(String.valueOf(id));
+            u.setFirstName("User");
+            u.setLastName(String.valueOf(id));
             return u;
         }
 
         int space = trimmed.indexOf(' ');
         if (space < 0) {
-            u.setFirst_name(trimmed);
-            u.setLast_name("");
+            u.setFirstName(trimmed);
+            u.setLastName("");
         } else {
-            u.setFirst_name(trimmed.substring(0, space).trim());
-            u.setLast_name(trimmed.substring(space + 1).trim());
+            u.setFirstName(trimmed.substring(0, space).trim());
+            u.setLastName(trimmed.substring(space + 1).trim());
         }
         return u;
     }
@@ -63,9 +59,7 @@ public final class MockUsers {
         if (u == null) {
             return "";
         }
-        String first = u.getFirst_name() == null ? "" : u.getFirst_name().trim();
-        String last = u.getLast_name() == null ? "" : u.getLast_name().trim();
-        String full = (first + " " + last).trim();
+        String full = u.getFullName().trim();
         if (full.isEmpty()) {
             return String.valueOf(u.getId());
         }

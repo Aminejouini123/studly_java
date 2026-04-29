@@ -13,6 +13,13 @@ module studly.java {
     requires com.fasterxml.jackson.databind;
     requires org.json;
     requires jdk.jsobject;
+    requires java.prefs;
+    requires jakarta.mail;
+    requires org.bytedeco.javacv;
+    requires org.bytedeco.opencv;
+    requires org.bytedeco.flandmark;
+    requires org.bytedeco.openblas;
+    requires jbcrypt;
 
     // Open packages for FXML injection
     opens controllers to javafx.fxml;
@@ -22,6 +29,8 @@ module studly.java {
     opens controllers.exams to javafx.fxml;
     opens controllers.gestiondetemps to javafx.fxml;
     opens controllers.group to javafx.fxml;
+    opens controllers.recommendations to javafx.fxml;
+    opens controllers.roadmap to javafx.fxml;
     opens controllers.user_controller to javafx.fxml;
     
     // Open models for TableView access

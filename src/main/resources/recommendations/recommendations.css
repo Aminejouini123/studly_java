@@ -1,0 +1,124 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Studly – Recommendations Panel Stylesheet
+   Glassmorphism aesthetic on a dark (#0F172A) background
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Panel typography ──────────────────────────────────────────────────── */
+.rec-panel-title {
+    -fx-text-fill: #F1F5F9;
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+}
+
+.rec-panel-subtitle {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 13px;
+}
+
+.rec-section-title {
+    -fx-text-fill: #E2E8F0;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+/* ── Count badge next to section title ─────────────────────────────────── */
+.rec-count-badge {
+    -fx-background-color: rgba(99, 102, 241, 0.18);
+    -fx-text-fill: #818CF8;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12;
+    -fx-padding: 2 10 2 10;
+}
+
+/* ── Skill tag pills ────────────────────────────────────────────────────── */
+.rec-skill-tag {
+    -fx-background-color: rgba(99, 102, 241, 0.12);
+    -fx-text-fill: #818CF8;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 20;
+    -fx-padding: 5 14 5 14;
+    -fx-border-color: rgba(99, 102, 241, 0.35);
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+}
+
+/* ── Refresh button ─────────────────────────────────────────────────────── */
+.rec-refresh-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #6366F1;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-border-color: rgba(99, 102, 241, 0.45);
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-padding: 8 20 8 20;
+}
+
+.rec-refresh-btn:hover {
+    -fx-background-color: rgba(99, 102, 241, 0.12);
+    -fx-border-color: #6366F1;
+}
+
+/* ── Glassmorphism card ─────────────────────────────────────────────────── */
+.rec-card {
+    -fx-background-color: linear-gradient(
+        to bottom right,
+        rgba(30, 41, 59, 0.92),
+        rgba(15, 23, 42, 0.97)
+    );
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(99, 102, 241, 0.22);
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 18, 0, 0, 6);
+}
+
+.rec-card:hover {
+    -fx-border-color: rgba(99, 102, 241, 0.55);
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.25), 22, 0, 0, 8);
+}
+
+/* ── Card content ───────────────────────────────────────────────────────── */
+.rec-title {
+    -fx-text-fill: #F1F5F9;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.rec-provider {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 12px;
+}
+
+/* Hairline between provider and button */
+.rec-divider {
+    -fx-background-color: rgba(99, 102, 241, 0.18);
+}
+
+/* ── View button ────────────────────────────────────────────────────────── */
+.rec-view-btn {
+    -fx-background-color: linear-gradient(to right, #4b5ed4, #6366F1);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 9;
+    -fx-cursor: hand;
+    -fx-padding: 9 0 9 0;
+}
+
+.rec-view-btn:hover {
+    -fx-background-color: linear-gradient(to right, #5b6ee4, #7274f4);
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.5), 10, 0, 0, 3);
+}
+
+/* ── Empty-state label ──────────────────────────────────────────────────── */
+.rec-empty {
+    -fx-text-fill: #475569;
+    -fx-font-size: 13px;
+    -fx-font-style: italic;
+    -fx-padding: 8 0 8 0;
+}

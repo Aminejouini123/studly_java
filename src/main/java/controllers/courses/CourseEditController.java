@@ -32,6 +32,8 @@ public class CourseEditController extends BaseCourseController {
 
     public void setCourse(Course course) {
         this.course = course;
+        this.currentCourse = course;
+        courseToEdit = course;
         if (course != null) {
             populateForm(course);
         }
@@ -170,9 +172,4 @@ public class CourseEditController extends BaseCourseController {
         this.backendController = controller;
     }
 
-    public void setCourse(Course course) {
-        this.currentCourse = course;
-        courseToEdit = course;
-        populateForm(course);
-    }
 }

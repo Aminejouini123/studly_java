@@ -35,18 +35,13 @@ public class EditUserController {
 
     public void setUserData(User user) {
         this.currentUser = user;
-        firstNameField.setText(user.getFirst_name());
-        lastNameField.setText(user.getLast_name());
+        firstNameField.setText(user.getFirstName());
+        lastNameField.setText(user.getLastName());
         emailField.setText(user.getEmail());
         
-        // Extract role from ["ROLE_USER"]
-        String roles = user.getRoles();
-        if (roles != null) {
-            if (roles.contains("ROLE_ADMIN")) roleChoiceBox.setValue("ROLE_ADMIN");
-            else roleChoiceBox.setValue("ROLE_USER");
-        }
+        if (user.isAdmin()) roleChoiceBox.setValue("ROLE_ADMIN");
+        else roleChoiceBox.setValue("ROLE_USER");
         
-        // Password field is left empty for security, only updated if typed
         passwordField.setPromptText("Leave empty to keep current password");
     }
 
@@ -63,8 +58,8 @@ public class EditUserController {
             return;
         }
 
-        currentUser.setFirst_name(firstName);
-        currentUser.setLast_name(lastName);
+        currentUser.setFirstName(firstName);
+        currentUser.setLastName(lastName);
         currentUser.setEmail(email);
         currentUser.setRoles("[\"" + role + "\"]");
         
@@ -73,7 +68,7 @@ public class EditUserController {
             currentUser.setPassword(utils.PasswordUtil.hash(password));
         }
         
-        currentUser.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
+        currentUser.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
         try {
             userService.modifier(currentUser);

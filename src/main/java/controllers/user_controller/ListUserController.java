@@ -112,8 +112,8 @@ public class ListUserController {
 
             if (!currentSearchQuery.isEmpty()) {
                 boolean matchesEmail = user.getEmail() != null && user.getEmail().toLowerCase().contains(currentSearchQuery);
-                boolean matchesFirstName = user.getFirst_name() != null && user.getFirst_name().toLowerCase().contains(currentSearchQuery);
-                boolean matchesLastName = user.getLast_name() != null && user.getLast_name().toLowerCase().contains(currentSearchQuery);
+                boolean matchesFirstName = user.getFirstName() != null && user.getFirstName().toLowerCase().contains(currentSearchQuery);
+                boolean matchesLastName = user.getLastName() != null && user.getLastName().toLowerCase().contains(currentSearchQuery);
                 if (!matchesEmail && !matchesFirstName && !matchesLastName) return false;
             }
             return true;
@@ -128,9 +128,9 @@ public class ListUserController {
 
     private void applyDateSort() {
         Comparator<User> comparator = (u1, u2) -> {
-            if (u1.getCreated_at() == null || u2.getCreated_at() == null) return 0;
-            return descending ? u2.getCreated_at().compareTo(u1.getCreated_at()) 
-                              : u1.getCreated_at().compareTo(u2.getCreated_at());
+            if (u1.getCreatedAt() == null || u2.getCreatedAt() == null) return 0;
+            return descending ? u2.getCreatedAt().compareTo(u1.getCreatedAt()) 
+                              : u1.getCreatedAt().compareTo(u2.getCreatedAt());
         };
         sortedList.comparatorProperty().unbind();
         sortedList.setComparator(comparator);
@@ -144,7 +144,7 @@ public class ListUserController {
             TableColumn<User, Object> colLastLogin,
             TableColumn<User, String> colActions
     ) {
-        colAvatar.setCellValueFactory(new PropertyValueFactory<>("first_name"));
+        colAvatar.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         colAvatar.setCellFactory(column -> new TableCell<User, String>() {
             @Override
             protected void updateItem(String name, boolean empty) {
@@ -168,7 +168,7 @@ public class ListUserController {
                 if (empty || user == null) {
                     setGraphic(null);
                 } else {
-                    Label nameLbl = new Label(user.getFirst_name() + " " + user.getLast_name());
+                    Label nameLbl = new Label(user.getFullName());
                     nameLbl.setStyle("-fx-text-fill: #0F172A; -fx-font-weight: bold; -fx-font-size: 13px;");
                     Label emailLbl = new Label(user.getEmail());
                     emailLbl.setStyle("-fx-text-fill: #64748B; -fx-font-size: 11px;");
@@ -224,7 +224,7 @@ public class ListUserController {
             }
         });
 
-        colLastLogin.setCellValueFactory(new PropertyValueFactory<>("created_at"));
+        colLastLogin.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
         colLastLogin.setCellFactory(column -> new TableCell<User, Object>() {
              @Override
              protected void updateItem(Object date, boolean empty) {
@@ -322,7 +322,7 @@ public class ListUserController {
     private void handleDelete(User user) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Delete User");
-        alert.setHeaderText("Delete " + user.getFirst_name() + " " + user.getLast_name());
+        alert.setHeaderText("Delete " + user.getFullName());
         alert.setContentText("Are you sure?");
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {

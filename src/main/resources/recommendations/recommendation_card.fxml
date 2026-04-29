@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<!--
+  Glassmorphism-style recommendation card.
+  Data is injected by RecommendationCardController.setRecommendation().
+-->
+<VBox maxWidth="Infinity" prefWidth="300.0" spacing="12.0"
+      styleClass="rec-card" stylesheets="@recommendations.css"
+      xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.recommendations.RecommendationCardController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <children>
+
+        <!-- ── Badges row ── -->
+        <HBox alignment="CENTER_LEFT" spacing="8.0">
+            <children>
+                <!-- Type badge – colour set in controller -->
+                <Label fx:id="typeBadge" text="JOB" />
+                <Region HBox.hgrow="ALWAYS" />
+                <!-- Match-score badge – colour set in controller -->
+                <Label fx:id="scoreBadge" text="0% match" />
+            </children>
+        </HBox>
+
+        <!-- ── Title ── -->
+        <Label fx:id="titleLabel" maxWidth="Infinity" styleClass="rec-title"
+               text="Title" wrapText="true" />
+
+        <!-- ── Provider / channel ── -->
+        <Label fx:id="providerLabel" styleClass="rec-provider" text="Provider" />
+
+        <!-- ── Hairline divider ── -->
+        <Region prefHeight="1.0" styleClass="rec-divider" />
+
+        <!-- ── View button ── -->
+        <Button fx:id="viewButton" maxWidth="Infinity" mnemonicParsing="false"
+                styleClass="rec-view-btn" text="View  →" />
+
+    </children>
+</VBox>

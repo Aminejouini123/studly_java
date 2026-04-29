@@ -20,6 +20,8 @@ public class FrontendController extends BaseCourseController {
     @FXML private Label planningNavLabel;
     @FXML private Label coursesNavLabel;
     @FXML private Label groupsNavLabel;
+    @FXML private Label recommendationsNavLabel;
+    @FXML private Label roadmapNavLabel;
     @FXML private StackPane contentHost;
     @FXML private Label userNameLabel;
     @FXML private Label userRoleLabel;
@@ -48,19 +50,15 @@ public class FrontendController extends BaseCourseController {
         User user = SessionManager.getCurrentUser();
         if (user == null) return;
 
-        String firstName = user.getFirst_name() != null ? user.getFirst_name() : "";
-        String lastName = user.getLast_name() != null ? user.getLast_name() : "";
-        String fullName = (firstName + " " + lastName).trim();
-        
         if (userNameLabel != null) {
-            userNameLabel.setText(fullName.isEmpty() ? "User" : fullName);
+            String fullName = user.getFullName();
+            userNameLabel.setText(fullName.trim().isEmpty() ? "User" : fullName);
         }
 
         if (userRoleLabel != null) {
-            String roles = user.getRoles() != null ? user.getRoles() : "";
-            if (roles.contains("ROLE_ADMIN")) {
+            if (user.isAdmin()) {
                 userRoleLabel.setText("Administrator");
-            } else if (roles.contains("ROLE_TEACHER")) {
+            } else if (user.isTeacher()) {
                 userRoleLabel.setText("Teacher");
             } else {
                 userRoleLabel.setText("Student");
@@ -68,19 +66,16 @@ public class FrontendController extends BaseCourseController {
         }
 
         if (avatarInitials != null) {
-            String initials = "";
-            if (!firstName.isEmpty()) initials += firstName.substring(0, 1).toUpperCase();
-            if (!lastName.isEmpty()) initials += lastName.substring(0, 1).toUpperCase();
+            String initials = user.getInitials();
             avatarInitials.setText(initials.isEmpty() ? "U" : initials);
         }
         
         // Set profile avatar color based on role
         Circle targetCircle = avatarCircle != null ? avatarCircle : profileAvatar;
         if (targetCircle != null) {
-            String roles = user.getRoles() != null ? user.getRoles() : "";
-            if (roles.contains("ROLE_ADMIN")) {
+            if (user.isAdmin()) {
                 targetCircle.setStyle("-fx-fill: #ef4444;");
-            } else if (roles.contains("ROLE_TEACHER")) {
+            } else if (user.isTeacher()) {
                 targetCircle.setStyle("-fx-fill: #f59e0b;");
             } else {
                 targetCircle.setStyle("-fx-fill: #004fb0;");
@@ -133,6 +128,18 @@ public class FrontendController extends BaseCourseController {
     }
 
     @FXML
+    public void showRecommendations() {
+        loadContent("/recommendations/recommendations.fxml");
+        setActiveNav(recommendationsNavLabel);
+    }
+
+    @FXML
+    public void showRoadmap() {
+        loadContent("/roadmap/RoadmapView.fxml");
+        setActiveNav(roadmapNavLabel);
+    }
+
+    @FXML
     public void showProfile() {
         loadContent("/getion_user/profile.fxml");
         setActiveNav(null); // No nav label for profile
@@ -182,6 +189,8 @@ public class FrontendController extends BaseCourseController {
         updateNavStyle(planningNavLabel, planningNavLabel == activeLabel);
         updateNavStyle(coursesNavLabel, coursesNavLabel == activeLabel);
         updateNavStyle(groupsNavLabel, groupsNavLabel != null && groupsNavLabel == activeLabel);
+        updateNavStyle(recommendationsNavLabel, recommendationsNavLabel != null && recommendationsNavLabel == activeLabel);
+        updateNavStyle(roadmapNavLabel, roadmapNavLabel != null && roadmapNavLabel == activeLabel);
     }
 
     private void updateNavStyle(Label label, boolean active) {

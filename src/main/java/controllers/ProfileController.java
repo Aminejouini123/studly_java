@@ -58,32 +58,26 @@ public class ProfileController {
         User user = SessionManager.getCurrentUser();
         if (user == null) return;
 
-        String firstName = user.getFirst_name() != null ? user.getFirst_name() : "";
-        String lastName  = user.getLast_name()  != null ? user.getLast_name()  : "";
-        profileNameLabel.setText(firstName + " " + lastName);
+        profileNameLabel.setText(user.getFullName());
 
-        String roles = user.getRoles() != null ? user.getRoles() : "Member";
-        if      (roles.contains("ROLE_ADMIN"))   profileRoleLabel.setText("Administrator");
-        else if (roles.contains("ROLE_TEACHER")) profileRoleLabel.setText("Teacher");
-        else                                     profileRoleLabel.setText("Student");
+        if      (user.isAdmin())   profileRoleLabel.setText("Administrator");
+        else if (user.isTeacher()) profileRoleLabel.setText("Teacher");
+        else                       profileRoleLabel.setText("Student");
 
-        String initials = "";
-        if (!firstName.isEmpty()) initials += firstName.substring(0, 1).toUpperCase();
-        if (!lastName.isEmpty())  initials += lastName.substring(0, 1).toUpperCase();
-        bigAvatarInitials.setText(initials);
+        bigAvatarInitials.setText(user.getInitials());
 
-        fullNameValue.setText(firstName + " " + lastName);
+        fullNameValue.setText(user.getFullName());
         emailValue.setText(user.getEmail());
-        phoneValue.setText(user.getPhone_number() != null ? user.getPhone_number() : "N/A");
+        phoneValue.setText(user.getPhoneNumber() != null ? user.getPhoneNumber() : "N/A");
         addressValue.setText(user.getAddress() != null ? user.getAddress() : "N/A");
-        dobValue.setText(user.getDate_of_birth() != null ? user.getDate_of_birth().toString() : "N/A");
+        dobValue.setText(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : "N/A");
         websiteValue.setText(user.getWebsite() != null ? user.getWebsite() : "N/A");
         bioLabel.setText((user.getBio() == null || user.getBio().isEmpty())
             ? "No bio added yet." : user.getBio());
-        educationValue.setText((user.getEducation_level() == null || user.getEducation_level().isEmpty())
-            ? "Not specified" : user.getEducation_level());
-        skillsValue.setText((user.getSkills() == null || user.getSkills().isEmpty())
-            ? "No skills listed" : user.getSkills());
+        educationValue.setText((user.getEducationLevel() == null || user.getEducationLevel().isEmpty())
+            ? "Not specified" : user.getEducationLevel());
+        skillsValue.setText(user.getFormattedSkills().isEmpty()
+            ? "No skills listed" : user.getFormattedSkills());
 
         editProfileBtn.setOnAction(e -> FrontendController.getInstance().showEditProfile());
 

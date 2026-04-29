@@ -1,7 +1,4 @@
-package controllers;
-
-import controllers.user_controller.FaceLoginController;
-import controllers.user_controller.ResetPasswordController;
+package controllers.user_controller;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -304,10 +301,10 @@ public class LoginPage {
         if (user == null) user = userService.findByEmail(profile.email);
 
         if (user != null) {
-            if (user.getGoogle_id() == null || user.getGoogle_id().isEmpty()) {
+            if (user.getGoogleId() == null || user.getGoogleId().isEmpty()) {
                 userService.linkGoogleAccount(user.getId(), profile.googleId,
                     profile.accessToken, profile.refreshToken, profile.tokenExpiresAt);
-                user.setGoogle_id(profile.googleId);
+                user.setGoogleId(profile.googleId);
             }
             SessionManager.setCurrentUser(user);
             redirectByRole(user);
@@ -360,21 +357,21 @@ public class LoginPage {
         try {
             Timestamp now = Timestamp.valueOf(LocalDateTime.now());
             User newUser = new User();
-            newUser.setGoogle_id(profile.googleId);
+            newUser.setGoogleId(profile.googleId);
             newUser.setEmail(profile.email);
-            newUser.setFirst_name(profile.firstName);
-            newUser.setLast_name(profile.lastName.isEmpty() ? "-" : profile.lastName);
-            newUser.setProfile_picture(profile.pictureUrl);
-            newUser.setGoogle_access_token(profile.accessToken);
-            newUser.setGoogle_refresh_token(profile.refreshToken);
-            newUser.setGoogle_token_expires_at(profile.tokenExpiresAt);
+            newUser.setFirstName(profile.firstName);
+            newUser.setLastName(profile.lastName.isEmpty() ? "-" : profile.lastName);
+            newUser.setProfilePicture(profile.pictureUrl);
+            newUser.setGoogleAccessToken(profile.accessToken);
+            newUser.setGoogleRefreshToken(profile.refreshToken);
+            newUser.setGoogleTokenExpiresAt(profile.tokenExpiresAt);
             newUser.setRole(new Student());
-            newUser.setIs_verified(1);
+            newUser.setIsVerified(1);
             newUser.setStatut("active");
             newUser.setScore(0);
             newUser.setPassword("");
-            newUser.setCreated_at(now);
-            newUser.setUpdated_at(now);
+            newUser.setCreatedAt(now);
+            newUser.setUpdatedAt(now);
 
             userService.ajouter(newUser);
             User created = userService.findByEmail(profile.email);
@@ -389,7 +386,7 @@ public class LoginPage {
     // ---- Utilities ----
 
     private void redirectByRole(User user) {
-        if (user.getRoles() != null && user.getRoles().contains("ROLE_ADMIN")) {
+        if (user.isAdmin()) {
             navigateTo("/TEMPLATE/backend_management.fxml", "Admin Dashboard – Studly");
         } else {
             navigateTo("/TEMPLATE/frontend_dashboard.fxml", "Dashboard – Studly");

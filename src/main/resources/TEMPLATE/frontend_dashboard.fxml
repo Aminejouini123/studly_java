@@ -36,6 +36,8 @@
                       <Label fx:id="coursesNavLabel" onMouseClicked="#goToCourses" styleClass="nav-link" text="Courses" />
                       <Label fx:id="groupsNavLabel" onMouseClicked="#showGroups" styleClass="nav-link" text="Groups" />
                       <Label styleClass="nav-link" text="Tasks" />
+                      <Label fx:id="recommendationsNavLabel" onMouseClicked="#showRecommendations" styleClass="nav-link" text="For You" />
+                      <Label fx:id="roadmapNavLabel" onMouseClicked="#showRoadmap" styleClass="nav-link" text="Roadmap" />
                    </children>
                 </HBox>
                 
