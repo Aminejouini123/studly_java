@@ -1,5 +1,6 @@
 package controllers.courses;
 
+import controllers.BackendCourseController;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ComboBox;
@@ -34,6 +35,9 @@ public class CourseAddController extends BaseCourseController {
 
     // --- Inline Error Labels ---
     @FXML private Label errName, errEmail, errSemester, errDifficulty, errType, errPriority, errStatus, errCoeff, errDuration;
+
+    private boolean fromBackend;
+    private BackendCourseController backendController;
 
     @FXML
     public void initialize() {
@@ -244,7 +248,11 @@ public class CourseAddController extends BaseCourseController {
         fadeIn.play();
         scaleUp.play();
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1.5), e -> {
-            goToCourses(null);
+            if (fromBackend && backendController != null) {
+                backendController.restoreDashboard();
+            } else {
+                goToCourses(null);
+            }
         }));
         timeline.play();
     }
@@ -302,6 +310,18 @@ public class CourseAddController extends BaseCourseController {
 
     @FXML
     public void handleBack(javafx.scene.input.MouseEvent event) {
-        goToCourses(event);
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+        } else {
+            goToCourses(event);
+        }
+    }
+
+    public void setFromBackend(boolean fromBackend) {
+        this.fromBackend = fromBackend;
+    }
+
+    public void setBackendController(BackendCourseController backendController) {
+        this.backendController = backendController;
     }
 }

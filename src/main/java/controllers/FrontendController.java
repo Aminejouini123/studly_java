@@ -71,13 +71,21 @@ public class FrontendController {
         try {
             URL resource = getClass().getResource(resourcePath);
             if (resource == null) {
-                throw new IllegalStateException("Missing FXML resource: " + resourcePath);
+                throw new IOException("Missing FXML resource: " + resourcePath);
             }
 
-            Node content = FXMLLoader.load(resource);
+            FXMLLoader loader = new FXMLLoader(resource);
+            Node content = loader.load();
             contentHost.getChildren().setAll(content);
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to load FXML resource: " + resourcePath, e);
+            e.printStackTrace();
+            javafx.application.Platform.runLater(() -> {
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                alert.setTitle("Load Error");
+                alert.setHeaderText("Unable to load component");
+                alert.setContentText("Resource: " + resourcePath + "\nError: " + e.getMessage());
+                alert.showAndWait();
+            });
         }
     }
 
@@ -111,7 +119,6 @@ public class FrontendController {
         loadContent("/getion_user/edit_profile_settings.fxml");
     }
 
-<<<<<<< HEAD
     public void refreshUserHeader() {
         User user = SessionManager.getCurrentUser();
         if (user == null) {
@@ -142,29 +149,6 @@ public class FrontendController {
             if (!firstName.isEmpty()) initials += firstName.substring(0, 1).toUpperCase();
             if (!lastName.isEmpty()) initials += lastName.substring(0, 1).toUpperCase();
             avatarInitials.setText(initials.isEmpty() ? "U" : initials);
-=======
-    public void loadContent(String resourcePath) {
-        try {
-            URL resource = getClass().getResource(resourcePath);
-            System.out.println("FrontendController: loading resource -> " + resourcePath + " (url=" + resource + ")");
-            if (resource == null) {
-                throw new IOException("Missing FXML resource: " + resourcePath);
-            }
-
-            FXMLLoader loader = new FXMLLoader(resource);
-            Node content = loader.load();
-            System.out.println("FrontendController: loaded content for " + resourcePath + ", nodes=" + (content == null ? "null" : content.getClass().getSimpleName()));
-            contentHost.getChildren().setAll(content);
-        } catch (IOException e) {
-            e.printStackTrace();
-            javafx.application.Platform.runLater(() -> {
-                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-                alert.setTitle("Load Error");
-                alert.setHeaderText("Unable to load component");
-                alert.setContentText("Resource: " + resourcePath + "\nError: " + e.getMessage());
-                alert.showAndWait();
-            });
->>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
         }
     }
 

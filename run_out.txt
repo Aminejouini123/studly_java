@@ -1,0 +1,39 @@
+[INFO] Error stacktraces are turned on.
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< tn.esprit:Projet_PI_Java >----------------------
+[INFO] Building Projet_PI_Java 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> javafx:0.0.8:run (default-cli) > process-classes @ Projet_PI_Java >>>
+[WARNING] 6 problems were encountered while building the effective model for org.openjfx:javafx-fxml:jar:17.0.2 during dependency collection step for project (use -X to see details)
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ Projet_PI_Java ---
+[INFO] Copying 61 resources from src\main\resources to target\classes
+[INFO] Copying 1 resource from . to target\classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ Projet_PI_Java ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 103 source files with javac [debug target 11] to target\classes
+[WARNING] location of system modules is not set in conjunction with -source 11
+  not setting the location of system modules may lead to class files that cannot run on JDK 11
+    --release 11 is recommended instead of -source 11 -target 11 because it sets the location of system modules automatically
+[INFO] /C:/Users/THIKA/studly_java/src/main/java/controllers/group/BackendGroupsManagementController.java: C:\Users\THIKA\studly_java\src\main\java\controllers\group\BackendGroupsManagementController.java uses unchecked or unsafe operations.
+[INFO] /C:/Users/THIKA/studly_java/src/main/java/controllers/group/BackendGroupsManagementController.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] <<< javafx:0.0.8:run (default-cli) < process-classes @ Projet_PI_Java <<<
+[INFO] 
+[INFO] 
+[INFO] --- javafx:0.0.8:run (default-cli) @ Projet_PI_Java ---
+Reconnecting to the database...
+Reconnecting to the database...
+Reconnecting to the database...
+Reconnecting to the database...
+Reconnecting to the database...
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:20 min
+[INFO] Finished at: 2026-04-27T18:45:52+02:00
+[INFO] ------------------------------------------------------------------------

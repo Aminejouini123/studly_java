@@ -9,14 +9,14 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefWidth="450.0" spacing="20.0" styleClass="glass-card" stylesheets="@../TEMPLATE/backend_style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AddUserController">
+<VBox prefWidth="450.0" spacing="20.0" styleClass="glass-card" stylesheets="@../TEMPLATE/backend_style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AddUserController">
    <padding>
       <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
    </padding>
    <children>
       <Label fx:id="formTitle" styleClass="title-text" text="Create New User" style="-fx-font-size: 22px;" />
       <Label styleClass="subtitle-text" text="Enter user details below to add a new account." />
-      
+
       <VBox spacing="15.0">
          <children>
             <HBox spacing="15.0">
@@ -35,21 +35,21 @@
                   </VBox>
                </children>
             </HBox>
-            
+
             <VBox spacing="8.0">
                <children>
                   <Label styleClass="stat-label" text="EMAIL ADDRESS" />
                   <TextField fx:id="emailField" promptText="email@example.com" styleClass="search-field" style="-fx-background-radius: 8;" />
                </children>
             </VBox>
-            
+
             <VBox spacing="8.0">
                <children>
                   <Label styleClass="stat-label" text="PASSWORD" />
-                  <PasswordField fx:id="passwordField" promptText="••••••••" styleClass="search-field" style="-fx-background-radius: 8;" />
+                  <PasswordField fx:id="passwordField" promptText="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" styleClass="search-field" style="-fx-background-radius: 8;" />
                </children>
             </VBox>
-            
+
             <VBox spacing="8.0">
                <children>
                   <Label styleClass="stat-label" text="USER ROLE" />
@@ -58,7 +58,7 @@
             </VBox>
          </children>
       </VBox>
-      
+
       <HBox alignment="CENTER_RIGHT" spacing="15.0">
          <children>
             <Button mnemonicParsing="false" onAction="#handleCancel" styleClass="btn-secondary" text="Cancel" />

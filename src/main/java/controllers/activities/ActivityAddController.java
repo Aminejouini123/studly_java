@@ -7,6 +7,7 @@ import models.Course;
 import services.ActivityService;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import controllers.backend.BackendActivityController;
 
 public class ActivityAddController extends BaseActivityController {
 
@@ -18,6 +19,9 @@ public class ActivityAddController extends BaseActivityController {
 
     private Course currentCourse;
     private final ActivityService activityService = new ActivityService();
+
+    private boolean fromBackend;
+    private BackendActivityController backendController;
 
     @FXML
     public void initialize() {
@@ -67,6 +71,11 @@ public class ActivityAddController extends BaseActivityController {
 
     @FXML
     private void handleBack() {
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+            return;
+        }
+
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_activities.fxml"));
             javafx.scene.Parent root = loader.load();
@@ -169,4 +178,11 @@ public class ActivityAddController extends BaseActivityController {
         }
     }
 
+    public void setFromBackend(boolean fromBackend) {
+        this.fromBackend = fromBackend;
+    }
+
+    public void setBackendController(BackendActivityController backendController) {
+        this.backendController = backendController;
+    }
 }

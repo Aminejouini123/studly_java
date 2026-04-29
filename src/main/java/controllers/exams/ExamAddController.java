@@ -9,6 +9,7 @@ import javafx.scene.layout.StackPane;
 import models.Course;
 import models.Exam;
 import services.ExamService;
+import controllers.backend.BackendExamController;
 
 import java.sql.Date;
 import java.sql.SQLException;
@@ -25,6 +26,9 @@ public class ExamAddController extends BaseExamController {
 
     private Course currentCourse;
     private final ExamService examService = new ExamService();
+
+    private boolean fromBackend;
+    private BackendExamController backendController;
 
     @FXML
     public void initialize() {
@@ -66,6 +70,10 @@ public class ExamAddController extends BaseExamController {
 
     @FXML
     public void handleCancel() {
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+            return;
+        }
         navigateToExamList(titleField, currentCourse);
     }
 
@@ -144,5 +152,13 @@ public class ExamAddController extends BaseExamController {
         if (selectedFile != null) {
             fileField.setText(selectedFile.getAbsolutePath());
         }
+    }
+
+    public void setFromBackend(boolean fromBackend) {
+        this.fromBackend = fromBackend;
+    }
+
+    public void setBackendController(BackendExamController backendController) {
+        this.backendController = backendController;
     }
 }

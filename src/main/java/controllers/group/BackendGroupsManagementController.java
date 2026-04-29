@@ -29,6 +29,7 @@ import models.Group;
 import models.User;
 import services.GroupService;
 import services.UserService;
+import utils.SessionManager;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -207,6 +208,15 @@ public class BackendGroupsManagementController {
                 edit.setOnAction(e -> openEdit(g));
                 del.setOnAction(e -> deleteGroup(g));
 
+                boolean canModify = canCurrentUserModify(g);
+                edit.setDisable(!canModify);
+                del.setDisable(!canModify);
+                if (!canModify) {
+                    Tooltip tip = new Tooltip("Seul le createur (ou un admin) peut modifier/supprimer.");
+                    edit.setTooltip(tip);
+                    del.setTooltip(tip);
+                }
+
                 HBox box = new HBox(2, view, edit, del);
                 box.setAlignment(Pos.CENTER);
                 setGraphic(box);
@@ -262,7 +272,8 @@ public class BackendGroupsManagementController {
         List<Group> rows = groupsTable.getItems() == null ? List.of() : groupsTable.getItems().stream().collect(Collectors.toList());
         String csv = buildCsv(rows);
         try {
-            Files.writeString(file.toPath(), csv, StandardCharsets.UTF_8);
+            // Add UTF-8 BOM to help Excel detect encoding correctly.
+            Files.writeString(file.toPath(), "\uFEFF" + csv, StandardCharsets.UTF_8);
             showAlert(Alert.AlertType.INFORMATION, "Export", "Export Excel termine.");
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Export", "Ecriture impossible: " + e.getMessage());
@@ -312,6 +323,11 @@ public class BackendGroupsManagementController {
     }
 
     private void openEdit(Group g) {
+        if (!canCurrentUserModify(g)) {
+            showAlert(Alert.AlertType.ERROR, "Autorisation", "Seul le createur (ou un admin) peut modifier ce groupe.");
+            return;
+        }
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestion_group/edit_group.fxml"));
             Parent root = loader.load();
@@ -349,6 +365,11 @@ public class BackendGroupsManagementController {
     }
 
     private void deleteGroup(Group g) {
+        if (!canCurrentUserModify(g)) {
+            showAlert(Alert.AlertType.ERROR, "Autorisation", "Seul le createur (ou un admin) peut supprimer ce groupe.");
+            return;
+        }
+
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");
         confirm.setHeaderText(null);
@@ -389,6 +410,15 @@ public class BackendGroupsManagementController {
             return cat.contains(q);
         });
         updateEmptyState();
+    }
+
+    private static boolean canCurrentUserModify(Group g) {
+        if (g == null) return false;
+        User current = SessionManager.getCurrentUser();
+        if (current == null) return false;
+        if (current.getId() == g.getCreatorId()) return true;
+        String roles = current.getRoles();
+        return roles != null && roles.contains("ROLE_ADMIN");
     }
 
     private void updateEmptyState() {
@@ -485,29 +515,29 @@ public class BackendGroupsManagementController {
 
     private String buildCsv(List<Group> rows) {
         StringBuilder sb = new StringBuilder();
-        sb.append("id,category,capacity,created_by,created_at,status\n");
+        // Keep it clean (no "sep=;" line). On FR locales, Excel typically opens ';' delimited CSV correctly.
+        // Also, we keep CREATED_AT as text to avoid Excel displaying it as "#####" due to narrow columns.
+        sb.append("CATEGORY;CAPACITY;CREATED_BY;CREATED_AT;STATUS\n");
         for (Group g : rows) {
-            String id = String.valueOf(g.getId());
             String category = safe(g.getCategory());
             String capacity = String.valueOf(g.getCapacity());
             User u = resolveUser(g.getCreatorId());
             String createdBy = u == null ? ("user #" + g.getCreatorId()) : displayName(u);
-            String createdAt = formatTs(g.getCreatedAt());
+            String createdAt = "'" + formatTs(g.getCreatedAt());
             String status = g.getCreatorId() > 0 ? "Assigned" : "Unassigned";
 
-            sb.append(csv(id)).append(',')
-              .append(csv(category)).append(',')
-              .append(csv(capacity)).append(',')
-              .append(csv(createdBy)).append(',')
-              .append(csv(createdAt)).append(',')
-              .append(csv(status)).append('\n');
+            sb.append(csv(category, ';')).append(';')
+              .append(csv(capacity, ';')).append(';')
+              .append(csv(createdBy, ';')).append(';')
+              .append(csv(createdAt, ';')).append(';')
+              .append(csv(status, ';')).append('\n');
         }
         return sb.toString();
     }
 
-    private static String csv(String value) {
+    private static String csv(String value, char delimiter) {
         String v = value == null ? "" : value;
-        boolean needsQuotes = v.contains(",") || v.contains("\"") || v.contains("\n") || v.contains("\r");
+        boolean needsQuotes = v.indexOf(delimiter) >= 0 || v.contains("\"") || v.contains("\n") || v.contains("\r");
         if (!needsQuotes) return v;
         return "\"" + v.replace("\"", "\"\"") + "\"";
     }
@@ -517,94 +547,277 @@ public class BackendGroupsManagementController {
      * Uses built-in Helvetica with WinAnsi encoding; keeps content mostly ASCII/Latin-1.
      */
     private void writeSimplePdf(Path out, List<Group> rows) throws IOException {
-        String title = "Groups Management Export";
-        List<String> lines = new java.util.ArrayList<>();
-        lines.add(title);
-        lines.add("Generated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
-        lines.add("");
-        lines.add("ID | CATEGORY | CAPACITY | CREATED BY | CREATED AT | STATUS");
-        lines.add("-----------------------------------------------------------");
+        List<PdfRow> tableRows = new java.util.ArrayList<>();
         for (Group g : rows) {
             User u = resolveUser(g.getCreatorId());
             String createdBy = u == null ? ("user #" + g.getCreatorId()) : displayName(u);
             String status = g.getCreatorId() > 0 ? "Assigned" : "Unassigned";
-            String line = "#" + g.getId()
-                    + " | " + nullToDash(g.getCategory())
-                    + " | " + g.getCapacity()
-                    + " | " + createdBy
-                    + " | " + formatTs(g.getCreatedAt())
-                    + " | " + status;
-            lines.add(line);
+            tableRows.add(new PdfRow(
+                    nullToDash(g.getCategory()),
+                    String.valueOf(g.getCapacity()),
+                    nullToDash(createdBy),
+                    nullToDash(formatTs(g.getCreatedAt())),
+                    status
+            ));
         }
 
-        byte[] pdf = SimplePdf.onePage(lines);
+        byte[] pdf = SimplePdfTable.build(
+                "Groups Management Export",
+                "Generated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+                tableRows
+        );
         Files.write(out, pdf);
     }
 
-    private static final class SimplePdf {
-        private static byte[] onePage(List<String> lines) throws IOException {
-            // Build a single-page PDF with text lines.
-            StringBuilder content = new StringBuilder();
-            content.append("BT\n");
-            content.append("/F1 11 Tf\n");
-            content.append("14 TL\n"); // line height
-            content.append("50 800 Td\n"); // Start near top-left.
+    private static final class PdfRow {
+        private final String category;
+        private final String capacity;
+        private final String createdBy;
+        private final String createdAt;
+        private final String status;
 
-            for (int i = 0; i < lines.size(); i++) {
-                String line = escapePdfText(lines.get(i));
-                content.append("(").append(line).append(") Tj\n");
-                if (i != lines.size() - 1) {
-                    content.append("T*\n"); // Move to next line.
-                }
-            }
-            content.append("ET\n");
+        private PdfRow(String category, String capacity, String createdBy, String createdAt, String status) {
+            this.category = category;
+            this.capacity = capacity;
+            this.createdBy = createdBy;
+            this.createdAt = createdAt;
+            this.status = status;
+        }
 
-            byte[] contentBytes = content.toString().getBytes(StandardCharsets.ISO_8859_1);
+        String category() { return category; }
+        String capacity() { return capacity; }
+        String createdBy() { return createdBy; }
+        String createdAt() { return createdAt; }
+        String status() { return status; }
+    }
 
-            // Objects
-            // 1: Catalog
-            // 2: Pages
-            // 3: Page
-            // 4: Font
-            // 5: Content stream
+    /**
+     * Minimal, dependency-free PDF "table" export (multi-page).
+     * Still uses built-in base14 fonts (Helvetica / Helvetica-Bold) and ISO-8859-1 text.
+     */
+    private static final class SimplePdfTable {
+        private static final int PAGE_W = 595; // A4 portrait
+        private static final int PAGE_H = 842;
+
+        private static final int MARGIN_X = 40;
+        private static final int TITLE_Y = 800;
+        private static final int META_Y = 780;
+        private static final int TABLE_TOP_Y = 740;
+        private static final int ROW_H = 18;
+        private static final int HEADER_H = 22;
+        private static final int BOTTOM_Y = 60;
+
+        // Total available width = 595 - 2*40 = 515
+        private static final int W_CATEGORY = 110;
+        private static final int W_CAPACITY = 60;
+        private static final int W_CREATED_BY = 165;
+        private static final int W_CREATED_AT = 110;
+        private static final int W_STATUS = 70;
+
+        private static final String[] HEADERS = {"CATEGORY", "CAPACITY", "CREATED BY", "CREATED AT", "STATUS"};
+
+        static byte[] build(String title, String meta, List<PdfRow> rows) throws IOException {
+            // Object numbers:
+            // 1 Catalog
+            // 2 Pages
+            // 3 Font regular (F1)
+            // 4 Font bold (F2)
+            // Then per page: Page obj + Content obj
+            int rowsPerPage = Math.max(1, (TABLE_TOP_Y - BOTTOM_Y - HEADER_H) / ROW_H);
+            int pageCount = Math.max(1, (int) Math.ceil(rows.size() / (double) rowsPerPage));
+
+            int firstPageObj = 5;
+            int objects = 4 + pageCount * 2;
+
             ByteArrayBuilder b = new ByteArrayBuilder();
             b.append("%PDF-1.4\n");
 
-            int o1 = b.markObject(1);
+            int[] offsets = new int[objects + 1]; // 0..objects
+
+            // 1: Catalog
+            offsets[1] = b.length();
             b.append("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
 
-            int o2 = b.markObject(2);
-            b.append("2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n");
+            // 2: Pages (Kids list references page objects)
+            String kids = buildKidsArray(firstPageObj, pageCount);
+            offsets[2] = b.length();
+            b.append("2 0 obj\n<< /Type /Pages /Kids ").append(kids).append(" /Count ").append(String.valueOf(pageCount)).append(" >>\nendobj\n");
 
-            int o3 = b.markObject(3);
-            // A4 portrait: 595x842 points
-            b.append("3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] ")
-             .append("/Resources << /Font << /F1 4 0 R >> >> ")
-             .append("/Contents 5 0 R >>\nendobj\n");
+            // 3: Font regular
+            offsets[3] = b.length();
+            b.append("3 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n");
 
-            int o4 = b.markObject(4);
-            b.append("4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n");
+            // 4: Font bold
+            offsets[4] = b.length();
+            b.append("4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj\n");
 
-            int o5 = b.markObject(5);
-            b.append("5 0 obj\n<< /Length ").append(String.valueOf(contentBytes.length)).append(" >>\nstream\n");
-            b.appendBytes(contentBytes);
-            b.append("\nendstream\nendobj\n");
+            // Pages + content streams
+            for (int p = 0; p < pageCount; p++) {
+                int pageObj = firstPageObj + (p * 2);
+                int contentObj = pageObj + 1;
+
+                int from = p * rowsPerPage;
+                int to = Math.min(rows.size(), from + rowsPerPage);
+                List<PdfRow> pageRows = rows.subList(from, to);
+
+                byte[] contentBytes = pageContent(title, meta, p == 0, pageRows).getBytes(StandardCharsets.ISO_8859_1);
+
+                offsets[pageObj] = b.length();
+                b.append(pageObj + " 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + PAGE_W + " " + PAGE_H + "] ")
+                 .append("/Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> ")
+                 .append("/Contents " + contentObj + " 0 R >>\nendobj\n");
+
+                offsets[contentObj] = b.length();
+                b.append(contentObj + " 0 obj\n<< /Length ").append(String.valueOf(contentBytes.length)).append(" >>\nstream\n");
+                b.appendBytes(contentBytes);
+                b.append("\nendstream\nendobj\n");
+            }
 
             int xrefStart = b.length();
-            b.append("xref\n0 6\n");
+            b.append("xref\n0 ").append(String.valueOf(objects + 1)).append("\n");
             b.append("0000000000 65535 f \n");
-            b.append(xrefLine(o1)).append("\n");
-            b.append(xrefLine(o2)).append("\n");
-            b.append(xrefLine(o3)).append("\n");
-            b.append(xrefLine(o4)).append("\n");
-            b.append(xrefLine(o5)).append("\n");
-            b.append("trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n").append(String.valueOf(xrefStart)).append("\n%%EOF\n");
+            for (int i = 1; i <= objects; i++) {
+                b.append(xrefLine(offsets[i])).append("\n");
+            }
+            b.append("trailer\n<< /Size ").append(String.valueOf(objects + 1)).append(" /Root 1 0 R >>\nstartxref\n")
+             .append(String.valueOf(xrefStart)).append("\n%%EOF\n");
 
             return b.toByteArray();
         }
 
+        private static String buildKidsArray(int firstPageObj, int pageCount) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            for (int i = 0; i < pageCount; i++) {
+                int pageObj = firstPageObj + (i * 2);
+                sb.append(pageObj).append(" 0 R");
+                if (i != pageCount - 1) {
+                    sb.append(" ");
+                }
+            }
+            sb.append("]");
+            return sb.toString();
+        }
+
+        private static String pageContent(String title, String meta, boolean includeHeader, List<PdfRow> rows) {
+            StringBuilder c = new StringBuilder(8192);
+
+            // Title + meta
+            if (includeHeader) {
+                c.append("BT\n");
+                c.append("/F2 16 Tf\n");
+                c.append("1 0 0 1 ").append(MARGIN_X).append(" ").append(TITLE_Y).append(" Tm\n");
+                c.append("(").append(escapePdfText(safeLatin1(title))).append(") Tj\n");
+                c.append("/F1 11 Tf\n");
+                c.append("1 0 0 1 ").append(MARGIN_X).append(" ").append(META_Y).append(" Tm\n");
+                c.append("(").append(escapePdfText(safeLatin1(meta))).append(") Tj\n");
+                c.append("ET\n");
+            }
+
+            int tableLeft = MARGIN_X;
+            int tableTop = TABLE_TOP_Y;
+            int tableRight = MARGIN_X + W_CATEGORY + W_CAPACITY + W_CREATED_BY + W_CREATED_AT + W_STATUS;
+
+            // Grid lines (header + rows)
+            int totalRows = rows.size();
+            int tableBottom = tableTop - HEADER_H - (totalRows * ROW_H);
+
+            c.append("0.6 w\n"); // stroke width
+            c.append("0 0 0 RG\n"); // stroke color (black)
+
+            // Vertical lines
+            int x0 = tableLeft;
+            int x1 = x0 + W_CATEGORY;
+            int x2 = x1 + W_CAPACITY;
+            int x3 = x2 + W_CREATED_BY;
+            int x4 = x3 + W_CREATED_AT;
+            int x5 = x4 + W_STATUS;
+
+            verticalLine(c, x0, tableTop, tableBottom);
+            verticalLine(c, x1, tableTop, tableBottom);
+            verticalLine(c, x2, tableTop, tableBottom);
+            verticalLine(c, x3, tableTop, tableBottom);
+            verticalLine(c, x4, tableTop, tableBottom);
+            verticalLine(c, x5, tableTop, tableBottom);
+
+            // Horizontal lines (top, header bottom, then each row)
+            horizontalLine(c, tableLeft, tableRight, tableTop);
+            horizontalLine(c, tableLeft, tableRight, tableTop - HEADER_H);
+            for (int r = 0; r < totalRows; r++) {
+                horizontalLine(c, tableLeft, tableRight, tableTop - HEADER_H - ((r + 1) * ROW_H));
+            }
+
+            // Header text
+            c.append("BT\n");
+            c.append("/F2 10 Tf\n");
+            textInCell(c, x0, tableTop, W_CATEGORY, HEADER_H, HEADERS[0]);
+            textInCell(c, x1, tableTop, W_CAPACITY, HEADER_H, HEADERS[1]);
+            textInCell(c, x2, tableTop, W_CREATED_BY, HEADER_H, HEADERS[2]);
+            textInCell(c, x3, tableTop, W_CREATED_AT, HEADER_H, HEADERS[3]);
+            textInCell(c, x4, tableTop, W_STATUS, HEADER_H, HEADERS[4]);
+            c.append("ET\n");
+
+            // Body rows
+            c.append("BT\n");
+            c.append("/F1 10 Tf\n");
+            for (int i = 0; i < totalRows; i++) {
+                PdfRow row = rows.get(i);
+                int rowTop = tableTop - HEADER_H - (i * ROW_H);
+
+                textInCell(c, x0, rowTop, W_CATEGORY, ROW_H, row.category());
+                textInCell(c, x1, rowTop, W_CAPACITY, ROW_H, row.capacity());
+                textInCell(c, x2, rowTop, W_CREATED_BY, ROW_H, row.createdBy());
+                textInCell(c, x3, rowTop, W_CREATED_AT, ROW_H, row.createdAt());
+                textInCell(c, x4, rowTop, W_STATUS, ROW_H, row.status());
+            }
+            c.append("ET\n");
+
+            return c.toString();
+        }
+
+        private static void horizontalLine(StringBuilder c, int xLeft, int xRight, int y) {
+            c.append(xLeft).append(" ").append(y).append(" m ").append(xRight).append(" ").append(y).append(" l S\n");
+        }
+
+        private static void verticalLine(StringBuilder c, int x, int yTop, int yBottom) {
+            c.append(x).append(" ").append(yTop).append(" m ").append(x).append(" ").append(yBottom).append(" l S\n");
+        }
+
+        private static void textInCell(StringBuilder c, int cellX, int cellTopY, int cellW, int cellH, String raw) {
+            int padX = 4;
+            int padY = 13; // baseline offset for 10pt text within ~18-22px row
+            String s = safeLatin1(raw == null ? "" : raw.trim());
+
+            int maxChars = Math.max(3, (int) Math.floor((cellW - (padX * 2)) / 6.0)); // rough heuristic
+            s = ellipsize(s, maxChars);
+
+            int x = cellX + padX;
+            int y = (cellTopY - cellH) + padY;
+            // Use absolute positioning per cell (Td is relative and would accumulate).
+            c.append("1 0 0 1 ").append(x).append(" ").append(y).append(" Tm\n");
+            c.append("(").append(escapePdfText(s)).append(") Tj\n");
+        }
+
+        private static String ellipsize(String s, int maxChars) {
+            if (s == null) return "";
+            if (s.length() <= maxChars) return s;
+            if (maxChars <= 1) return s.substring(0, 1);
+            if (maxChars <= 3) return s.substring(0, maxChars);
+            return s.substring(0, maxChars - 3) + "...";
+        }
+
         private static String xrefLine(int offset) {
             return String.format(Locale.ROOT, "%010d 00000 n ", offset);
+        }
+
+        private static String safeLatin1(String s) {
+            if (s == null) return "";
+            StringBuilder out = new StringBuilder(s.length());
+            for (int i = 0; i < s.length(); i++) {
+                char ch = s.charAt(i);
+                out.append(ch <= 0xFF ? ch : '?');
+            }
+            return out.toString();
         }
 
         private static String escapePdfText(String s) {

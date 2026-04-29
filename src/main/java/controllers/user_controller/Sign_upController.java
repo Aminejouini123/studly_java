@@ -21,12 +21,14 @@ public class Sign_upController {
     @FXML private TextField sign_name_id;
     @FXML private TextField sign_lname_id;
     @FXML private TextField sign_email_id;
+    @FXML private TextField phoneNumberField;
     @FXML private TextField date_id;
     @FXML private PasswordField passw_s_id;
     @FXML private PasswordField pass_s_id;
     @FXML private Label firstNameError;
     @FXML private Label lastNameError;
     @FXML private Label emailError;
+    @FXML private Label phoneError;
     @FXML private Label dobError;
     @FXML private Label passwordError;
     @FXML private Label confirmPasswordError;
@@ -34,6 +36,9 @@ public class Sign_upController {
     @FXML private Hyperlink return_login_id;
 
     private final UserService userService = new UserService();
+
+    // E.164: + followed by 2..15 digits (first digit 1..9)
+    private static final String E164_REGEX = "^\\+[1-9]\\d{1,14}$";
 
     @FXML
     public void initialize() {
@@ -45,6 +50,7 @@ public class Sign_upController {
         String firstName = sign_name_id.getText().trim();
         String lastName  = sign_lname_id.getText().trim();
         String email     = sign_email_id.getText().trim();
+        String phone     = phoneNumberField == null ? "" : phoneNumberField.getText().trim();
         String dobText   = date_id.getText().trim();
         String password  = passw_s_id.getText().trim();
         String confirm   = pass_s_id.getText().trim();
@@ -70,6 +76,14 @@ public class Sign_upController {
             hasError = true;
         } else if (!email.matches("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$")) {
             showError(emailError, "Invalid email format");
+            hasError = true;
+        }
+
+        if (phone.isEmpty()) {
+            showError(phoneError, "Phone number is required");
+            hasError = true;
+        } else if (!phone.matches(E164_REGEX)) {
+            showError(phoneError, "Format: +33612345678");
             hasError = true;
         }
 
@@ -109,6 +123,7 @@ public class Sign_upController {
         newUser.setFirst_name(firstName);
         newUser.setLast_name(lastName);
         newUser.setEmail(email);
+        newUser.setPhone_number(phone);
         newUser.setPassword(password);
         newUser.setDate_of_birth(dob);
         newUser.setRoles("[\"ROLE_USER\"]");
@@ -144,14 +159,20 @@ public class Sign_upController {
     }
 
     private void resetErrors() {
-        Label[] labels = {firstNameError, lastNameError, emailError, dobError, passwordError, confirmPasswordError};
+        Label[] labels = {firstNameError, lastNameError, emailError, phoneError, dobError, passwordError, confirmPasswordError};
         for (Label l : labels) {
+            if (l == null) {
+                continue;
+            }
             l.setVisible(false);
             l.setManaged(false);
         }
     }
 
     private void showError(Label label, String message) {
+        if (label == null) {
+            return;
+        }
         label.setText(message);
         label.setVisible(true);
         label.setManaged(true);

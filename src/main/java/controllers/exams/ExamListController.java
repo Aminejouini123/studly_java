@@ -53,6 +53,8 @@ public class ExamListController extends BaseExamController {
     private List<Exam> allExams = new ArrayList<>();
     private final ExamService examService = new ExamService();
 
+    private boolean fromBackend;
+
     @FXML
     public void initialize() {
         if (statusFilter != null) {
@@ -73,6 +75,10 @@ public class ExamListController extends BaseExamController {
         this.currentCourse = course;
         courseTitleLabel.setText(course.getName());
         loadExams();
+    }
+
+    public void setFromBackend(boolean fromBackend) {
+        this.fromBackend = fromBackend;
     }
 
     private void loadExams() {

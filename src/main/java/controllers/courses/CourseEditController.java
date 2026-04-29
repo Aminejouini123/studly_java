@@ -1,5 +1,6 @@
 package controllers.courses;
 
+import controllers.BackendCourseController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -28,6 +29,8 @@ public class CourseEditController extends BaseCourseController {
     private Button submitBtn;
 
     private static Course courseToEdit;
+    private boolean fromBackend;
+    private BackendCourseController backendController;
 
     public static void startEdit(Course course, Stage stage) {
         try {
@@ -52,6 +55,22 @@ public class CourseEditController extends BaseCourseController {
         if (courseToEdit != null) {
             populateForm(courseToEdit);
         }
+    }
+
+    // Used by backend flow (backend_edit_course.fxml).
+    public void setCourse(Course course) {
+        courseToEdit = course;
+        if (courseToEdit != null && courseNameField != null) {
+            populateForm(courseToEdit);
+        }
+    }
+
+    public void setFromBackend(boolean fromBackend) {
+        this.fromBackend = fromBackend;
+    }
+
+    public void setBackendController(BackendCourseController backendController) {
+        this.backendController = backendController;
     }
 
     private void populateForm(Course course) {
@@ -81,7 +100,11 @@ public class CourseEditController extends BaseCourseController {
             updateCourseFromForm(courseToEdit);
             new CourseService().modifier(courseToEdit);
             courseToEdit = null; // Clear
-            loadScene("/gestion_cours/frontend_courses.fxml", null, (javafx.scene.Node) event.getSource());
+            if (fromBackend && backendController != null) {
+                backendController.restoreDashboard();
+            } else {
+                loadScene("/gestion_cours/frontend_courses.fxml", null, (javafx.scene.Node) event.getSource());
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -128,6 +151,10 @@ public class CourseEditController extends BaseCourseController {
     @FXML
     public void handleBack(javafx.scene.input.MouseEvent event) {
         courseToEdit = null;
-        goToCourses(event);
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+        } else {
+            goToCourses(event);
+        }
     }
 }

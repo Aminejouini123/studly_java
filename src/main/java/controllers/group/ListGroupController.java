@@ -19,8 +19,11 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import models.Group;
+import models.Invitation;
 import services.GroupService;
+import services.InvitationService;
 import services.UserService;
+import utils.SessionManager;
 
 import java.io.IOException;
 import java.net.URL;
@@ -31,6 +34,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ListGroupController {
     @FXML
@@ -47,6 +52,7 @@ public class ListGroupController {
 
     private final GroupService groupService = new GroupService();
     private final UserService userService = new UserService();
+    private final InvitationService invitationService = new InvitationService();
     private final UserLabelResolver userLabelResolver = new UserLabelResolver(userService);
     private final ObservableList<Group> masterData = FXCollections.observableArrayList();
     private FilteredList<Group> filtered;
@@ -104,6 +110,11 @@ public class ListGroupController {
     }
 
     private void openEdit(Group group) {
+        if (!canCurrentUserModify(group)) {
+            showAlert(Alert.AlertType.ERROR, "Autorisation", "Seul le createur du groupe peut le modifier.");
+            return;
+        }
+
         StackPane host = findGroupHost(groupsList);
         if (host == null) {
             showAlert(Alert.AlertType.ERROR, "Navigation", "Unable to open Edit (host not found).");
@@ -120,6 +131,11 @@ public class ListGroupController {
     }
 
     private void deleteGroup(Group group) {
+        if (!canCurrentUserModify(group)) {
+            showAlert(Alert.AlertType.ERROR, "Autorisation", "Seul le createur du groupe peut le supprimer.");
+            return;
+        }
+
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");
         confirm.setHeaderText(null);
@@ -140,15 +156,44 @@ public class ListGroupController {
     private void refresh() {
         statusLabel.setText("");
         masterData.clear();
+
+        models.User current = SessionManager.getCurrentUser();
+        if (current == null) {
+            statusLabel.setText("Veuillez vous connecter.");
+            applySearch();
+            updateEmptyState();
+            return;
+        }
+
         try {
             List<Group> groups = groupService.recuperer();
-            masterData.addAll(groups);
-            statusLabel.setText(groups.size() + " groupe(s).");
+
+            Set<Integer> acceptedGroupIds = invitationService.recuperer().stream()
+                    .filter(i -> i.getReceiver_id() == current.getId())
+                    .filter(i -> isAccepted(i))
+                    .map(Invitation::getGroup_id)
+                    .collect(Collectors.toSet());
+
+            List<Group> visible = groups.stream()
+                    .filter(g -> g != null)
+                    .filter(g -> g.getCreatorId() == current.getId() || acceptedGroupIds.contains(g.getId()))
+                    .collect(Collectors.toList());
+
+            masterData.addAll(visible);
+            statusLabel.setText(visible.size() + " groupe(s).");
         } catch (SQLException | RuntimeException e) {
             statusLabel.setText("Impossible de charger les groupes: " + e.getMessage());
         }
         applySearch();
         updateEmptyState();
+    }
+
+    private static boolean isAccepted(Invitation inv) {
+        if (inv == null || inv.getStatus() == null) {
+            return false;
+        }
+        String s = inv.getStatus().trim().toUpperCase(Locale.ROOT);
+        return s.contains("ACCEPTED");
     }
 
     private void updateEmptyState() {
@@ -207,6 +252,12 @@ public class ListGroupController {
 
     private static String safeTrim(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private static boolean canCurrentUserModify(Group group) {
+        if (group == null) return false;
+        models.User current = SessionManager.getCurrentUser();
+        return current != null && current.getId() == group.getCreatorId();
     }
 
     private final class GroupCardCell extends ListCell<Group> {
@@ -291,6 +342,10 @@ public class ListGroupController {
             creatorLabel.setText(userLabelResolver.resolve(group.getCreatorId()) + " (Createur)");
             placesLabel.setText(group.getCapacity() + " places");
             dateLabel.setText("Cree le " + formatDate(group));
+
+            boolean canModify = canCurrentUserModify(group);
+            actionsRow.setVisible(canModify);
+            actionsRow.setManaged(canModify);
 
             setGraphic(card);
         }

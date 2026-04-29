@@ -6,12 +6,18 @@ import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import models.Group;
+import models.Invitation;
 import services.GroupService;
+import services.InvitationService;
+import utils.SessionManager;
 
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class GroupsDashboardController {
     @FXML
@@ -30,6 +36,7 @@ public class GroupsDashboardController {
     private StackPane groupContentHost;
 
     private final GroupService groupService = new GroupService();
+    private final InvitationService invitationService = new InvitationService();
 
     @FXML
     public void initialize() {
@@ -65,18 +72,36 @@ public class GroupsDashboardController {
 
     private void refreshStats() {
         try {
-            List<Group> groups = groupService.recuperer();
-            int totalGroups = groups.size();
-            int totalCapacity = groups.stream().mapToInt(Group::getCapacity).sum();
+            models.User current = SessionManager.getCurrentUser();
+            if (current == null) {
+                groupsTotalLabel.setText("0");
+                assignedLabel.setText("0");
+                freeLabel.setText("0");
+                totalCapacityLabel.setText("0");
+                return;
+            }
 
-            // The Symfony UI shows: total / assigned / free / total capacity.
-            // If you later add a real "status" or membership count, wire it here.
-            int assigned = 0;
-            int free = totalGroups;
+            List<Group> all = groupService.recuperer();
+            Set<Integer> acceptedGroupIds = invitationService.recuperer().stream()
+                    .filter(i -> i.getReceiver_id() == current.getId())
+                    .filter(i -> isAccepted(i))
+                    .map(Invitation::getGroup_id)
+                    .collect(Collectors.toSet());
+
+            List<Group> visible = all.stream()
+                    .filter(g -> g != null)
+                    .filter(g -> g.getCreatorId() == current.getId() || acceptedGroupIds.contains(g.getId()))
+                    .collect(Collectors.toList());
+
+            int totalGroups = visible.size();
+            int totalCapacity = visible.stream().mapToInt(Group::getCapacity).sum();
+
+            int createdByMe = (int) visible.stream().filter(g -> g.getCreatorId() == current.getId()).count();
+            int joined = totalGroups - createdByMe;
 
             groupsTotalLabel.setText(String.valueOf(totalGroups));
-            assignedLabel.setText(String.valueOf(assigned));
-            freeLabel.setText(String.valueOf(free));
+            assignedLabel.setText(String.valueOf(createdByMe));
+            freeLabel.setText(String.valueOf(joined));
             totalCapacityLabel.setText(String.valueOf(totalCapacity));
         } catch (SQLException | RuntimeException e) {
             groupsTotalLabel.setText("0");
@@ -84,6 +109,14 @@ public class GroupsDashboardController {
             freeLabel.setText("0");
             totalCapacityLabel.setText("0");
         }
+    }
+
+    private static boolean isAccepted(Invitation inv) {
+        if (inv == null || inv.getStatus() == null) {
+            return false;
+        }
+        String s = inv.getStatus().trim().toUpperCase(Locale.ROOT);
+        return s.contains("ACCEPTED");
     }
 
     private Parent loadView(String resourcePath) {

@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
 
-<VBox prefHeight="534.0" prefWidth="1081.0" spacing="18.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.group.BackendGroupsManagementController">
+<VBox prefHeight="534.0" prefWidth="1081.0" spacing="18.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.group.BackendGroupsManagementController">
     <children>
         <!-- Breadcrumb -->
         <HBox alignment="CENTER_LEFT" spacing="8.0">

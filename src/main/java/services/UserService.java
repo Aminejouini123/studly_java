@@ -12,10 +12,20 @@ public class UserService implements IService<User> {
         // No longer caching connection in constructor
     }
 
+    private Connection requireConnection() throws SQLException {
+        Connection c = MyDatabase.getInstance().getConnection();
+        if (c == null) {
+            // Ensure callers get a handled SQLException instead of a NullPointerException.
+            throw new SQLException("Database connection is not available. Please start MySQL/MariaDB and ensure the schema is initialized.");
+        }
+        return c;
+    }
+
     @Override
     public void ajouter(User entity) throws SQLException {
         String sql = "insert into `users` (google_id, is_verified, verification_code, email, roles, password, first_name, last_name, date_of_birth, phone_number, address, created_at, updated_at, statut, profile_picture, education_level, job_title, website, bio, skills, score, google_access_token, google_refresh_token, google_token_expires_at) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql)) {
+        Connection c = requireConnection();
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, entity.getGoogle_id());
             ps.setInt(2, entity.getIs_verified());
             ps.setString(3, entity.getVerification_code());
@@ -47,7 +57,8 @@ public class UserService implements IService<User> {
     @Override
     public void modifier(User entity) throws SQLException {
         String sql = "update `users` set google_id = ?, is_verified = ?, verification_code = ?, email = ?, roles = ?, password = ?, first_name = ?, last_name = ?, date_of_birth = ?, phone_number = ?, address = ?, created_at = ?, updated_at = ?, statut = ?, profile_picture = ?, education_level = ?, job_title = ?, website = ?, bio = ?, skills = ?, score = ?, google_access_token = ?, google_refresh_token = ?, google_token_expires_at = ? where id = ?";
-        try (PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql)) {
+        Connection c = requireConnection();
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, entity.getGoogle_id());
             ps.setInt(2, entity.getIs_verified());
             ps.setString(3, entity.getVerification_code());
@@ -80,7 +91,8 @@ public class UserService implements IService<User> {
     @Override
     public void supprimer(int id) throws SQLException {
         String sql = "delete from `users` where id = ?";
-        try (PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql)) {
+        Connection c = requireConnection();
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
         }
@@ -90,7 +102,8 @@ public class UserService implements IService<User> {
     public List<User> recuperer() throws SQLException {
         String sql = "select * from `users`";
         List<User> list = new ArrayList<>();
-        try (Statement statement = MyDatabase.getInstance().getConnection().createStatement();
+        Connection c = requireConnection();
+        try (Statement statement = c.createStatement();
              ResultSet rs = statement.executeQuery(sql)) {
             while (rs.next()) {
                 list.add(extractUserFromResultSet(rs));
@@ -101,7 +114,8 @@ public class UserService implements IService<User> {
 
     public User authenticateUser(String email, String password) throws SQLException {
         String sql = "select * from `users` where email = ? and password = ?";
-        try (PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql)) {
+        Connection c = requireConnection();
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, email);
             ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {

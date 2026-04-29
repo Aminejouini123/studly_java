@@ -156,7 +156,7 @@ CREATE TABLE IF NOT EXISTS `task` (
   CONSTRAINT `fk_task_user` FOREIGN KEY (`assigned_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `groups` (
+CREATE TABLE IF NOT EXISTS `group` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `capacity` int(11) DEFAULT NULL,
   `group_photo` varchar(255) DEFAULT NULL,
@@ -179,7 +179,7 @@ CREATE TABLE IF NOT EXISTS `invitation` (
   KEY `fk_invitation_sender` (`sender_id`),
   KEY `fk_invitation_receiver` (`receiver_id`),
   KEY `fk_invitation_group` (`group_id`),
-  CONSTRAINT `fk_invitation_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_invitation_group` FOREIGN KEY (`group_id`) REFERENCES `group` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_invitation_receiver` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_invitation_sender` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -193,7 +193,8 @@ CREATE TABLE IF NOT EXISTS `message` (
   PRIMARY KEY (`id`),
   KEY `fk_message_group` (`group_id`),
   KEY `fk_message_sender` (`sender_id`),
-  CONSTRAINT `fk_message_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_message_group` FOREIGN KEY (`group_id`) REFERENCES `group` (`id`) ON DELETE CASCADE,
+  -- Important: sender_id must reference `users(id)` (not legacy `user(id)`).
   CONSTRAINT `fk_message_sender` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -258,7 +259,7 @@ CREATE TABLE IF NOT EXISTS `project` (
   `group_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_project_group` (`group_id`),
-  CONSTRAINT `fk_project_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE
+  CONSTRAINT `fk_project_group` FOREIGN KEY (`group_id`) REFERENCES `group` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `project_task` (

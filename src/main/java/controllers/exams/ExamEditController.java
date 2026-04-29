@@ -9,6 +9,7 @@ import javafx.scene.layout.StackPane;
 import models.Course;
 import models.Exam;
 import services.ExamService;
+import controllers.backend.BackendExamController;
 
 import java.sql.Date;
 import java.sql.SQLException;
@@ -26,6 +27,9 @@ public class ExamEditController extends BaseExamController {
     private Exam currentExam;
     private final ExamService examService = new ExamService();
 
+    private boolean fromBackend;
+    private BackendExamController backendController;
+
     @FXML
     public void initialize() {
         difficultyCombo.getItems().addAll("Easy", "Medium", "Hard");
@@ -35,7 +39,9 @@ public class ExamEditController extends BaseExamController {
     public void setExam(Exam exam, Course course) {
         this.currentExam = exam;
         this.currentCourse = course;
-        courseNameLabel.setText(course.getName());
+        if (course != null) {
+            courseNameLabel.setText(course.getName());
+        }
 
         titleField.setText(exam.getTitle());
         datePicker.setValue(exam.getDate().toLocalDate());
@@ -45,6 +51,11 @@ public class ExamEditController extends BaseExamController {
         statusCombo.setValue(exam.getStatus());
         fileField.setText(exam.getFile());
         linkField.setText(exam.getLink());
+    }
+
+    // Compatibility for backend flows that don't pass the course object.
+    public void setExam(Exam exam) {
+        setExam(exam, null);
     }
 
     @FXML
@@ -73,6 +84,10 @@ public class ExamEditController extends BaseExamController {
 
     @FXML
     public void handleCancel() {
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+            return;
+        }
         navigateToExamList(titleField, currentCourse);
     }
 
@@ -151,5 +166,13 @@ public class ExamEditController extends BaseExamController {
         if (selectedFile != null) {
             fileField.setText(selectedFile.getAbsolutePath());
         }
+    }
+
+    public void setFromBackend(boolean fromBackend) {
+        this.fromBackend = fromBackend;
+    }
+
+    public void setBackendController(BackendExamController backendController) {
+        this.backendController = backendController;
     }
 }

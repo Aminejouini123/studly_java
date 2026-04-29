@@ -23,6 +23,8 @@ import java.util.Locale;
 
 public class GroupService implements IService<Group> {
     private final Connection connection;
+    // Single source of truth: use table `group` (backticked in SQL because GROUP is a SQL keyword).
+    private final String groupTable = "group";
     private final Set<String> groupColumns = new HashSet<>();
     private final Map<String, ForeignKeyRef> foreignKeysByColumn = new HashMap<>();
     private final Map<String, Boolean> groupNullableByColumn = new HashMap<>();
@@ -54,7 +56,7 @@ public class GroupService implements IService<Group> {
             values.append(", CURRENT_TIMESTAMP");
         }
 
-        String sql = "insert into `groups` (" + columns + ") values (" + values + ")";
+        String sql = "insert into `" + groupTable + "` (" + columns + ") values (" + values + ")";
         PreparedStatement ps = connection.prepareStatement(sql);
         int i = 1;
         ps.setInt(i++, group.getCapacity());
@@ -72,7 +74,7 @@ public class GroupService implements IService<Group> {
             } else {
                 Integer resolvedCreatorId = resolveDefaultCreatorId();
                 if (resolvedCreatorId == null) {
-                    throw new IllegalStateException("Invalid creator_id: no users exist. Create a user first (or make groups.creator_id nullable).");
+                    throw new IllegalStateException("Invalid creator_id: no users exist. Create a user first (or make `group`.creator_id nullable).");
                 }
                 ps.setInt(i, requireValidForeignKeyId(CREATOR_ID_COL, resolvedCreatorId));
             }
@@ -86,8 +88,8 @@ public class GroupService implements IService<Group> {
 
         boolean hasCreatorId = hasColumn("creator_id");
         String sql = hasCreatorId
-                ? "update `groups` set capacity = ?, group_photo = ?, category = ?, creator_id = ? where id = ?"
-                : "update `groups` set capacity = ?, group_photo = ?, category = ? where id = ?";
+                ? "update `" + groupTable + "` set capacity = ?, group_photo = ?, category = ?, creator_id = ? where id = ?"
+                : "update `" + groupTable + "` set capacity = ?, group_photo = ?, category = ? where id = ?";
         PreparedStatement ps = connection.prepareStatement(sql);
         int i = 1;
         ps.setInt(i++, group.getCapacity());
@@ -105,7 +107,7 @@ public class GroupService implements IService<Group> {
             } else {
                 Integer resolvedCreatorId = resolveDefaultCreatorId();
                 if (resolvedCreatorId == null) {
-                    throw new IllegalStateException("Invalid creator_id: no users exist. Create a user first (or make groups.creator_id nullable).");
+                    throw new IllegalStateException("Invalid creator_id: no users exist. Create a user first (or make `group`.creator_id nullable).");
                 }
                 ps.setInt(i++, requireValidForeignKeyId(CREATOR_ID_COL, resolvedCreatorId));
             }
@@ -117,7 +119,7 @@ public class GroupService implements IService<Group> {
     @Override
     public void supprimer(int id) throws SQLException {
         requireConnection();
-        String sql = "delete from `groups` where id = ?";
+        String sql = "delete from `" + groupTable + "` where id = ?";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setInt(1, id);
         ps.executeUpdate();
@@ -131,13 +133,13 @@ public class GroupService implements IService<Group> {
 
         String sql;
         if (hasCreatorId && hasCreatedAt) {
-            sql = "select id, capacity, group_photo, category, creator_id, created_at from `groups`";
+            sql = "select id, capacity, group_photo, category, creator_id, created_at from `" + groupTable + "`";
         } else if (hasCreatorId) {
-            sql = "select id, capacity, group_photo, category, creator_id from `groups`";
+            sql = "select id, capacity, group_photo, category, creator_id from `" + groupTable + "`";
         } else if (hasCreatedAt) {
-            sql = "select id, capacity, group_photo, category, created_at from `groups`";
+            sql = "select id, capacity, group_photo, category, created_at from `" + groupTable + "`";
         } else {
-            sql = "select id, capacity, group_photo, category from `groups`";
+            sql = "select id, capacity, group_photo, category from `" + groupTable + "`";
         }
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(sql);
@@ -213,7 +215,7 @@ public class GroupService implements IService<Group> {
         }
         try {
             DatabaseMetaData meta = connection.getMetaData();
-            ResultSet rs = meta.getColumns(null, null, "groups", null);
+            ResultSet rs = meta.getColumns(null, null, groupTable, null);
             while (rs.next()) {
                 String name = rs.getString("COLUMN_NAME");
                 if (name != null) {
@@ -236,7 +238,7 @@ public class GroupService implements IService<Group> {
         }
         try {
             DatabaseMetaData meta = connection.getMetaData();
-            ResultSet rs = meta.getImportedKeys(null, null, "groups");
+            ResultSet rs = meta.getImportedKeys(null, null, groupTable);
             while (rs.next()) {
                 String fkColumn = rs.getString("FKCOLUMN_NAME");
                 String pkTable = rs.getString("PKTABLE_NAME");
@@ -246,6 +248,23 @@ public class GroupService implements IService<Group> {
                 }
             }
         } catch (SQLException ignored) {
+        }
+    }
+
+    /**
+     * Checks if the given group id exists in the database.
+     */
+    public boolean existsById(int groupId) throws SQLException {
+        requireConnection();
+        if (groupId <= 0) {
+            return false;
+        }
+        String sql = "select 1 from `" + groupTable + "` where id = ? limit 1";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, groupId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
         }
     }
 
