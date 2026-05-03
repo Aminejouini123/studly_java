@@ -65,19 +65,39 @@ public class AddEventController {
 
     @FXML
     private void handleAddEvent(ActionEvent actionEvent) {
+        System.out.println("=== handleAddEvent called ===");
+        
         if (!validateInput()) {
+            System.out.println("Validation failed");
             return;
         }
-
+        
+        System.out.println("Validation passed, building event...");
         Event event = buildEvent();
+        
+        System.out.println("Event built:");
+        System.out.println("  Title: " + event.getTitle());
+        System.out.println("  Type: " + event.getType());
+        System.out.println("  Date: " + event.getDate());
+        System.out.println("  Location: " + event.getLocation());
+        
         if ("Etude".equalsIgnoreCase(event.getType())) {
+            System.out.println("Opening study quiz flow...");
             openStudyQuizFlow(event);
             return;
         }
 
-        EventStore.getInstance().addEvent(event);
-        showAlert(Alert.AlertType.INFORMATION, "Succes", "L'evenement a ete ajoute avec succes.");
-        clearForm();
+        try {
+            System.out.println("Adding event to EventStore...");
+            EventStore.getInstance().addEvent(event);
+            System.out.println("Event added successfully!");
+            showAlert(Alert.AlertType.INFORMATION, "Succes", "L'evenement a ete ajoute avec succes.");
+            clearForm();
+        } catch (Exception e) {
+            System.err.println("Error adding event: " + e.getMessage());
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'ajout: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -98,7 +118,9 @@ public class AddEventController {
             MapPickerController mapController = loader.getController();
 
             mapController.setCallback((name, lat, lng) -> {
-                locationField.setText(name);
+                String selectedLocation = name == null ? "" : name.trim();
+                locationField.setText(selectedLocation);
+                locationField.positionCaret(selectedLocation.length());
             });
 
             Stage mapStage = new Stage();
@@ -187,27 +209,35 @@ public class AddEventController {
     }
 
     private boolean validateInput() {
+        System.out.println("=== Validating input ===");
         StringBuilder err = new StringBuilder();
         
         // Titre obligatoire
-        if (titleField.getText() == null || titleField.getText().trim().isEmpty()) {
+        String title = titleField.getText();
+        System.out.println("Title: '" + title + "'");
+        if (title == null || title.trim().isEmpty()) {
             err.append("- Le titre est obligatoire.\n");
         }
         
         // Type obligatoire
-        if (typeComboBox.getValue() == null || typeComboBox.getValue().trim().isEmpty()) {
+        String type = typeComboBox.getValue();
+        System.out.println("Type: '" + type + "'");
+        if (type == null || type.trim().isEmpty()) {
             err.append("- Le type est obligatoire.\n");
         }
         
         // Date obligatoire
-        if (datePicker.getValue() == null) {
+        LocalDate date = datePicker.getValue();
+        System.out.println("Date: " + date);
+        if (date == null) {
             err.append("- La date est obligatoire.\n");
-        } else if (datePicker.getValue().isBefore(LocalDate.now())) {
+        } else if (date.isBefore(LocalDate.now())) {
             err.append("- La date ne peut pas etre dans le passe.\n");
         }
 
         // Heure de début obligatoire
         String startTime = startTimeField.getText().trim();
+        System.out.println("Start time: '" + startTime + "'");
         if (startTime.isEmpty()) {
             err.append("- L'heure de debut est obligatoire.\n");
         } else if (!startTime.matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")) {
@@ -216,6 +246,7 @@ public class AddEventController {
 
         // Heure de fin obligatoire
         String endTime = endTimeField.getText().trim();
+        System.out.println("End time: '" + endTime + "'");
         if (endTime.isEmpty()) {
             err.append("- L'heure de fin est obligatoire.\n");
         } else if (!endTime.matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")) {
@@ -238,17 +269,22 @@ public class AddEventController {
         }
 
         // Lieu obligatoire
-        if (locationField.getText() == null || locationField.getText().trim().isEmpty()) {
+        String location = locationField.getText();
+        System.out.println("Location: '" + location + "'");
+        if (location == null || location.trim().isEmpty()) {
             err.append("- Le lieu est obligatoire.\n");
         }
 
         // Priorité obligatoire
-        if (priorityComboBox.getValue() == null || priorityComboBox.getValue().trim().isEmpty()) {
+        String priority = priorityComboBox.getValue();
+        System.out.println("Priority: '" + priority + "'");
+        if (priority == null || priority.trim().isEmpty()) {
             err.append("- La priorite est obligatoire.\n");
         }
 
         // Rappel obligatoire et doit être un nombre
         String reminder = reminderField.getText().trim();
+        System.out.println("Reminder: '" + reminder + "'");
         if (reminder.isEmpty()) {
             err.append("- Le rappel est obligatoire.\n");
         } else {
@@ -263,9 +299,12 @@ public class AddEventController {
         }
 
         if (err.length() > 0) {
+            System.out.println("Validation errors:\n" + err.toString());
             showAlert(Alert.AlertType.ERROR, "Erreur de validation", err.toString());
             return false;
         }
+        
+        System.out.println("Validation successful!");
         return true;
     }
 

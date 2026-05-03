@@ -28,9 +28,11 @@ public class GroupService implements IService<Group> {
     private final Map<String, Boolean> groupNullableByColumn = new HashMap<>();
 
     private static final String CREATOR_ID_COL = "creator_id";
+    private static final String GROUPS_TABLE = "groups";
 
     public GroupService() {
         this.connection = MyDatabase.getInstance().getConnection();
+        ensureGroupsTableExists();
         loadGroupColumns();
         loadForeignKeys();
     }
@@ -207,23 +209,91 @@ public class GroupService implements IService<Group> {
         }
     }
 
+    private void ensureGroupsTableExists() {
+        if (connection == null) {
+            return;
+        }
+
+        try {
+            DatabaseMetaData meta = connection.getMetaData();
+            if (tableExists(meta, GROUPS_TABLE)) {
+                return;
+            }
+
+            String userTable = resolveUserTableName(meta);
+            boolean created = tryCreateGroupsTable(buildCreateGroupsTableSql(userTable));
+
+            if (!created && !tableExists(meta, GROUPS_TABLE)) {
+                tryCreateGroupsTable(buildCreateGroupsTableSql(null));
+            }
+        } catch (SQLException ignored) {
+            // Best-effort bootstrap only.
+        }
+    }
+
+    private boolean tryCreateGroupsTable(String sql) {
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(sql);
+            return true;
+        } catch (SQLException ignored) {
+            return false;
+        }
+    }
+
+    private String resolveUserTableName(DatabaseMetaData meta) throws SQLException {
+        if (tableExists(meta, "users")) {
+            return "users";
+        }
+        if (tableExists(meta, "user")) {
+            return "user";
+        }
+        return null;
+    }
+
+    private String buildCreateGroupsTableSql(String userTable) {
+        StringBuilder sql = new StringBuilder()
+                .append("CREATE TABLE IF NOT EXISTS `groups` (")
+                .append("`id` int(11) NOT NULL AUTO_INCREMENT, ")
+                .append("`capacity` int(11) DEFAULT NULL, ")
+                .append("`group_photo` varchar(255) DEFAULT NULL, ")
+                .append("`category` varchar(100) DEFAULT NULL, ")
+                .append("`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP, ")
+                .append("`creator_id` int(11) DEFAULT NULL, ")
+                .append("PRIMARY KEY (`id`), ")
+                .append("KEY `fk_group_creator` (`creator_id`)");
+
+        if (userTable != null) {
+            sql.append(", CONSTRAINT `fk_group_creator` FOREIGN KEY (`creator_id`) REFERENCES `")
+               .append(userTable)
+               .append("` (`id`) ON DELETE SET NULL");
+        }
+
+        sql.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        return sql.toString();
+    }
+
+    private boolean tableExists(DatabaseMetaData meta, String tableName) throws SQLException {
+        try (ResultSet rs = meta.getTables(null, null, tableName, new String[]{"TABLE"})) {
+            return rs.next();
+        }
+    }
+
     private void loadGroupColumns() {
         if (connection == null) {
             return;
         }
         try {
             DatabaseMetaData meta = connection.getMetaData();
-            ResultSet rs = meta.getColumns(null, null, "groups", null);
-            while (rs.next()) {
-                String name = rs.getString("COLUMN_NAME");
-                if (name != null) {
-                    String lower = name.toLowerCase(Locale.ROOT);
-                    groupColumns.add(lower);
+            try (ResultSet rs = meta.getColumns(null, null, GROUPS_TABLE, null)) {
+                while (rs.next()) {
+                    String name = rs.getString("COLUMN_NAME");
+                    if (name != null) {
+                        String lower = name.toLowerCase(Locale.ROOT);
+                        groupColumns.add(lower);
 
-                    // Track nullability for temporary "creator nullable" test mode.
-                    // TODO remplacer par vrai User quand module pret
-                    String isNullable = rs.getString("IS_NULLABLE");
-                    groupNullableByColumn.put(lower, "YES".equalsIgnoreCase(isNullable));
+                        String isNullable = rs.getString("IS_NULLABLE");
+                        groupNullableByColumn.put(lower, "YES".equalsIgnoreCase(isNullable));
+                    }
                 }
             }
         } catch (SQLException ignored) {
@@ -236,13 +306,14 @@ public class GroupService implements IService<Group> {
         }
         try {
             DatabaseMetaData meta = connection.getMetaData();
-            ResultSet rs = meta.getImportedKeys(null, null, "groups");
-            while (rs.next()) {
-                String fkColumn = rs.getString("FKCOLUMN_NAME");
-                String pkTable = rs.getString("PKTABLE_NAME");
-                String pkColumn = rs.getString("PKCOLUMN_NAME");
-                if (fkColumn != null && pkTable != null && pkColumn != null) {
-                    foreignKeysByColumn.put(fkColumn.toLowerCase(), new ForeignKeyRef(pkTable, pkColumn));
+            try (ResultSet rs = meta.getImportedKeys(null, null, GROUPS_TABLE)) {
+                while (rs.next()) {
+                    String fkColumn = rs.getString("FKCOLUMN_NAME");
+                    String pkTable = rs.getString("PKTABLE_NAME");
+                    String pkColumn = rs.getString("PKCOLUMN_NAME");
+                    if (fkColumn != null && pkTable != null && pkColumn != null) {
+                        foreignKeysByColumn.put(fkColumn.toLowerCase(Locale.ROOT), new ForeignKeyRef(pkTable, pkColumn));
+                    }
                 }
             }
         } catch (SQLException ignored) {

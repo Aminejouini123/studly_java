@@ -173,10 +173,12 @@ public class CourseDetailController extends BaseCourseController {
     private static final double PDF_ZOOM_MIN = 0.5;
     private static final double PDF_ZOOM_MAX = 3.0;
     private static final double PDF_ZOOM_STEP = 0.15;
+    private static final int AI_PDF_CONTEXT_LIMIT = 6_000;
 
     // TTS Support
     private final TtsService ttsService = new TtsService();
     private MediaPlayer mediaPlayer;
+    private String cachedAiPdfContext;
 
     @FXML
     public void handleBackToCoursesAction(javafx.event.ActionEvent event) {
@@ -192,6 +194,7 @@ public class CourseDetailController extends BaseCourseController {
     @FXML
     public void populateCourseDetails(Course course) {
         this.displayedCourse = course;
+        this.cachedAiPdfContext = null;
         if (course == null) {
             return;
         }
@@ -403,6 +406,26 @@ public class CourseDetailController extends BaseCourseController {
         if (msg.isEmpty()) {
             return;
         }
+        String pdfContext;
+        try {
+            pdfContext = getAiPdfContext();
+        } catch (Exception ex) {
+            chatMessages.add(new ChatMessage(
+                    ChatMessage.Role.AI,
+                    "I can only answer from the course PDF, but I couldn't read it.\n" +
+                    "Reason: " + rootMessage(ex)
+            ));
+            scrollChatToBottom();
+            return;
+        }
+        if (pdfContext.isBlank()) {
+            chatMessages.add(new ChatMessage(
+                    ChatMessage.Role.AI,
+                    "I can only answer about education and the content of this course PDF. Attach a readable PDF to use the chatbot."
+            ));
+            scrollChatToBottom();
+            return;
+        }
         chatInputField.clear();
 
         chatMessages.add(new ChatMessage(ChatMessage.Role.USER, msg));
@@ -410,13 +433,14 @@ public class CourseDetailController extends BaseCourseController {
         setChatBusy(true, "Thinking...");
 
         String systemPrompt = buildSystemPrompt(displayedCourse);
+        String userPrompt = buildChatUserPrompt(msg, pdfContext);
         pendingAiBubble = new ChatMessage(ChatMessage.Role.AI, "…");
         chatMessages.add(pendingAiBubble);
         scrollChatToBottom();
 
         CompletableFuture<?> fut = CompletableFuture.supplyAsync(() -> {
             try {
-                return chatService.chat(systemPrompt, msg);
+                return chatService.chat(systemPrompt, userPrompt);
             } catch (Exception e) {
                 return "Error: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
             }
@@ -670,7 +694,7 @@ public class CourseDetailController extends BaseCourseController {
             scrollChatToBottom();
             return;
         }
-        File f = new File(displayedCourse.getCourse_file().trim());
+        File f = resolveCoursePdfFile();
         if (!f.exists() || !f.isFile()) {
             chatMessages.add(new ChatMessage(ChatMessage.Role.AI, "Course file not found on this device:\n" + f.getAbsolutePath()));
             scrollChatToBottom();
@@ -689,24 +713,36 @@ public class CourseDetailController extends BaseCourseController {
         pendingAiBubble = pending;
         scrollChatToBottom();
 
-        String systemPrompt = buildSystemPrompt(displayedCourse);
+        String systemPrompt;
+        try {
+            systemPrompt = buildSystemPrompt(displayedCourse);
+        } catch (Exception ex) {
+            replacePendingAi("I can only summarize from the course PDF, but I couldn't read it.\nReason: " + rootMessage(ex));
+            setChatBusy(false, "");
+            return;
+        }
         CompletableFuture.supplyAsync(() -> {
             try {
-                String text = PdfTextExtractor.extractText(f, 35_000);
+                String text = PdfTextExtractor.extractText(f, AI_PDF_CONTEXT_LIMIT);
                 if (text.isBlank()) {
                     return "I couldn’t extract text from this PDF. It looks like a scanned PDF (images). " +
                            "To summarize scanned PDFs, we need OCR (e.g., Tesseract).";
                 }
                 String userPrompt =
-                        "Act as a Senior Academic Researcher and Pedagogical Expert. " +
-                        "Synthesize a highly professional, structured academic summary from the PDF content below.\n\n" +
-                        "Use the following professional structure:\n" +
+                        "Analyze the PDF content below and summarize ONLY what is explicitly supported by it.\n" +
+                        "Do not add general knowledge, outside examples, or topics that are not grounded in the PDF.\n\n" +
+                        "Always produce a useful summary, even if the PDF is very short.\n" +
+                        "If the document is short, incomplete, or contains little text, do not refuse. Instead, summarize every usable idea that is present and keep the output compact.\n" +
+                        "Use this structure when enough information exists:\n" +
                         "1) **EXECUTIVE SUMMARY**: A high-level 2-3 sentence academic overview.\n" +
                         "2) **STRATEGIC LEARNING OBJECTIVES**: What the student should master (3-5 items).\n" +
                         "3) **CORE THEORETICAL FRAMEWORK**: Key concepts and their relationships.\n" +
                         "4) **CRITICAL VOCABULARY**: Definitions of essential terms.\n" +
-                        "5) **EVALUATION PREPARATION**: 5 sophisticated exam questions ranging from application to synthesis.\n" +
-                        "6) **ACCELERATED REVISION SHEET**: A condensed 10-line mastery guide.\n\n" +
+                        "5) **EVALUATION PREPARATION**: 3-5 exam questions supported by the PDF.\n" +
+                        "6) **ACCELERATED REVISION SHEET**: A short revision guide.\n\n" +
+                        "If the PDF is too short for all sections, adapt the structure and include only the sections that can be supported by the document.\n" +
+                        "Never say that you cannot summarize only because the content is short. Summarize what is available.\n" +
+                        "If a detail is missing in the PDF, say it is not specified in the document.\n" +
                         "Maintain a formal, authoritative, and educational tone throughout. Use **bolding** for emphasis and *italics* for technical terms.\n\n" +
                         "PDF content:\n" + text;
 
@@ -722,11 +758,12 @@ public class CourseDetailController extends BaseCourseController {
 
     private static String buildSystemPrompt(Course course) {
         String base =
-                "You are Studly AI, a highly capable academic assistant for students.\n" +
-                "Scope: Professional education, research, and study assistance.\n" +
-                "Core Directive: Always be helpful, detailed, and professional. If the user asks for a summary, synthesize one using the provided course data (notes, title, link).\n" +
-                "If the user asks something completely unrelated to education (e.g., politics, gossip), politely redirect them to academic topics.\n" +
-                "Language: Always reply in the same language as the user (e.g., French if they ask in French).";
+                "You are Studly AI, a strict academic assistant.\n" +
+                "Scope: education only.\n" +
+                "You must answer ONLY if the request is educational and directly related to the PDF topic.\n" +
+                "If the user asks about anything outside education or outside the PDF, refuse briefly and redirect them to the document topic.\n" +
+                "Do not use general knowledge to fill gaps. If the PDF does not contain the answer, say that the information is not present in the document.\n" +
+                "Language: always reply in the same language as the user.\n";
         if (course == null) {
             return base;
         }
@@ -735,12 +772,52 @@ public class CourseDetailController extends BaseCourseController {
         String link = course.getCourse_link() != null ? course.getCourse_link().trim() : "";
 
         StringBuilder sb = new StringBuilder(base);
-        sb.append(" You are the dedicated assistant for this course.");
+        sb.append("You are the dedicated assistant for this course.");
         if (!name.isEmpty()) sb.append(" [COURSE TITLE]: ").append(name).append(".");
-        if (!comment.isEmpty()) sb.append(" [COURSE NOTES/CONTENT]: ").append(comment).append(".");
+        if (!comment.isEmpty()) sb.append(" [COURSE NOTE]: ").append(comment).append(".");
         if (!link.isEmpty()) sb.append(" [REFERENCE LINK]: ").append(link).append(".");
-        sb.append(" You can use these notes to provide summaries, explain concepts, or answer questions. If the information is missing, use your general knowledge to assist the student while staying relevant to the course theme.");
         return sb.toString();
+    }
+
+    private static String buildChatUserPrompt(String userQuestion, String pdfContext) {
+        String question = userQuestion == null ? "" : userQuestion.trim();
+        String context = pdfContext == null ? "" : pdfContext.trim();
+        return "Answer the question only from the PDF context below.\n" +
+                "If the answer is not in the PDF, say it is not present in the document.\n\n" +
+                "PDF context:\n" + context + "\n\n" +
+                "User question:\n" + question;
+    }
+
+    private File resolveCoursePdfFile() {
+        if (displayedCourse == null || displayedCourse.getCourse_file() == null || displayedCourse.getCourse_file().trim().isEmpty()) {
+            return null;
+        }
+        return resolveCourseFile(displayedCourse.getCourse_file().trim());
+    }
+
+    private String getAiPdfContext() throws Exception {
+        if (cachedAiPdfContext != null) {
+            return cachedAiPdfContext;
+        }
+        File pdf = resolveCoursePdfFile();
+        if (pdf == null || !pdf.exists() || !pdf.isFile() || !pdf.getName().toLowerCase().endsWith(".pdf")) {
+            cachedAiPdfContext = "";
+            return cachedAiPdfContext;
+        }
+        String text = PdfTextExtractor.extractText(pdf, AI_PDF_CONTEXT_LIMIT);
+        cachedAiPdfContext = text == null ? "" : text.trim();
+        return cachedAiPdfContext;
+    }
+
+    private static String rootMessage(Throwable ex) {
+        Throwable t = ex;
+        while (t != null && t.getCause() != null) {
+            t = t.getCause();
+        }
+        if (t == null) {
+            return "Unknown error";
+        }
+        return t.getMessage() == null || t.getMessage().isBlank() ? t.getClass().getSimpleName() : t.getMessage();
     }
 
     private static String displayUpper(String value) {

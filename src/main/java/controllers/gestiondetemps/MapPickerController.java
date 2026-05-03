@@ -14,6 +14,7 @@ public class MapPickerController {
     private WebView mapWebView;
 
     private LocationSelectionCallback callback;
+    private final JavaConnector javaConnector = new JavaConnector();
 
     private static final String MAP_HTML = 
         "<!DOCTYPE html>" +
@@ -214,8 +215,20 @@ public class MapPickerController {
         "        }" +
         "        " +
         "        function confirmLocation() {" +
-        "            if (typeof javaConnector !== 'undefined' && selectedLat && selectedLng) {" +
+        "            if (!Number.isFinite(selectedLat) || !Number.isFinite(selectedLng)) {" +
+        "                alert('Veuillez selectionner un lieu sur la carte');" +
+        "                return;" +
+        "            }" +
+        "            " +
+        "            if (typeof javaConnector === 'undefined') {" +
+        "                alert('Erreur: Connexion Java non disponible');" +
+        "                return;" +
+        "            }" +
+        "            " +
+        "            try {" +
         "                javaConnector.setLocation(selectedName, selectedLat, selectedLng);" +
+        "            } catch (e) {" +
+        "                alert('Erreur lors de la confirmation: ' + e.message);" +
         "            }" +
         "        }" +
         "        " +
@@ -235,11 +248,19 @@ public class MapPickerController {
 
         WebEngine engine = mapWebView.getEngine();
         engine.setJavaScriptEnabled(true);
+        
+        engine.setOnAlert(event -> {
+            System.out.println("JS Alert: " + event.getData());
+        });
 
         engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                JSObject window = (JSObject) engine.executeScript("window");
-                window.setMember("javaConnector", new JavaConnector());
+                try {
+                    JSObject window = (JSObject) engine.executeScript("window");
+                    window.setMember("javaConnector", javaConnector);
+                } catch (Exception e) {
+                    System.err.println("Error exposing JavaConnector: " + e.getMessage());
+                }
             }
         });
 
@@ -253,15 +274,24 @@ public class MapPickerController {
     public class JavaConnector {
         public void setLocation(String name, double lat, double lng) {
             Platform.runLater(() -> {
-                if (callback != null) {
-                    callback.onLocationSelected(name, lat, lng);
-                }
-                Stage stage = (Stage) mapWebView.getScene().getWindow();
-                if (stage != null) {
-                    stage.close();
+                try {
+                    if (callback != null) {
+                        callback.onLocationSelected(name, lat, lng);
+                    }
+                    closeWindow();
+                } catch (Exception e) {
+                    System.err.println("Error in setLocation: " + e.getMessage());
                 }
             });
         }
+    }
+
+    private void closeWindow() {
+        if (mapWebView.getScene() == null || mapWebView.getScene().getWindow() == null) {
+            return;
+        }
+
+        ((Stage) mapWebView.getScene().getWindow()).close();
     }
 
     @FunctionalInterface

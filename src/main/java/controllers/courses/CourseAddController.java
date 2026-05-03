@@ -291,7 +291,7 @@ public class CourseAddController extends BaseCourseController {
                 // Frontend : recharger la liste dans le shell + onglet Cours actif.
                 controllers.FrontendController fc = controllers.FrontendController.getInstance();
                 if (fc != null) {
-                    fc.goToCourses(null);
+                    fc.goToCourses((javafx.event.Event) null);
                 } else {
                     returnToDashboard(rootPane);
                 }

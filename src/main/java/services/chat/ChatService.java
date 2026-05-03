@@ -6,6 +6,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.io.InputStream;
 import java.util.Properties;
@@ -17,6 +20,7 @@ import utils.JsonUtils;
 public final class ChatService {
     private static final URI OPENROUTER_CHAT_URI = URI.create("https://openrouter.ai/api/v1/chat/completions");
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
+    private static final int DEFAULT_MAX_TOKENS = 1024;
 
     private final HttpClient http;
     private final OpenRouterConfigStore configStore;
@@ -61,6 +65,7 @@ public final class ChatService {
 
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("model", model);
+        payload.put("max_tokens", DEFAULT_MAX_TOKENS);
         payload.put("messages", List.of(
                 Map.of("role", "system", "content", sys),
                 Map.of("role", "user", "content", user)
@@ -140,8 +145,7 @@ public final class ChatService {
         if (!file.isBlank()) {
             return normalizeKey(file);
         }
-        String classpath = classpathProperty("openrouter.apiKey");
-        return normalizeKey(classpath);
+        return normalizeKey(resolvePropertiesApiKey());
     }
 
     private static String normalizeKey(String raw) {
@@ -153,9 +157,42 @@ public final class ChatService {
         return k;
     }
 
-    private static String classpathProperty(String key) {
-        try (InputStream in = ChatService.class.getResourceAsStream("/openrouter.properties")) {
+    private static String resolvePropertiesApiKey() {
+        String classpath = classpathProperty("/openrouter.properties", "openrouter.apiKey");
+        if (!classpath.isBlank()) {
+            return classpath;
+        }
+
+        String classpathExample = classpathProperty("/openrouter.properties.example", "openrouter.apiKey");
+        if (!classpathExample.isBlank()) {
+            return classpathExample;
+        }
+
+        String sourceFile = fileProperty(Paths.get("src", "main", "resources", "openrouter.properties"), "openrouter.apiKey");
+        if (!sourceFile.isBlank()) {
+            return sourceFile;
+        }
+
+        return fileProperty(Paths.get("src", "main", "resources", "openrouter.properties.example"), "openrouter.apiKey");
+    }
+
+    private static String classpathProperty(String resourcePath, String key) {
+        try (InputStream in = ChatService.class.getResourceAsStream(resourcePath)) {
             if (in == null) return "";
+            Properties p = new Properties();
+            p.load(in);
+            String v = p.getProperty(key);
+            return v == null ? "" : v.trim();
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    private static String fileProperty(Path path, String key) {
+        if (path == null || !Files.exists(path)) {
+            return "";
+        }
+        try (InputStream in = Files.newInputStream(path)) {
             Properties p = new Properties();
             p.load(in);
             String v = p.getProperty(key);

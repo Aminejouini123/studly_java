@@ -15,6 +15,7 @@ import java.util.Map;
  * Generates a quiz from a course PDF using OpenRouter.
  */
 public final class QuizGeneratorService {
+    private static final int QUIZ_PDF_CONTEXT_LIMIT = 6_000;
     private final ChatService chatService;
 
     public QuizGeneratorService() {
@@ -51,7 +52,7 @@ public final class QuizGeneratorService {
     }
 
     public List<QuizQuestion> generateQuizFromPdf(File pdf, String courseName, QuizConfig config) throws Exception {
-        String text = PdfTextExtractor.extractText(pdf, 35_000);
+        String text = PdfTextExtractor.extractText(pdf, QUIZ_PDF_CONTEXT_LIMIT);
         if (text.isBlank()) {
             throw new IllegalStateException(
                     "I couldn’t extract text from this PDF. It looks like a scanned PDF (images). " +
@@ -65,20 +66,22 @@ public final class QuizGeneratorService {
 
         String systemPrompt =
                 "You are Studly AI, an education assistant.\n" +
-                "Generate quizzes only about the provided course material.\n" +
+                "Generate quizzes only about the provided PDF content.\n" +
+                "Never use general knowledge or invent facts outside the PDF.\n" +
+                "If the PDF does not support a question, do not create it.\n" +
                 "STRICT REQUIREMENT: You MUST generate questions ONLY of the requested type. If TRUE_FALSE is requested, do not generate MCQ.\n" +
                 "Language: match the language of the content.\n" +
                 "Be precise and avoid unrelated topics.\n" +
                 "Return ONLY valid JSON. No markdown. No code fences.";
 
         String title = (courseName == null || courseName.isBlank()) ? "this course" : courseName.trim();
-        String topic = cfg.getTopic() == null || cfg.getTopic().isBlank() ? title : cfg.getTopic().trim();
         int n = Math.max(1, Math.min(30, cfg.getNumberOfQuestions()));
         String qType = cfg.getQuestionType().name();
         String diff = cfg.getDifficulty().name();
 
         String userPrompt =
-                "Create a quiz for topic: " + topic + "\n" +
+                "Create a quiz strictly from the PDF content below.\n" +
+                "Course title: " + title + "\n" +
                 "Constraints:\n" +
                 "- numberOfQuestions: " + n + "\n" +
                 "- questionType: " + qType + " (MCQ | TRUE_FALSE | SHORT_ANSWER)\n" +
@@ -104,6 +107,10 @@ public final class QuizGeneratorService {
                 "- For SHORT_ANSWER: options MUST be [] and correctAnswer a short expected answer.\n" +
                 "- explanation: 1 short line.\n" +
                 "- DO NOT mix types. If the requested type is " + qType + ", every single question must be " + qType + ".\n" +
+                "- Every question MUST be directly answerable from the PDF text.\n" +
+                "- Do not ask generic questions about the broader subject if the PDF does not explicitly support them.\n" +
+                "- Ignore the activity title and any free-text topic if they conflict with the PDF. The PDF content always wins.\n" +
+                "- Generate questions only from what is actually present in the PDF.\n" +
                 "\n" +
                 "PDF content:\n" + text;
 
