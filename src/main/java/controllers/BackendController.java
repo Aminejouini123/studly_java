@@ -59,6 +59,7 @@ public class BackendController {
             Node content = loader.load();
             mainContentHost.getChildren().setAll(content);
         } catch (IOException e) {
+            System.err.println("Error loading FXML content: " + fxmlPath);
             e.printStackTrace();
         }
     }
@@ -80,6 +81,7 @@ public class BackendController {
                 }
             }
         }
+        
         if (activeBtn == null) return;
         activeBtn.getStyleClass().remove("nav-button");
         activeBtn.getStyleClass().add("nav-button-active");
@@ -91,5 +93,10 @@ public class BackendController {
                 svg.setFill(Color.web("#38bdf8"));
             }
         }
+    }
+
+    @FXML
+    public void handleExportExcel() {
+        System.out.println("Export logic should be handled by sub-controllers.");
     }
 }

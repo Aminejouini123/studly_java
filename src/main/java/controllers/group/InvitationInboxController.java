@@ -134,9 +134,7 @@ public class InvitationInboxController {
 
     private static String displayName(User u) {
         if (u == null) return "Utilisateur";
-        String first = u.getFirst_name() == null ? "" : u.getFirst_name().trim();
-        String last = u.getLast_name() == null ? "" : u.getLast_name().trim();
-        String full = (first + " " + last).trim();
+        String full = u.getFullName().trim();
         if (!full.isEmpty()) return full;
         String email = u.getEmail() == null ? "" : u.getEmail().trim();
         return email.isEmpty() ? "Utilisateur" : email.toLowerCase(Locale.ROOT);

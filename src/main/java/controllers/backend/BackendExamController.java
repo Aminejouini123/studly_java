@@ -238,7 +238,11 @@ public class BackendExamController {
             javafx.scene.Parent formRoot = loader.load();
             controllers.exams.ExamEditController controller = loader.getController();
             controller.setFromBackend(true);
-            controller.setExam(exam);
+            if (filteredCourse != null) {
+                controller.setExam(exam, filteredCourse);
+            } else {
+                controller.setExam(exam, new Course());
+            }
             controller.setBackendController(this);
             
             if (examsTable.getScene() != null) {

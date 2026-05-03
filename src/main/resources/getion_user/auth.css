@@ -74,6 +74,27 @@
     -fx-background-color: #021636;
 }
 
+.send-code-button {
+    -fx-background-color: #377df0;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 8 14;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.send-code-button:hover {
+    -fx-background-color: #1d5cc9;
+}
+
+.send-code-button:disabled {
+    -fx-opacity: 0.6;
+}
+
 .continue-with-text {
     -fx-text-fill: rgba(255, 255, 255, 0.8);
     -fx-font-size: 12px;
@@ -108,6 +129,52 @@
 .signup-link:hover {
     -fx-text-fill: #99ccff;
     -fx-underline: true;
+}
+
+.face-id-button {
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255,255,255,0.35);
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.face-id-button:hover {
+    -fx-background-color: rgba(255,255,255,0.22);
+    -fx-border-color: rgba(255,255,255,0.6);
+}
+
+.face-id-button:disabled {
+    -fx-opacity: 0.5;
+}
+
+.remember-me-checkbox {
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.remember-me-checkbox .box {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-border-color: rgba(255, 255, 255, 0.55);
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+
+.remember-me-checkbox:selected .box {
+    -fx-background-color: #377df0;
+    -fx-border-color: #377df0;
+}
+
+.remember-me-checkbox .mark {
+    -fx-background-color: white;
 }
 
 .error-label {

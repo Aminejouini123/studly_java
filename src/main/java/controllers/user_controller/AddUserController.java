@@ -48,17 +48,17 @@ public class AddUserController {
         }
 
         User newUser = new User();
-        newUser.setFirst_name(firstName);
-        newUser.setLast_name(lastName);
+        newUser.setFirstName(firstName);
+        newUser.setLastName(lastName);
         newUser.setEmail(email);
-        newUser.setPassword(password);
+        newUser.setPassword(utils.PasswordUtil.hash(password));
         newUser.setRoles("[\"" + role + "\"]");
         newUser.setStatut("Active");
-        newUser.setIs_verified(1);
+        newUser.setIsVerified(1);
         
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
-        newUser.setCreated_at(now);
-        newUser.setUpdated_at(now);
+        newUser.setCreatedAt(now);
+        newUser.setUpdatedAt(now);
 
         try {
             userService.ajouter(newUser);

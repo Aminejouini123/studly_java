@@ -28,6 +28,16 @@ public class ExamAddController extends BaseExamController {
 
     private Course currentCourse;
     private final ExamService examService = new ExamService();
+    private boolean fromBackend = false;
+    private controllers.backend.BackendExamController backendController;
+
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
+    }
+
+    public void setBackendController(controllers.backend.BackendExamController controller) {
+        this.backendController = controller;
+    }
 
     @FXML
     public void initialize() {

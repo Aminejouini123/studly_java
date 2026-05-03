@@ -12,6 +12,8 @@ cp.txt
 
 # Local API keys (do not commit)
 src/main/resources/openrouter.properties
+src/main/resources/recommendation.properties
+src/main/resources/google-oauth.properties
 
 # Python/Other
 studly_api/.env

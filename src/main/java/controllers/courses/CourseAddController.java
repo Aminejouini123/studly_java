@@ -38,6 +38,17 @@ public class CourseAddController extends BaseCourseController {
     // --- Inline Error Labels ---
     @FXML private Label errName, errEmail, errSemester, errDifficulty, errType, errPriority, errStatus, errCoeff, errDuration;
 
+    private boolean fromBackend = false;
+    private controllers.BackendCourseController backendController;
+
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
+    }
+
+    public void setBackendController(controllers.BackendCourseController controller) {
+        this.backendController = controller;
+    }
+
     @FXML
     public void initialize() {
         if (formTitle != null) formTitle.setText("Add a New Course");

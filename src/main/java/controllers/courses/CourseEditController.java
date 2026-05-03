@@ -32,12 +32,17 @@ public class CourseEditController extends BaseCourseController {
 
     public void setCourse(Course course) {
         this.course = course;
+        this.currentCourse = course;
+        courseToEdit = course;
         if (course != null) {
             populateForm(course);
         }
     }
 
     private static Course courseToEdit;
+    private boolean fromBackend = false;
+    private controllers.BackendCourseController backendController;
+    private Course currentCourse;
 
     public static void startEdit(Course course, Stage stage) {
         courseToEdit = course;
@@ -158,4 +163,13 @@ public class CourseEditController extends BaseCourseController {
         courseToEdit = null;
         returnToCourses(event);
     }
+
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
+    }
+
+    public void setBackendController(controllers.BackendCourseController controller) {
+        this.backendController = controller;
+    }
+
 }

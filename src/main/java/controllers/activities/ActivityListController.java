@@ -52,6 +52,8 @@ public class ActivityListController extends BaseActivityController {
     private final ActivityService activityService = new ActivityService();
     private final QuizGeneratorService quizGeneratorService = new QuizGeneratorService();
 
+    private boolean fromBackend = false;
+
     @FXML
     public void initialize() {
         if (statusFilter != null) {
@@ -73,6 +75,10 @@ public class ActivityListController extends BaseActivityController {
         this.currentCourse = course;
         courseTitleLabel.setText(course.getName());
         loadActivities();
+    }
+
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
     }
 
     private void loadActivities() {

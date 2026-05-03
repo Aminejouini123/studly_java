@@ -18,6 +18,8 @@ public class ActivityAddController extends BaseActivityController {
 
     private Course currentCourse;
     private final ActivityService activityService = new ActivityService();
+    private boolean fromBackend = false;
+    private controllers.backend.BackendActivityController backendController;
 
     @FXML
     public void initialize() {
@@ -29,6 +31,14 @@ public class ActivityAddController extends BaseActivityController {
 
     public void setCourse(Course course) {
         this.currentCourse = course;
+    }
+
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
+    }
+
+    public void setBackendController(controllers.backend.BackendActivityController controller) {
+        this.backendController = controller;
     }
 
     @FXML
