@@ -71,6 +71,10 @@ public abstract class BaseCourseController {
 
     @FXML
     public void goToCourses(MouseEvent event) {
+        if (event == null) {
+            goToCourses((javafx.event.Event) null);
+            return;
+        }
         try {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Node contentHost = stage.getScene().getRoot().lookup("#contentHost");

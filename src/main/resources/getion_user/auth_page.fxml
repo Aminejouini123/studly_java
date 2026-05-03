@@ -14,7 +14,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 
-<AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.LoginPage">
+<AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.user_controller.LoginPage">
     <children>
         <!-- Background decorative elements for the modern feel -->
         <!-- Big abstract circle on the top left -->
