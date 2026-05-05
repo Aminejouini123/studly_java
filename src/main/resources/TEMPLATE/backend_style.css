@@ -458,13 +458,18 @@
     -fx-background-color: rgba(59, 130, 246, 0.1);
 }
 
-<<<<<<< HEAD
+/* View action button */
 .btn-view {
     -fx-background-color: transparent;
     -fx-cursor: hand;
     -fx-padding: 5;
     -fx-background-radius: 5;
-=======
+}
+
+.btn-view:hover {
+    -fx-background-color: rgba(100, 116, 139, 0.12);
+}
+
 /* Time Management Specific Styles */
 .status-badge {
     -fx-font-size: 10px;
@@ -512,14 +517,7 @@
     -fx-background-radius: 12;
     -fx-padding: 30;
     -fx-spacing: 25;
->>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
 }
-
-.btn-view:hover {
-    -fx-background-color: rgba(100, 116, 139, 0.12);
-}
-<<<<<<< HEAD
-=======
 
 .admin-form-section-title {
     -fx-font-size: 16px;
@@ -569,4 +567,3 @@
     -fx-font-weight: bold;
     -fx-padding: 2 0 0 2;
 }
->>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e

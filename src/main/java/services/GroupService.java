@@ -1,6 +1,7 @@
 package services;
 
 import models.Group;
+import models.User;
 import utils.MyDatabase;
 
 import java.sql.Connection;
@@ -281,6 +282,53 @@ public class GroupService implements IService<Group> {
         return hasColumn("creator_id");
     }
 
+    public int resolveCreatorIdForUser(User currentUser) {
+        if (currentUser == null || currentUser.getId() <= 0) {
+            throw new IllegalStateException("Utilisateur non connecte.");
+        }
+        if (!hasColumn(CREATOR_ID_COL)) {
+            return currentUser.getId();
+        }
+
+        ForeignKeyRef ref = foreignKeysByColumn.get(CREATOR_ID_COL);
+        if (ref == null) {
+            return currentUser.getId();
+        }
+
+        // Fast path: same id exists in the referenced table.
+        if (existsById(ref.pkTable, ref.pkColumn, currentUser.getId())) {
+            return currentUser.getId();
+        }
+
+        // Fallback path: resolve by email in referenced user table (handles users/user table mismatch).
+        String email = currentUser.getEmail() == null ? "" : currentUser.getEmail().trim();
+        if (!email.isEmpty()) {
+            Integer byEmail = findIdByEmail(ref.pkTable, ref.pkColumn, email);
+            if (byEmail != null && byEmail > 0) {
+                return byEmail;
+            }
+        }
+
+        throw new IllegalStateException(
+                "Invalid creator_id: user id " + currentUser.getId() + " does not exist in `" + ref.pkTable + "`."
+        );
+    }
+
+    public boolean isGroupCreator(Group group, User currentUser) {
+        if (group == null || currentUser == null || currentUser.getId() <= 0) {
+            return false;
+        }
+        if (group.getCreatorId() > 0 && currentUser.getId() == group.getCreatorId()) {
+            return true;
+        }
+        try {
+            int resolved = resolveCreatorIdForUser(currentUser);
+            return group.getCreatorId() > 0 && group.getCreatorId() == resolved;
+        } catch (RuntimeException ex) {
+            return false;
+        }
+    }
+
     private int requireValidForeignKeyId(String fkColumn, int id) {
         if (id <= 0) {
             throw new IllegalStateException("Invalid " + fkColumn + " value (must be > 0).");
@@ -292,14 +340,6 @@ public class GroupService implements IService<Group> {
         }
 
         if (!existsById(ref.pkTable, ref.pkColumn, id)) {
-            if (CREATOR_ID_COL.equalsIgnoreCase(fkColumn)) {
-                // If caller gave a bad creator id, try to fall back to an existing (or demo) user.
-                ensureSampleUsers(1);
-                Integer first = firstId(ref.pkTable, ref.pkColumn);
-                if (first != null) {
-                    return first;
-                }
-            }
             throw new IllegalStateException("Invalid " + fkColumn + ": user id " + id + " does not exist.");
         }
 
@@ -312,6 +352,34 @@ public class GroupService implements IService<Group> {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             return rs.next();
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    private Integer findIdByEmail(String table, String idColumn, String email) {
+        if (!hasTableColumn(table, "email")) {
+            return null;
+        }
+        String sql = "select " + idColumn + " from `" + table + "` where lower(email) = lower(?) limit 1";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+        return null;
+    }
+
+    private boolean hasTableColumn(String table, String column) {
+        try {
+            DatabaseMetaData meta = connection.getMetaData();
+            try (ResultSet rs = meta.getColumns(null, null, table, column)) {
+                return rs.next();
+            }
         } catch (SQLException e) {
             return false;
         }

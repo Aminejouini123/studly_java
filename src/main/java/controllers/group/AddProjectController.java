@@ -13,6 +13,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import models.Group;
 import models.Project;
+import models.User;
+import services.GroupService;
 import services.ProjectService;
 import services.ai.DescriptionAiService;
 import utils.SessionManager;
@@ -54,6 +56,7 @@ public class AddProjectController {
     private Button generateDescriptionButton;
 
     private final ProjectService projectService = new ProjectService();
+    private final GroupService groupService = new GroupService();
     private final DescriptionAiService descriptionAiService = new DescriptionAiService();
     private Group group;
     private Project projectToEdit;
@@ -150,7 +153,8 @@ public class AddProjectController {
             showAlert(Alert.AlertType.ERROR, "Projet", "Aucun groupe selectionne.");
             return;
         }
-        if (SessionManager.getCurrentUser() == null || SessionManager.getCurrentUser().getId() != group.getCreatorId()) {
+        User current = SessionManager.getCurrentUser();
+        if (!groupService.isGroupCreator(group, current)) {
             showAlert(Alert.AlertType.WARNING, "Projet", "Acces refuse: seul le createur du groupe peut ajouter/modifier un projet.");
             return;
         }

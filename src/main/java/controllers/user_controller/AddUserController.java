@@ -1,4 +1,4 @@
-package controllers;
+package controllers.user_controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -8,6 +8,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import models.User;
 import services.UserService;
+import utils.PasswordUtil;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -70,7 +71,7 @@ public class AddUserController {
         newUser.setLast_name(lastName);
         newUser.setEmail(email);
         newUser.setPhone_number(phoneNumber);
-        newUser.setPassword(password);
+        newUser.setPassword(PasswordUtil.hash(password));
         newUser.setRoles("[\"" + role + "\"]");
         newUser.setStatut("Active");
         newUser.setIs_verified(1);

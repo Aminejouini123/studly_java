@@ -19,7 +19,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
 
-<AnchorPane prefHeight="1200.0" prefWidth="980.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.group.GroupDetailsController">
+<AnchorPane prefHeight="760.0" prefWidth="980.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.group.GroupDetailsController">
     <children>
         <VBox spacing="18.0" AnchorPane.bottomAnchor="18.0" AnchorPane.leftAnchor="18.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="18.0">
 
@@ -60,7 +60,7 @@
 
                 <children>
                     <!-- Left column -->
-                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" GridPane.columnIndex="0" GridPane.vgrow="ALWAYS">
+                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="ALWAYS" GridPane.columnIndex="0" GridPane.vgrow="ALWAYS">
                         <content>
                             <VBox spacing="14.0">
                                 <children>
@@ -186,6 +186,11 @@
                <RowConstraints vgrow="ALWAYS" />
             </rowConstraints>
             </GridPane>
+            <HBox alignment="CENTER_RIGHT">
+                <children>
+                    <Button mnemonicParsing="false" onAction="#backToGroups" styleClass="btn-secondary" text="Fermer" />
+                </children>
+            </HBox>
         </VBox>
     </children>
 </AnchorPane>

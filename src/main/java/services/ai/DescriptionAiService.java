@@ -10,21 +10,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-/**
- * Generates descriptions for Project / Task forms.
- *
- * Behavior:
- * - If AI is configured via env vars, calls an OpenAI-compatible chat endpoint.
- * - Otherwise, falls back to a deterministic template generator so the button still works offline.
- *
- * Supported env vars (optional):
- * - AI_API_KEY: bearer token for the API (example: OpenAI API key).
- * - AI_BASE_URL: base URL, default: https://api.openai.com/v1
- * - AI_MODEL: model name to use.
- *
- * Notes:
- * - We keep the JSON parsing lightweight (no extra dependencies). If parsing fails, we fall back to templates.
- */
 public class DescriptionAiService {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 

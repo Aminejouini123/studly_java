@@ -1,7 +1,8 @@
-package controllers;
+package controllers.user_controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import controllers.FrontendController;
 import models.User;
 import services.UserService;
 import utils.SessionManager;

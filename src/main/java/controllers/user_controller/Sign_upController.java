@@ -8,6 +8,7 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import models.User;
 import services.UserService;
+import utils.PasswordUtil;
 
 import java.sql.Date;
 import java.sql.SQLException;
@@ -124,7 +125,7 @@ public class Sign_upController {
         newUser.setLast_name(lastName);
         newUser.setEmail(email);
         newUser.setPhone_number(phone);
-        newUser.setPassword(password);
+        newUser.setPassword(PasswordUtil.hash(password));
         newUser.setDate_of_birth(dob);
         newUser.setRoles("[\"ROLE_USER\"]");
         newUser.setIs_verified(0);

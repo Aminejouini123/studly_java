@@ -14,6 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -111,7 +112,7 @@ public class ListGroupController {
 
     private void openEdit(Group group) {
         if (!canCurrentUserModify(group)) {
-            showAlert(Alert.AlertType.ERROR, "Autorisation", "Seul le createur du groupe peut le modifier.");
+            showAlert(Alert.AlertType.ERROR, "Autorisation", "Seul le createur du groupe ou un admin peut le modifier.");
             return;
         }
 
@@ -132,7 +133,7 @@ public class ListGroupController {
 
     private void deleteGroup(Group group) {
         if (!canCurrentUserModify(group)) {
-            showAlert(Alert.AlertType.ERROR, "Autorisation", "Seul le createur du groupe peut le supprimer.");
+            showAlert(Alert.AlertType.ERROR, "Autorisation", "Seul le createur du groupe ou un admin peut le supprimer.");
             return;
         }
 
@@ -159,7 +160,13 @@ public class ListGroupController {
 
         models.User current = SessionManager.getCurrentUser();
         if (current == null) {
-            statusLabel.setText("Veuillez vous connecter.");
+            try {
+                List<Group> groups = groupService.recuperer();
+                masterData.addAll(groups);
+                statusLabel.setText(groups.size() + " groupe(s).");
+            } catch (SQLException | RuntimeException e) {
+                statusLabel.setText("Impossible de charger les groupes: " + e.getMessage());
+            }
             applySearch();
             updateEmptyState();
             return;
@@ -176,7 +183,7 @@ public class ListGroupController {
 
             List<Group> visible = groups.stream()
                     .filter(g -> g != null)
-                    .filter(g -> g.getCreatorId() == current.getId() || acceptedGroupIds.contains(g.getId()))
+                    .filter(g -> groupService.isGroupCreator(g, current) || acceptedGroupIds.contains(g.getId()))
                     .collect(Collectors.toList());
 
             masterData.addAll(visible);
@@ -233,7 +240,7 @@ public class ListGroupController {
         while (current != null) {
             if (current instanceof StackPane) {
                 StackPane sp = (StackPane) current;
-                if ("groupContentHost".equals(sp.getId())) {
+                if ("groupContentHost".equals(sp.getId()) || "contentHost".equals(sp.getId())) {
                     return sp;
                 }
             }
@@ -254,10 +261,8 @@ public class ListGroupController {
         return value == null ? "" : value.trim();
     }
 
-    private static boolean canCurrentUserModify(Group group) {
-        if (group == null) return false;
-        models.User current = SessionManager.getCurrentUser();
-        return current != null && current.getId() == group.getCreatorId();
+    private boolean canCurrentUserModify(Group group) {
+        return groupService.isGroupCreator(group, SessionManager.getCurrentUser());
     }
 
     private final class GroupCardCell extends ListCell<Group> {
@@ -339,13 +344,27 @@ public class ListGroupController {
             }
 
             nameLabel.setText(nullToDash(group.getCategory()));
-            creatorLabel.setText(userLabelResolver.resolve(group.getCreatorId()) + " (Createur)");
+            if (group.getCreatorId() > 0) {
+                creatorLabel.setText(userLabelResolver.resolve(group.getCreatorId()) + " (Createur)");
+            } else {
+                creatorLabel.setText("Createur non defini");
+            }
             placesLabel.setText(group.getCapacity() + " places");
             dateLabel.setText("Cree le " + formatDate(group));
 
             boolean canModify = canCurrentUserModify(group);
-            actionsRow.setVisible(canModify);
-            actionsRow.setManaged(canModify);
+            actionsRow.setVisible(true);
+            actionsRow.setManaged(true);
+            editButton.setDisable(!canModify);
+            deleteButton.setDisable(!canModify);
+            if (!canModify) {
+                Tooltip tip = new Tooltip("Seul le createur du groupe ou un admin peut modifier/supprimer.");
+                editButton.setTooltip(tip);
+                deleteButton.setTooltip(tip);
+            } else {
+                editButton.setTooltip(null);
+                deleteButton.setTooltip(null);
+            }
 
             setGraphic(card);
         }

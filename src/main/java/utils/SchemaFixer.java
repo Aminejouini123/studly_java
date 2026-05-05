@@ -44,6 +44,7 @@ public final class SchemaFixer {
             repairGroupTableAndForeignKeys(c);
             repairInvitationUserForeignKeys(c);
             repairMessageSenderUserForeignKey(c);
+            repairProjectDescriptionColumn(c);
             repairProjectTaskDescriptionColumn(c);
         } catch (SQLException e) {
             System.err.println("SchemaFixer: repair failed: " + e.getMessage());
@@ -272,15 +273,27 @@ public final class SchemaFixer {
     }
 
     /**
+     * Repairs legacy schema where project.description is VARCHAR and too small (causes "Data too long").
+     * The current schema expects TEXT.
+     */
+    private static void repairProjectDescriptionColumn(Connection c) throws SQLException {
+        repairDescriptionColumnToText(c, "project");
+    }
+
+    /**
      * Repairs legacy schema where project_task.description is VARCHAR and too small (causes "Data too long").
      * The current schema expects TEXT.
      */
     private static void repairProjectTaskDescriptionColumn(Connection c) throws SQLException {
-        if (!tableExists(c, "project_task")) {
+        repairDescriptionColumnToText(c, "project_task");
+    }
+
+    private static void repairDescriptionColumnToText(Connection c, String table) throws SQLException {
+        if (!tableExists(c, table)) {
             return;
         }
 
-        try (ResultSet rs = c.getMetaData().getColumns(safe(c.getCatalog()), null, "project_task", "description")) {
+        try (ResultSet rs = c.getMetaData().getColumns(safe(c.getCatalog()), null, table, "description")) {
             if (!rs.next()) {
                 return;
             }
@@ -298,10 +311,10 @@ public final class SchemaFixer {
                 // Even VARCHAR(65535) could exist, but the typical broken case is 255/500/etc.
                 if (size > 0 && size <= 2000) {
                     try {
-                        exec(c, "ALTER TABLE `project_task` MODIFY COLUMN `description` TEXT NULL");
-                        System.out.println("SchemaFixer: upgraded project_task.description to TEXT.");
+                        exec(c, "ALTER TABLE `" + table + "` MODIFY COLUMN `description` TEXT NULL");
+                        System.out.println("SchemaFixer: upgraded " + table + ".description to TEXT.");
                     } catch (SQLException e) {
-                        System.err.println("SchemaFixer: could not upgrade project_task.description to TEXT: " + e.getMessage());
+                        System.err.println("SchemaFixer: could not upgrade " + table + ".description to TEXT: " + e.getMessage());
                     }
                 }
             }

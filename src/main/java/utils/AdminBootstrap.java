@@ -70,7 +70,7 @@ public final class AdminBootstrap {
         String sql = "update `users` set roles = ?, password = ?, is_verified = 1, updated_at = CURRENT_TIMESTAMP where id = ?";
         try (PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, "[\"ROLE_ADMIN\"]");
-            ps.setString(2, password);
+            ps.setString(2, PasswordUtil.hash(password));
             ps.setInt(3, id);
             ps.executeUpdate();
         }
@@ -92,7 +92,7 @@ public final class AdminBootstrap {
             ps.setString(i++, null);                 // verification_code
             ps.setString(i++, email);                // email
             ps.setString(i++, "[\"ROLE_ADMIN\"]");   // roles
-            ps.setString(i++, password);             // password (plaintext, matches current authenticateUser)
+            ps.setString(i++, PasswordUtil.hash(password)); // password (BCrypt hash)
             ps.setString(i++, "Admin");              // first_name
             ps.setString(i++, "Studly");             // last_name
             ps.setObject(i++, null);                 // date_of_birth

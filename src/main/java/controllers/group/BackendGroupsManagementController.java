@@ -1,8 +1,8 @@
 package controllers.group;
 
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
@@ -13,13 +13,13 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.geometry.Pos;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.FileChooser;
@@ -40,7 +40,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -54,15 +53,7 @@ public class BackendGroupsManagementController {
     @FXML private Button exportPdfBtn;
     @FXML private Button addGroupBtn;
     @FXML private Button sortCreatedAtBtn;
-
-    @FXML private TableView<Group> groupsTable;
-    @FXML private TableColumn<Group, String> colId;
-    @FXML private TableColumn<Group, Group> colCategory;
-    @FXML private TableColumn<Group, String> colCapacity;
-    @FXML private TableColumn<Group, Group> colCreatedBy;
-    @FXML private TableColumn<Group, Timestamp> colCreatedAt;
-    @FXML private TableColumn<Group, String> colStatus;
-    @FXML private TableColumn<Group, Group> colActions;
+    @FXML private FlowPane groupsFlow;
 
     @FXML private VBox emptyState;
 
@@ -81,152 +72,7 @@ public class BackendGroupsManagementController {
     public void initialize() {
         filtered = new FilteredList<>(master, g -> true);
         sorted = new SortedList<>(filtered);
-        sorted.comparatorProperty().bind(groupsTable.comparatorProperty());
-        groupsTable.setItems(sorted);
-
-        colId.setCellValueFactory(c -> new SimpleStringProperty("#" + c.getValue().getId()));
-        colCapacity.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCapacity() + " members"));
-        colCreatedAt.setCellValueFactory(c -> c.getValue().createdAtProperty());
-        colCreatedAt.setComparator(Comparator.nullsLast(Timestamp::compareTo));
-        colCreatedAt.setCellFactory(tc -> new TableCell<>() {
-            @Override
-            protected void updateItem(Timestamp ts, boolean empty) {
-                super.updateItem(ts, empty);
-                if (empty) {
-                    setText(null);
-                    setGraphic(null);
-                    return;
-                }
-                setText(ts == null ? "-" : formatTs(ts));
-                setGraphic(null);
-            }
-        });
-        colStatus.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCreatorId() > 0 ? "Assigned" : "Unassigned"));
-
-        colCategory.setCellValueFactory(c -> new javafx.beans.property.SimpleObjectProperty<>(c.getValue()));
-        colCategory.setCellFactory(tc -> new TableCell<>() {
-            @Override
-            protected void updateItem(Group g, boolean empty) {
-                super.updateItem(g, empty);
-                if (empty || g == null) {
-                    setGraphic(null);
-                    return;
-                }
-
-                HBox row = new HBox(10);
-                row.getStyleClass().add("gm-cat-cell");
-
-                VBox iconBox = new VBox();
-                iconBox.getStyleClass().add("gm-cat-icon");
-                SVGPath icon = new SVGPath();
-                icon.setContent("M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z");
-                icon.setScaleX(0.7);
-                icon.setScaleY(0.7);
-                icon.getStyleClass().add("gm-cat-icon-shape");
-                iconBox.getChildren().add(icon);
-
-                VBox text = new VBox(2);
-                Label title = new Label(nullToDash(g.getCategory()));
-                title.getStyleClass().add("gm-cell-title");
-                Label meta = new Label("Capacity: " + g.getCapacity() + " members");
-                meta.getStyleClass().add("gm-cell-sub");
-                text.getChildren().addAll(title, meta);
-
-                row.getChildren().addAll(iconBox, text);
-                setGraphic(row);
-            }
-        });
-
-        colCreatedBy.setCellValueFactory(c -> new javafx.beans.property.SimpleObjectProperty<>(c.getValue()));
-        colCreatedBy.setCellFactory(tc -> new TableCell<>() {
-            @Override
-            protected void updateItem(Group g, boolean empty) {
-                super.updateItem(g, empty);
-                if (empty || g == null) {
-                    setGraphic(null);
-                    return;
-                }
-
-                User u = resolveUser(g.getCreatorId());
-                VBox box = new VBox(2);
-                Label name = new Label(u == null ? ("user #" + g.getCreatorId()) : displayName(u));
-                name.getStyleClass().add("gm-cell-title");
-                Label email = new Label(u == null ? "" : safe(u.getEmail()).toLowerCase(Locale.ROOT));
-                email.getStyleClass().add("gm-cell-sub");
-                box.getChildren().addAll(name, email);
-                setGraphic(box);
-            }
-        });
-
-        colStatus.setCellFactory(tc -> new TableCell<>() {
-            @Override
-            protected void updateItem(String status, boolean empty) {
-                super.updateItem(status, empty);
-                if (empty || status == null) {
-                    setGraphic(null);
-                    setText(null);
-                    return;
-                }
-                Label pill = new Label(status);
-                pill.getStyleClass().add("gm-status-pill");
-                pill.getStyleClass().add("Assigned".equalsIgnoreCase(status) ? "gm-status-assigned" : "gm-status-unassigned");
-                setGraphic(pill);
-                setText(null);
-            }
-        });
-
-        colActions.setCellValueFactory(c -> new javafx.beans.property.SimpleObjectProperty<>(c.getValue()));
-        colActions.setCellFactory(tc -> new TableCell<>() {
-            @Override
-            protected void updateItem(Group g, boolean empty) {
-                super.updateItem(g, empty);
-                if (empty || g == null) {
-                    setGraphic(null);
-                    return;
-                }
-
-                Button view = plainIconButton(
-                        "M12 6.5c-3.79 0-7.17 2.13-8.82 5.5 1.65 3.37 5.03 5.5 8.82 5.5s7.17-2.13 8.82-5.5c-1.65-3.37-5.03-5.5-8.82-5.5zm0 9a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z",
-                        "#64748B",
-                        "btn-view",
-                        "Voir"
-                );
-                Button edit = plainIconButton(
-                        "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z",
-                        "#3b82f6",
-                        "btn-edit",
-                        "Modifier"
-                );
-                Button del = plainIconButton(
-                        "M 6 19 c 0 1.1 0.9 2 2 2 h 8 c 1.1 0 2 -0.9 2 -2 V 7 H 6 v 12 Z M 19 4 h -3.5 l -1 -1 h -5 l -1 1 H 5 v 2 h 14 V 4 Z",
-                        "#ef4444",
-                        "btn-delete",
-                        "Supprimer"
-                );
-
-                view.setOnAction(e -> openDetails(g));
-                edit.setOnAction(e -> openEdit(g));
-                del.setOnAction(e -> deleteGroup(g));
-
-                boolean canModify = canCurrentUserModify(g);
-                edit.setDisable(!canModify);
-                del.setDisable(!canModify);
-                if (!canModify) {
-                    Tooltip tip = new Tooltip("Seul le createur (ou un admin) peut modifier/supprimer.");
-                    edit.setTooltip(tip);
-                    del.setTooltip(tip);
-                }
-
-                HBox box = new HBox(2, view, edit, del);
-                box.setAlignment(Pos.CENTER);
-                setGraphic(box);
-            }
-        });
-
-        // Make sure Actions column always renders buttons and isn't accidentally sortable.
-        colActions.setSortable(false);
-
-        // Default sort by creation date (newest first).
+        sorted.addListener((ListChangeListener<Group>) change -> renderCards());
         applyCreatedAtSort(true);
 
         if (searchField != null) {
@@ -243,20 +89,25 @@ public class BackendGroupsManagementController {
 
     private void applyCreatedAtSort(boolean desc) {
         createdAtSortDesc = desc;
-        if (colCreatedAt != null && groupsTable != null) {
-            colCreatedAt.setSortType(desc ? TableColumn.SortType.DESCENDING : TableColumn.SortType.ASCENDING);
-            groupsTable.getSortOrder().setAll(colCreatedAt);
-            groupsTable.sort();
-        }
+        sorted.setComparator((a, b) -> {
+            Timestamp ta = a == null ? null : a.getCreatedAt();
+            Timestamp tb = b == null ? null : b.getCreatedAt();
+            if (ta == null && tb == null) return 0;
+            if (ta == null) return 1;
+            if (tb == null) return -1;
+            int cmp = ta.compareTo(tb);
+            return desc ? -cmp : cmp;
+        });
         if (sortCreatedAtBtn != null) {
             sortCreatedAtBtn.setTooltip(new Tooltip(desc ? "Trier: plus recent d'abord" : "Trier: plus ancien d'abord"));
         }
+        renderCards();
     }
 
     @FXML
     private void exportCsv() {
         // Excel can open CSV directly; we export current filtered rows.
-        if (groupsTable == null || groupsTable.getScene() == null) {
+        if (groupsFlow == null || groupsFlow.getScene() == null) {
             return;
         }
 
@@ -264,12 +115,12 @@ public class BackendGroupsManagementController {
         fc.setTitle("Export Excel (CSV)");
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV (*.csv)", "*.csv"));
         fc.setInitialFileName("groups_export.csv");
-        java.io.File file = fc.showSaveDialog(groupsTable.getScene().getWindow());
+        java.io.File file = fc.showSaveDialog(groupsFlow.getScene().getWindow());
         if (file == null) {
             return;
         }
 
-        List<Group> rows = groupsTable.getItems() == null ? List.of() : groupsTable.getItems().stream().collect(Collectors.toList());
+        List<Group> rows = sorted == null ? List.of() : sorted.stream().collect(Collectors.toList());
         String csv = buildCsv(rows);
         try {
             // Add UTF-8 BOM to help Excel detect encoding correctly.
@@ -282,7 +133,7 @@ public class BackendGroupsManagementController {
 
     @FXML
     private void exportPdf() {
-        if (groupsTable == null || groupsTable.getScene() == null) {
+        if (groupsFlow == null || groupsFlow.getScene() == null) {
             return;
         }
 
@@ -290,12 +141,12 @@ public class BackendGroupsManagementController {
         fc.setTitle("Export PDF");
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF (*.pdf)", "*.pdf"));
         fc.setInitialFileName("groups_export.pdf");
-        java.io.File file = fc.showSaveDialog(groupsTable.getScene().getWindow());
+        java.io.File file = fc.showSaveDialog(groupsFlow.getScene().getWindow());
         if (file == null) {
             return;
         }
 
-        List<Group> rows = groupsTable.getItems() == null ? List.of() : groupsTable.getItems().stream().collect(Collectors.toList());
+        List<Group> rows = sorted == null ? List.of() : sorted.stream().collect(Collectors.toList());
         try {
             writeSimplePdf(file.toPath(), rows);
             showAlert(Alert.AlertType.INFORMATION, "Export", "Export PDF termine.");
@@ -412,13 +263,17 @@ public class BackendGroupsManagementController {
         updateEmptyState();
     }
 
-    private static boolean canCurrentUserModify(Group g) {
-        if (g == null) return false;
+    private boolean canCurrentUserModify(Group g) {
         User current = SessionManager.getCurrentUser();
-        if (current == null) return false;
-        if (current.getId() == g.getCreatorId()) return true;
-        String roles = current.getRoles();
-        return roles != null && roles.contains("ROLE_ADMIN");
+        return groupService.isGroupCreator(g, current) || isAdmin(current);
+    }
+
+    private boolean canCurrentUserView(Group g) {
+        User current = SessionManager.getCurrentUser();
+        if (current == null || g == null) {
+            return false;
+        }
+        return isAdmin(current) || groupService.isGroupCreator(g, current);
     }
 
     private void updateEmptyState() {
@@ -427,6 +282,104 @@ public class BackendGroupsManagementController {
             emptyState.setVisible(empty);
             emptyState.setManaged(empty);
         }
+        if (groupsFlow != null) {
+            groupsFlow.setVisible(!empty);
+            groupsFlow.setManaged(!empty);
+        }
+    }
+
+    private void renderCards() {
+        if (groupsFlow == null) {
+            return;
+        }
+        groupsFlow.getChildren().clear();
+        if (sorted == null) {
+            return;
+        }
+        for (Group g : sorted) {
+            if (g != null) {
+                groupsFlow.getChildren().add(buildGroupCard(g));
+            }
+        }
+    }
+
+    private VBox buildGroupCard(Group g) {
+        VBox card = new VBox(10);
+        card.getStyleClass().add("gm-group-card");
+        card.setPrefWidth(320);
+        card.setMinWidth(300);
+        card.setMaxWidth(360);
+
+        Label idLabel = new Label("ID: #" + g.getId());
+        idLabel.getStyleClass().add("gm-kv-title");
+
+        Label category = new Label(nullToDash(g.getCategory()));
+        category.getStyleClass().add("gm-group-title");
+
+        Label capacity = new Label("Capacite: " + g.getCapacity() + " membres");
+        capacity.getStyleClass().add("gm-kv-sub");
+
+        Label createdBy = new Label("Cree par: " + resolveCreatorDisplay(g.getCreatorId()));
+        createdBy.getStyleClass().add("gm-kv-sub");
+
+        Label createdAt = new Label("Date: " + (g.getCreatedAt() == null ? "-" : formatTs(g.getCreatedAt())));
+        createdAt.getStyleClass().add("gm-kv-sub");
+
+        String statusText = g.getCreatorId() > 0 ? "Assigned" : "Unassigned";
+        Label status = new Label(statusText);
+        status.getStyleClass().addAll("gm-status-pill", "Assigned".equalsIgnoreCase(statusText) ? "gm-status-assigned" : "gm-status-unassigned");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Button view = plainIconButton(
+                "M12 6.5c-3.79 0-7.17 2.13-8.82 5.5 1.65 3.37 5.03 5.5 8.82 5.5s7.17-2.13 8.82-5.5c-1.65-3.37-5.03-5.5-8.82-5.5zm0 9a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z",
+                "#64748B",
+                "btn-edit",
+                "Voir"
+        );
+        Button edit = plainIconButton(
+                "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z",
+                "#3b82f6",
+                "btn-edit",
+                "Modifier"
+        );
+        Button del = plainIconButton(
+                "M 6 19 c 0 1.1 0.9 2 2 2 h 8 c 1.1 0 2 -0.9 2 -2 V 7 H 6 v 12 Z M 19 4 h -3.5 l -1 -1 h -5 l -1 1 H 5 v 2 h 14 V 4 Z",
+                "#ef4444",
+                "btn-delete",
+                "Supprimer"
+        );
+        view.setOnAction(e -> openDetails(g));
+        edit.setOnAction(e -> openEdit(g));
+        del.setOnAction(e -> deleteGroup(g));
+
+        view.setDisable(!canCurrentUserView(g));
+        boolean canModify = canCurrentUserModify(g);
+        edit.setDisable(!canModify);
+        del.setDisable(!canModify);
+        if (!canModify) {
+            Tooltip tip = new Tooltip("Seul le createur (ou un admin) peut modifier/supprimer.");
+            edit.setTooltip(tip);
+            del.setTooltip(tip);
+        }
+
+        HBox statusAndActions = new HBox(8, status, spacer, view, edit, del);
+        statusAndActions.setAlignment(Pos.CENTER_LEFT);
+
+        card.getChildren().addAll(idLabel, category, capacity, createdBy, createdAt, statusAndActions);
+        return card;
+    }
+
+    private String resolveCreatorDisplay(int creatorId) {
+        if (creatorId <= 0) {
+            return "Createur non defini";
+        }
+        User creator = resolveUser(creatorId);
+        if (creator != null) {
+            return displayName(creator);
+        }
+        return "Createur inconnu";
     }
 
     private User resolveUser(int id) {
@@ -501,6 +454,14 @@ public class BackendGroupsManagementController {
         if (!full.isEmpty()) return full;
         String email = safe(u.getEmail());
         return email.isEmpty() ? "Utilisateur" : email.toLowerCase(Locale.ROOT);
+    }
+
+    private static boolean isAdmin(User user) {
+        if (user == null) {
+            return false;
+        }
+        String roles = user.getRoles();
+        return roles != null && roles.toUpperCase(Locale.ROOT).contains("ROLE_ADMIN");
     }
 
     private static String formatTs(Timestamp ts) {

@@ -17,10 +17,12 @@ import models.Invitation;
 import models.Project;
 import models.ProjectTask;
 import models.User;
+import services.GroupService;
 import services.InvitationService;
 import services.ProjectTaskService;
 import services.UserService;
 import services.ai.DescriptionAiService;
+import utils.SessionManager;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -71,6 +73,7 @@ public class AddProjectTaskController {
     private Button generateDescriptionButton;
 
     private final ProjectTaskService projectTaskService = new ProjectTaskService();
+    private final GroupService groupService = new GroupService();
     private final InvitationService invitationService = new InvitationService();
     private final UserService userService = new UserService();
     private final DescriptionAiService descriptionAiService = new DescriptionAiService();
@@ -196,6 +199,10 @@ public class AddProjectTaskController {
         }
         if (project.getId() <= 0) {
             showAlert(Alert.AlertType.ERROR, "Tache", "Projet invalide (id=" + project.getId() + "). Rafraichissez la liste des projets puis reessayez.");
+            return;
+        }
+        if (!groupService.isGroupCreator(group, SessionManager.getCurrentUser())) {
+            showAlert(Alert.AlertType.WARNING, "Tache", "Acces refuse: seul le createur du groupe peut ajouter/modifier/assigner une tache.");
             return;
         }
 
@@ -354,6 +361,22 @@ public class AddProjectTaskController {
                     .filter(u -> u != null && memberIds.contains(u.getId()))
                     .sorted(Comparator.comparing(AddProjectTaskController::displayUser, String.CASE_INSENSITIVE_ORDER))
                     .collect(Collectors.toList());
+
+            // Ensure group creator can always assign tasks to themselves, even on legacy DBs
+            // where creator_id may not align with the current users table ids.
+            User currentUser = SessionManager.getCurrentUser();
+            if (groupService.isGroupCreator(group, currentUser)
+                    && currentUser != null
+                    && currentUser.getId() > 0
+                    && members.stream().noneMatch(u -> u != null && u.getId() == currentUser.getId())) {
+                User self = users.stream()
+                        .filter(u -> u != null && u.getId() == currentUser.getId())
+                        .findFirst()
+                        .orElse(currentUser);
+                members.add(self);
+                members.sort(Comparator.comparing(AddProjectTaskController::displayUser, String.CASE_INSENSITIVE_ORDER));
+            }
+
             assigneeCombo.getItems().addAll(members);
             if (!members.isEmpty() && assigneeCombo.getSelectionModel().getSelectedItem() == null) {
                 assigneeCombo.getSelectionModel().select(0);

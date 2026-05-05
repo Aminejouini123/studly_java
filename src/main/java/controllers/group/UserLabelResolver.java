@@ -2,8 +2,12 @@ package controllers.group;
 
 import models.User;
 import services.UserService;
+import utils.MyDatabase;
 import utils.SessionManager;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +63,51 @@ final class UserLabelResolver {
             return cached;
         }
 
+        String crossTable = resolveFromLegacyTables(userId);
+        if (crossTable != null) {
+            cache.put(userId, crossTable);
+            return crossTable;
+        }
+
         return "user #" + userId;
+    }
+
+    private String resolveFromLegacyTables(int userId) {
+        Connection c = MyDatabase.getInstance().getConnection();
+        if (c == null) {
+            return null;
+        }
+
+        String fromUsers = queryDisplayName(c, "users", userId);
+        if (fromUsers != null) {
+            return fromUsers;
+        }
+        return queryDisplayName(c, "user", userId);
+    }
+
+    private static String queryDisplayName(Connection c, String table, int userId) {
+        String sql = "select first_name, last_name, email from `" + table + "` where id = ? limit 1";
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+                String first = rs.getString("first_name");
+                String last = rs.getString("last_name");
+                String email = rs.getString("email");
+                String full = ((first == null ? "" : first.trim()) + " " + (last == null ? "" : last.trim())).trim();
+                if (!full.isEmpty()) {
+                    return full;
+                }
+                if (email != null && !email.trim().isEmpty()) {
+                    return email.trim().toLowerCase(Locale.ROOT);
+                }
+                return null;
+            }
+        } catch (SQLException e) {
+            return null;
+        }
     }
 
     private static String displayName(User u) {

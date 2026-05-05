@@ -74,7 +74,7 @@ public class EditGroupController {
             showAlert(Alert.AlertType.ERROR, "Autorisation", "Veuillez vous connecter.");
             return;
         }
-        if (group.getCreatorId() <= 0 || current.getId() != group.getCreatorId()) {
+        if (!groupService.isGroupCreator(group, current)) {
             showAlert(Alert.AlertType.ERROR, "Autorisation", "Seul le createur du groupe peut le modifier.");
             return;
         }

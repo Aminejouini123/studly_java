@@ -1,5 +1,7 @@
 package controllers;
 
+import controllers.user_controller.AddUserController;
+import controllers.user_controller.ListUserController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;

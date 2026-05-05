@@ -6,7 +6,6 @@ import models.Activity;
 import models.Course;
 import services.ActivityService;
 import java.sql.SQLException;
-import controllers.backend.BackendActivityController;
 
 public class ActivityEditController extends BaseActivityController {
 
@@ -19,9 +18,6 @@ public class ActivityEditController extends BaseActivityController {
     private Course currentCourse;
     private Activity currentActivity;
     private final ActivityService activityService = new ActivityService();
-
-    private boolean fromBackend;
-    private BackendActivityController backendController;
 
     public void setActivity(Activity activity, Course course) {
         this.currentActivity = activity;
@@ -40,11 +36,6 @@ public class ActivityEditController extends BaseActivityController {
         instructionsArea.setText(activity.getInstructions());
         outputArea.setText(activity.getExpected_output());
         hintsArea.setText(activity.getHints());
-    }
-
-    // Compatibility for backend flows that don't pass the course object.
-    public void setActivity(Activity activity) {
-        setActivity(activity, null);
     }
 
     @FXML
@@ -76,11 +67,6 @@ public class ActivityEditController extends BaseActivityController {
 
     @FXML
     private void handleBack() {
-        if (fromBackend && backendController != null) {
-            backendController.restoreDashboard();
-            return;
-        }
-
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_activities.fxml"));
             javafx.scene.Parent root = loader.load();
@@ -183,11 +169,4 @@ public class ActivityEditController extends BaseActivityController {
         }
     }
 
-    public void setFromBackend(boolean fromBackend) {
-        this.fromBackend = fromBackend;
-    }
-
-    public void setBackendController(BackendActivityController backendController) {
-        this.backendController = backendController;
-    }
 }

@@ -12,6 +12,7 @@ import models.Group;
 import models.Project;
 import models.ProjectTask;
 import models.User;
+import services.GroupService;
 import services.ProjectTaskService;
 import utils.SessionManager;
 
@@ -44,6 +45,7 @@ public class SubmitProjectTaskController {
     @FXML private Button cancelButton;
 
     private final ProjectTaskService projectTaskService = new ProjectTaskService();
+    private final GroupService groupService = new GroupService();
 
     private Group group;
     private Project project;
@@ -114,7 +116,7 @@ public class SubmitProjectTaskController {
         User current = SessionManager.getCurrentUser();
         int currentId = current == null ? 0 : current.getId();
         boolean isAssignee = currentId > 0 && currentId == task.getAssigned_user_id();
-        boolean isCreator = group != null && currentId > 0 && currentId == group.getCreatorId();
+        boolean isCreator = groupService.isGroupCreator(group, current);
 
         boolean canView = isAssignee || isCreator;
         if (!canView) {
@@ -174,6 +176,13 @@ public class SubmitProjectTaskController {
     @FXML
     private void downloadAttachment() {
         if (task == null) {
+            return;
+        }
+        User current = SessionManager.getCurrentUser();
+        boolean canView = current != null
+                && (groupService.isGroupCreator(group, current) || current.getId() == task.getAssigned_user_id());
+        if (!canView) {
+            showAlert(Alert.AlertType.WARNING, "Acces refuse", "Seul l'assigne ou le createur peut telecharger ce fichier.");
             return;
         }
         String stored = safeTrim(task.getAttachment());

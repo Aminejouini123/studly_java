@@ -112,15 +112,100 @@ public class UserService implements IService<User> {
         return list;
     }
 
-    public User authenticateUser(String email, String password) throws SQLException {
-        String sql = "select * from `users` where email = ? and password = ?";
+    public void storeResetToken(String email, String token) throws SQLException {
+        String sql = "UPDATE users SET verification_code = ?, updated_at = ? WHERE email = ?";
+        Connection c = requireConnection();
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, token);
+            ps.setTimestamp(2, new java.sql.Timestamp(System.currentTimeMillis()));
+            ps.setString(3, email);
+            ps.executeUpdate();
+        }
+    }
+
+    public User findByResetToken(String token) throws SQLException {
+        String sql = "SELECT * FROM users WHERE verification_code = ?";
+        Connection c = requireConnection();
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, token);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return extractUserFromResultSet(rs);
+            }
+        }
+        return null;
+    }
+
+    public void updatePassword(int userId, String hashedPassword) throws SQLException {
+        String sql = "UPDATE users SET password = ?, verification_code = NULL, updated_at = ? WHERE id = ?";
+        Connection c = requireConnection();
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, hashedPassword);
+            ps.setTimestamp(2, new java.sql.Timestamp(System.currentTimeMillis()));
+            ps.setInt(3, userId);
+            ps.executeUpdate();
+        }
+    }
+
+    public User findByEmail(String email) throws SQLException {
+        String sql = "SELECT * FROM users WHERE email = ?";
         Connection c = requireConnection();
         try (PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, email);
-            ps.setString(2, password);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return extractUserFromResultSet(rs);
+            }
+        }
+        return null;
+    }
+
+    public User findByGoogleId(String googleId) throws SQLException {
+        String sql = "SELECT * FROM users WHERE google_id = ?";
+        Connection c = requireConnection();
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, googleId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return extractUserFromResultSet(rs);
+            }
+        }
+        return null;
+    }
+
+    public void linkGoogleAccount(int userId, String googleId, String accessToken,
+                                  String refreshToken, java.sql.Timestamp expiresAt) throws SQLException {
+        String sql = "UPDATE users SET google_id = ?, google_access_token = ?, "
+                + "google_refresh_token = ?, google_token_expires_at = ?, updated_at = ? WHERE id = ?";
+        Connection c = requireConnection();
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, googleId);
+            ps.setString(2, accessToken);
+            ps.setString(3, refreshToken);
+            ps.setTimestamp(4, expiresAt);
+            ps.setTimestamp(5, new java.sql.Timestamp(System.currentTimeMillis()));
+            ps.setInt(6, userId);
+            ps.executeUpdate();
+        }
+    }
+
+    public User authenticateUser(String email, String password) throws SQLException {
+        String sql = "select * from `users` where email = ?";
+        Connection c = requireConnection();
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return extractUserFromResultSet(rs);
+                    User user = extractUserFromResultSet(rs);
+                    String storedPassword = user.getPassword();
+                    if (utils.PasswordUtil.verify(password, storedPassword)) {
+                        return user;
+                    }
+                    // Legacy compatibility: if password is stored in plain text, allow login once
+                    // and transparently migrate it to BCrypt.
+                    if (storedPassword != null && storedPassword.equals(password)) {
+                        String hashed = utils.PasswordUtil.hash(password);
+                        updatePassword(user.getId(), hashed);
+                        user.setPassword(hashed);
+                        return user;
+                    }
                 }
             }
         }

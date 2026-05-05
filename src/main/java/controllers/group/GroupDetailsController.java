@@ -480,8 +480,7 @@ public class GroupDetailsController {
     }
 
     private boolean isCurrentUserCreator() {
-        User current = SessionManager.getCurrentUser();
-        return current != null && group != null && current.getId() == group.getCreatorId();
+        return groupService.isGroupCreator(group, SessionManager.getCurrentUser());
     }
 
     private void loadPhoto(String urlOrPath) {
@@ -683,7 +682,7 @@ public class GroupDetailsController {
         User current = SessionManager.getCurrentUser();
         int currentId = current == null ? 0 : current.getId();
 
-        boolean creator = currentId > 0 && group != null && currentId == group.getCreatorId();
+        boolean creator = groupService.isGroupCreator(group, current);
         boolean assignee = currentId > 0 && currentId == task.getAssigned_user_id();
         boolean canOpen = creator || assignee;
         if (!canOpen) {
@@ -731,7 +730,7 @@ public class GroupDetailsController {
         if (t == null) return false;
         User current = SessionManager.getCurrentUser();
         int currentId = current == null ? 0 : current.getId();
-        return (group != null && currentId > 0 && currentId == group.getCreatorId())
+        return groupService.isGroupCreator(group, current)
                 || (currentId > 0 && currentId == t.getAssigned_user_id());
     }
 
@@ -875,8 +874,8 @@ public class GroupDetailsController {
                 inviteStatusLabel.setText("Invitation envoyee.");
             } else {
                 // Keep existing internal invitation behaviour even if SMS cannot be sent.
-                String reason = smsResult.getError();
-                inviteStatusLabel.setText("Invitation envoyee (SMS non envoye: " + (reason == null ? "inconnu" : reason) + ").");
+                // We intentionally avoid exposing low-level provider errors in the UI.
+                inviteStatusLabel.setText("Invitation envoyee (SMS non envoye).");
             }
         } catch (SQLException | RuntimeException e) {
             inviteStatusLabel.setText("Erreur: " + e.getMessage());
