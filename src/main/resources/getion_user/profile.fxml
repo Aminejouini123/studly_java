@@ -32,6 +32,11 @@
                                 <Circle fill="WHITE" radius="65.0" />
                                 <Circle fx:id="bigAvatarCircle" fill="#F8FAFC" radius="61.0" />
                                 <Label fx:id="bigAvatarInitials" alignment="CENTER" prefHeight="100.0" prefWidth="100.0" style="-fx-font-size: 44px; -fx-font-weight: 900; -fx-text-fill: #004fb0;" text="AJ" />
+                                <javafx.scene.image.ImageView fx:id="bigAvatarImage" fitHeight="122.0" fitWidth="122.0" pickOnBounds="true" preserveRatio="true">
+                                   <clip>
+                                      <Circle centerX="61.0" centerY="61.0" radius="61.0" />
+                                   </clip>
+                                </javafx.scene.image.ImageView>
                             </children>
                         </StackPane>
                         

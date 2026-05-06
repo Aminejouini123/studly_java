@@ -14,6 +14,8 @@ cp.txt
 src/main/resources/openrouter.properties
 src/main/resources/recommendation.properties
 src/main/resources/google-oauth.properties
+src/main/resources/github-oauth.properties
+uploads/
 
 # Python/Other
 studly_api/.env

@@ -23,6 +23,8 @@ DROP TABLE IF EXISTS `objective`;
 DROP TABLE IF EXISTS `exam`;
 DROP TABLE IF EXISTS `activity`;
 DROP TABLE IF EXISTS `course`;
+DROP TABLE IF EXISTS `roadmap_step`;
+DROP TABLE IF EXISTS `roadmap`;
 DROP TABLE IF EXISTS `event`;
 DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `personne`;
@@ -63,6 +65,8 @@ CREATE TABLE `users` (
   `google_access_token` varchar(255) DEFAULT NULL,
   `google_refresh_token` varchar(255) DEFAULT NULL,
   `google_token_expires_at` timestamp NULL DEFAULT NULL,
+  `ban_reason` varchar(500) DEFAULT NULL,
+  `github_id` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -310,11 +314,35 @@ CREATE TABLE `project_task` (
   CONSTRAINT `fk_project_task_user` FOREIGN KEY (`assigned_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE `roadmap` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `skill` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_roadmap_user` (`user_id`),
+  CONSTRAINT `fk_roadmap_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `roadmap_step` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `roadmap_id` int(11) NOT NULL,
+  `step_number` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` text,
+  `resources_json` text,
+  `is_completed` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `fk_step_roadmap` (`roadmap_id`),
+  CONSTRAINT `fk_step_roadmap` FOREIGN KEY (`roadmap_id`) REFERENCES `roadmap` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- 4. Insert Sample Data
 
 -- Sample Users (Passwords are hashed for testing)
 INSERT INTO `users` (`email`, `roles`, `password`, `first_name`, `last_name`, `is_verified`) VALUES
 ('admin@studly.com', 'ROLE_ADMIN', '$2a$10$8.UnVuG9HHgffUDAlk8Kn.2GYf8IQvO/yXv.o6.a.Z.f.o.6.a.Z.f.', 'Admin', 'Studly', 1),
+('superadmin@studly.com', '["ROLE_ADMIN"]', '$2a$12$uR/haoK2Bq.W21dXBcwdrevnRBW2VACmXnmD9xIvFPl4ZafLolSk2', 'Super', 'Admin', 1),
 ('student@studly.com', 'ROLE_STUDENT', '$2a$10$8.UnVuG9HHgffUDAlk8Kn.2GYf8IQvO/yXv.o6.a.Z.f.o.6.a.Z.f.', 'John', 'Doe', 1),
 ('teacher@studly.com', 'ROLE_TEACHER', '$2a$10$8.UnVuG9HHgffUDAlk8Kn.2GYf8IQvO/yXv.o6.a.Z.f.o.6.a.Z.f.', 'Jane', 'Smith', 1);
 

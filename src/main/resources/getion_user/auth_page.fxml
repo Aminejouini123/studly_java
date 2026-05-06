@@ -14,7 +14,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 
-<AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.user_controller.LoginPage">
+<AnchorPane styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.user_controller.LoginPage">
     <children>
         <!-- Background decorative elements for the modern feel -->
         <!-- Big abstract circle on the top left -->
@@ -55,7 +55,17 @@
                                 <Insets top="5.0" />
                             </VBox.margin>
                         </Label>
-                        <PasswordField fx:id="passwordInput" promptText="Password" styleClass="text-input-modern" />
+                        <StackPane>
+                            <children>
+                                <PasswordField fx:id="passwordInput" promptText="Password" styleClass="text-input-modern" />
+                                <TextField fx:id="passwordVisibleInput" managed="false" promptText="Password" styleClass="text-input-modern" visible="false" />
+                                <Button fx:id="showPasswordBtn" alignment="CENTER_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="38.0" prefWidth="40.0" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: #64748B;" text="👁" StackPane.alignment="CENTER_RIGHT">
+                                   <StackPane.margin>
+                                      <Insets right="5.0" />
+                                   </StackPane.margin>
+                                </Button>
+                            </children>
+                        </StackPane>
                         
                         <HBox alignment="CENTER_LEFT">
                             <children>
@@ -78,7 +88,7 @@
                         <HBox alignment="CENTER" spacing="15.0">
                             <children>
                                 <Button fx:id="googleLoginButton" mnemonicParsing="false" onAction="#handleGoogleLogin" style="-fx-font-weight: bold; -fx-font-size: 16px;" styleClass="social-button" text="G" textFill="#DB4437" />
-                                <Button mnemonicParsing="false" style="-fx-font-weight: bold; -fx-font-size: 16px;" styleClass="social-button" text="git" textFill="#333333" />
+                                <Button fx:id="githubLoginButton" mnemonicParsing="false" onAction="#handleGitHubLogin" style="-fx-font-weight: bold; -fx-font-size: 16px;" styleClass="social-button" text="git" textFill="#333333" />
                                 <Button mnemonicParsing="false" style="-fx-font-weight: bold; -fx-font-size: 16px;" styleClass="social-button" text="f" textFill="#4267B2" />
                             </children>
                             <VBox.margin>

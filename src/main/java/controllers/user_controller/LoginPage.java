@@ -11,6 +11,7 @@ import models.User;
 import services.UserService;
 import utils.EmailService;
 import utils.FaceAuthService;
+import utils.GitHubOAuthService;
 import utils.GoogleOAuthService;
 import utils.GoogleOAuthService.UserProfile;
 import utils.SessionManager;
@@ -29,7 +30,10 @@ public class LoginPage {
     @FXML private PasswordField passwordInput;
     @FXML private Button      loginButton;
     @FXML private Button      googleLoginButton;
+    @FXML private Button      githubLoginButton;
     @FXML private Button      faceLoginButton;
+    @FXML private TextField   passwordVisibleInput;
+    @FXML private Button      showPasswordBtn;
     @FXML private CheckBox    rememberMeCheckbox;   // may be null if not in FXML
     @FXML private Hyperlink   resetPasswordLink;
     @FXML private Hyperlink   signUpLink;
@@ -41,8 +45,9 @@ public class LoginPage {
     private static final String PREF_PWD   = "password";
     private static final String PREF_REMEMBER = "remember_me";
 
-    private final UserService         userService  = new UserService();
-    private final GoogleOAuthService  oauthService = new GoogleOAuthService();
+    private final UserService         userService       = new UserService();
+    private final GoogleOAuthService  oauthService      = new GoogleOAuthService();
+    private final GitHubOAuthService  githubOAuthService = new GitHubOAuthService();
 
     @FXML
     public void initialize() {
@@ -62,6 +67,38 @@ public class LoginPage {
                 faceLoginButton.setText("Face ID: " + errorMsg);
             }
         }
+        
+        setupShowPassword();
+    }
+
+    private void setupShowPassword() {
+        if (showPasswordBtn == null) return;
+        
+        showPasswordBtn.setOnAction(e -> {
+            if (passwordInput.isVisible()) {
+                passwordVisibleInput.setText(passwordInput.getText());
+                passwordVisibleInput.setVisible(true);
+                passwordVisibleInput.setManaged(true);
+                passwordInput.setVisible(false);
+                passwordInput.setManaged(false);
+                showPasswordBtn.setText("🙈");
+            } else {
+                passwordInput.setText(passwordVisibleInput.getText());
+                passwordInput.setVisible(true);
+                passwordInput.setManaged(true);
+                passwordVisibleInput.setVisible(false);
+                passwordVisibleInput.setManaged(false);
+                showPasswordBtn.setText("👁");
+            }
+        });
+        
+        // Sync text as user types
+        passwordInput.textProperty().addListener((obs, old, val) -> {
+            if (passwordInput.isVisible()) passwordVisibleInput.setText(val);
+        });
+        passwordVisibleInput.textProperty().addListener((obs, old, val) -> {
+            if (passwordVisibleInput.isVisible()) passwordInput.setText(val);
+        });
     }
 
     // ---- Remember Me ----
@@ -121,6 +158,11 @@ public class LoginPage {
                 showAlert(Alert.AlertType.ERROR, "Login Failed",
                     "Invalid email or password. Please try again.");
             }
+        } catch (UserService.BannedException ex) {
+            String reason = ex.getReason();
+            showAlert(Alert.AlertType.ERROR, "Access Denied",
+                "Your account has been banned.\nReason: "
+                + (reason != null && !reason.isBlank() ? reason : "No reason provided."));
         } catch (SQLException ex) {
             showAlert(Alert.AlertType.ERROR, "Database Error",
                 "Could not reach the database: " + ex.getMessage());
@@ -222,9 +264,9 @@ public class LoginPage {
             // onSuccess: userId recognized → look up user in DB and login
             recognizedId -> {
                 try {
-                    // Find the full User record by id
                     User user = findUserById(recognizedId);
                     if (user != null) {
+                        if (!checkNotBanned(user)) return;
                         SessionManager.setCurrentUser(user);
                         redirectByRole(user);
                     } else {
@@ -301,6 +343,7 @@ public class LoginPage {
         if (user == null) user = userService.findByEmail(profile.email);
 
         if (user != null) {
+            if (!checkNotBanned(user)) return;
             if (user.getGoogleId() == null || user.getGoogleId().isEmpty()) {
                 userService.linkGoogleAccount(user.getId(), profile.googleId,
                     profile.accessToken, profile.refreshToken, profile.tokenExpiresAt);
@@ -383,7 +426,113 @@ public class LoginPage {
         }
     }
 
+    // ---- GitHub OAuth2 login ----
+
+    @FXML
+    private void handleGitHubLogin() {
+        if (!githubOAuthService.isConfigured()) {
+            showAlert(Alert.AlertType.WARNING, "Not Configured",
+                "GitHub OAuth credentials are not set up yet.\n"
+                + "Edit src/main/resources/github-oauth.properties.");
+            return;
+        }
+
+        githubLoginButton.setDisable(true);
+        githubLoginButton.setText("…");
+
+        Task<GitHubOAuthService.UserProfile> task = new Task<>() {
+            @Override
+            protected GitHubOAuthService.UserProfile call() throws Exception {
+                return githubOAuthService.authenticate();
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            githubLoginButton.setDisable(false);
+            githubLoginButton.setText("git");
+            GitHubOAuthService.UserProfile profile = task.getValue();
+            if (profile == null) {
+                showAlert(Alert.AlertType.ERROR, "Cancelled",
+                    "GitHub login was cancelled or timed out.");
+                return;
+            }
+            try {
+                processGitHubProfile(profile);
+            } catch (SQLException ex) {
+                showAlert(Alert.AlertType.ERROR, "Database Error", ex.getMessage());
+            }
+        });
+
+        task.setOnFailed(e -> {
+            githubLoginButton.setDisable(false);
+            githubLoginButton.setText("git");
+            Throwable ex = task.getException();
+            showAlert(Alert.AlertType.ERROR, "GitHub Login Failed",
+                ex != null ? ex.getMessage() : "Unknown error.");
+        });
+
+        new Thread(task, "github-oauth").start();
+    }
+
+    private void processGitHubProfile(GitHubOAuthService.UserProfile profile) throws SQLException {
+        // Prefer looking up by GitHub ID so returning users are found even if email changes
+        User user = userService.findByGitHubId(profile.githubId);
+        if (user == null) user = userService.findByEmail(profile.email);
+
+        if (user != null) {
+            if (!checkNotBanned(user)) return;
+            if (user.getGithubId() == null || user.getGithubId().isEmpty()) {
+                userService.linkGitHubAccount(user.getId(), profile.githubId);
+                user.setGithubId(profile.githubId);
+            }
+            SessionManager.setCurrentUser(user);
+            redirectByRole(user);
+        } else {
+            registerNewGitHubUser(profile);
+        }
+    }
+
+    private void registerNewGitHubUser(GitHubOAuthService.UserProfile profile) {
+        // GitHub has already verified the email — no verification step required
+        try {
+            Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+            User newUser = new User();
+            newUser.setGithubId(profile.githubId);
+            newUser.setEmail(profile.email);
+            newUser.setFirstName(profile.firstName.isEmpty() ? profile.email.split("@")[0] : profile.firstName);
+            newUser.setLastName(profile.lastName.isEmpty() ? "-" : profile.lastName);
+            newUser.setProfilePicture(profile.avatarUrl);
+            newUser.setRole(new Student());
+            newUser.setIsVerified(1);
+            newUser.setStatut("active");
+            newUser.setScore(0);
+            newUser.setPassword("");
+            newUser.setCreatedAt(now);
+            newUser.setUpdatedAt(now);
+
+            userService.ajouter(newUser);
+            User created = userService.findByEmail(profile.email);
+            if (created != null) {
+                SessionManager.setCurrentUser(created);
+                navigateTo("/TEMPLATE/frontend_dashboard.fxml", "Dashboard – Studly");
+            }
+        } catch (SQLException ex) {
+            showAlert(Alert.AlertType.ERROR, "Database Error",
+                "Could not create account: " + ex.getMessage());
+        }
+    }
+
     // ---- Utilities ----
+
+    /** Returns false and shows an alert when the user is banned. */
+    private boolean checkNotBanned(User user) {
+        if (!"BANNED".equalsIgnoreCase(user.getStatut())) return true;
+        String reason = user.getBanReason();
+        showAlert(Alert.AlertType.ERROR, "Access Denied",
+            "Your account has been banned.\nReason: "
+            + (reason != null && !reason.isBlank() ? reason : "No reason provided."));
+        return false;
+    }
 
     private void redirectByRole(User user) {
         if (user.isAdmin()) {

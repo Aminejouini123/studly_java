@@ -184,3 +184,28 @@
     -fx-padding: 2 0 0 5;
 }
 
+.password-rules-container {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+}
+
+.password-rule-label {
+    -fx-text-fill: rgba(255, 255, 255, 0.6);
+    -fx-font-size: 11px;
+}
+
+.password-rule-valid {
+    -fx-text-fill: #4ade80;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(three-pass-box, rgba(74, 222, 128, 0.4), 5, 0, 0, 0);
+}
+
+.password-rule-invalid {
+    -fx-text-fill: rgba(255, 255, 255, 0.4);
+}
+
+

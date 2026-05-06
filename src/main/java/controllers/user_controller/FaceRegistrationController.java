@@ -26,8 +26,8 @@ import java.util.concurrent.*;
  */
 public class FaceRegistrationController {
 
-    private static final int    REQUIRED_CAPTURES     = 5;
-    private static final long   CAPTURE_INTERVAL_MS   = 800;
+    private static final int    REQUIRED_CAPTURES     = 30;
+    private static final long   CAPTURE_INTERVAL_MS   = 200;
     private static final int    CAMERA_FPS_PERIOD_MS  = 33; // ~30 fps
 
     private final int            userId;
@@ -158,7 +158,7 @@ public class FaceRegistrationController {
             Platform.runLater(() -> {
                 progressBar.setProgress((double) count / REQUIRED_CAPTURES);
                 statusLabel.setText("Capturing sample " + count + "/" + REQUIRED_CAPTURES
-                    + " — keep still, look directly at the camera");
+                    + " — move your head slightly for better results");
                 if (count >= REQUIRED_CAPTURES) {
                     capturing = false;
                     trainModel();

@@ -16,7 +16,7 @@
 
 <!-- Using the exact same styling classes and background as the auth page -->
 
-<AnchorPane prefHeight="700.0" prefWidth="1000.0" styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.user_controller.Sign_upController">
+<AnchorPane styleClass="root-pane" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.user_controller.Sign_upController">
     <children>
         <!-- Background decorative elements matching auth page -->
         <Circle fill="#2464d1" layoutX="120.0" layoutY="120.0" opacity="0.4" radius="150.0" />
@@ -66,12 +66,12 @@
                         </Label>
                         <TextField fx:id="sign_email_id" promptText="example@email.com" styleClass="text-input-modern" />
 
-                                                <Label styleClass="input-label" text="Saisie facile">
+                                                <Label styleClass="input-label" text="Date of Birth">
                             <VBox.margin>
                         <Insets bottom="3.0" top="5.0" />
                      </VBox.margin>
                         </Label>
-                        <DatePicker fx:id="date_id" promptText="Date of birth" styleClass="text-input-modern" />
+                        <DatePicker fx:id="date_id" maxWidth="1.7976931348623157E308" promptText="Date of birth" styleClass="text-input-modern" />
 
                                                 <!-- Placed passwords side by side to save vertical height space -->
                         <HBox spacing="15.0">
@@ -85,7 +85,17 @@
                            </VBox.margin>
                                  </Label>
                                  <!-- Replaced TextField with PasswordField for security/UX -->
-                                 <PasswordField fx:id="passw_s_id" promptText="Password" styleClass="text-input-modern" />
+                                 <StackPane>
+                                    <children>
+                                        <PasswordField fx:id="passw_s_id" promptText="Password" styleClass="text-input-modern" />
+                                        <TextField fx:id="passwVisible_s_id" managed="false" promptText="Password" styleClass="text-input-modern" visible="false" />
+                                        <Button fx:id="showPassBtn" alignment="CENTER_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="38.0" prefWidth="40.0" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: #64748B;" text="👁" StackPane.alignment="CENTER_RIGHT">
+                                           <StackPane.margin>
+                                              <Insets right="5.0" />
+                                           </StackPane.margin>
+                                        </Button>
+                                    </children>
+                                 </StackPane>
                              </VBox>
                              <VBox HBox.hgrow="ALWAYS">
                                  <Label styleClass="input-label" text="Confirm Password">
@@ -94,11 +104,33 @@
                            </VBox.margin>
                                  </Label>
                                  <!-- Replaced TextField with PasswordField for security/UX -->
-                                 <PasswordField fx:id="pass_s_id" promptText="Confirm" styleClass="text-input-modern" />
+                                 <StackPane>
+                                    <children>
+                                        <PasswordField fx:id="pass_s_id" promptText="Confirm" styleClass="text-input-modern" />
+                                        <TextField fx:id="passVisible_s_id" managed="false" promptText="Confirm" styleClass="text-input-modern" visible="false" />
+                                        <Button fx:id="showConfirmPassBtn" alignment="CENTER_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="38.0" prefWidth="40.0" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: #64748B;" text="👁" StackPane.alignment="CENTER_RIGHT">
+                                           <StackPane.margin>
+                                              <Insets right="5.0" />
+                                           </StackPane.margin>
+                                        </Button>
+                                    </children>
+                                 </StackPane>
                              </VBox>
-                        </HBox>
+                         </HBox>
+                         
+                                                 <VBox spacing="4.0" styleClass="password-rules-container">
+                            <children>
+                               <Label fx:id="ruleLength" styleClass="password-rule-label" text="✖  At least 8 characters" />
+                               <Label fx:id="ruleUpper" styleClass="password-rule-label" text="✖  At least one uppercase letter" />
+                               <Label fx:id="ruleNumber" styleClass="password-rule-label" text="✖  At least one number" />
+                               <Label fx:id="ruleSpecial" styleClass="password-rule-label" text="✖  At least one special character" />
+                            </children>
+                            <VBox.margin>
+                               <Insets top="10.0" />
+                            </VBox.margin>
+                         </VBox>
 
-                                                <Button fx:id="sign_button_id" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="signin-button" text="Create Account">
+                                                 <Button fx:id="sign_button_id" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="signin-button" text="Create Account">
                             <VBox.margin>
                                 <Insets bottom="10.0" top="20.0" />
                             </VBox.margin>

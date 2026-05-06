@@ -29,6 +29,12 @@ public class Sign_upController {
     @FXML private Button sign_button_id;
     @FXML private Button sendCodeButton;
     @FXML private Hyperlink return_login_id;
+    
+    // Show password fields
+    @FXML private TextField passwVisible_s_id;
+    @FXML private Button showPassBtn;
+    @FXML private TextField passVisible_s_id;
+    @FXML private Button showConfirmPassBtn;
 
     // Verification section
     @FXML private VBox verificationSection;
@@ -43,6 +49,12 @@ public class Sign_upController {
     @FXML private Label confirmPasswordError;
     @FXML private Label verificationCodeError;
 
+    // Password rules labels
+    @FXML private Label ruleLength;
+    @FXML private Label ruleUpper;
+    @FXML private Label ruleNumber;
+    @FXML private Label ruleSpecial;
+
     private static final long CODE_EXPIRY_MS = 10 * 60 * 1000L;
 
     private final UserService userService = new UserService();
@@ -54,6 +66,81 @@ public class Sign_upController {
     public void initialize() {
         sign_button_id.setOnAction(e -> handleSignUp());
         return_login_id.setOnAction(e -> navigateTo("/getion_user/auth_page.fxml", "Login – Studly"));
+
+        // Disable future dates in the DatePicker
+        date_id.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.isAfter(LocalDate.now()));
+            }
+        });
+
+        setupShowPassword();
+
+        // Setup real-time password validation
+        sign_button_id.setDisable(true); // Disable until valid
+        passw_s_id.textProperty().addListener((obs, old, val) -> validatePassword(val));
+    }
+
+    private void setupShowPassword() {
+        // Main Password
+        showPassBtn.setOnAction(e -> togglePassword(passw_s_id, passwVisible_s_id, showPassBtn));
+        passw_s_id.textProperty().addListener((obs, old, val) -> {
+            if (passw_s_id.isVisible()) passwVisible_s_id.setText(val);
+        });
+        passwVisible_s_id.textProperty().addListener((obs, old, val) -> {
+            if (passwVisible_s_id.isVisible()) passw_s_id.setText(val);
+        });
+
+        // Confirm Password
+        showConfirmPassBtn.setOnAction(e -> togglePassword(pass_s_id, passVisible_s_id, showConfirmPassBtn));
+        pass_s_id.textProperty().addListener((obs, old, val) -> {
+            if (pass_s_id.isVisible()) passVisible_s_id.setText(val);
+        });
+        passVisible_s_id.textProperty().addListener((obs, old, val) -> {
+            if (passVisible_s_id.isVisible()) pass_s_id.setText(val);
+        });
+    }
+
+    private void togglePassword(PasswordField pf, TextField tf, Button btn) {
+        if (pf.isVisible()) {
+            tf.setText(pf.getText());
+            tf.setVisible(true);
+            tf.setManaged(true);
+            pf.setVisible(false);
+            pf.setManaged(false);
+            btn.setText("🙈");
+        } else {
+            pf.setText(tf.getText());
+            pf.setVisible(true);
+            pf.setManaged(true);
+            tf.setVisible(false);
+            tf.setManaged(false);
+            btn.setText("👁");
+        }
+    }
+
+    private void validatePassword(String pwd) {
+        boolean lengthValid  = pwd.length() >= 8;
+        boolean upperValid   = pwd.matches(".*[A-Z].*");
+        boolean numberValid  = pwd.matches(".*[0-9].*");
+        boolean specialValid = pwd.matches(".*[!@#$%^&*(),.?\":{}|<>].*");
+
+        updateRuleLabel(ruleLength, lengthValid, "At least 8 characters");
+        updateRuleLabel(ruleUpper, upperValid, "At least one uppercase letter");
+        updateRuleLabel(ruleNumber, numberValid, "At least one number");
+        updateRuleLabel(ruleSpecial, specialValid, "At least one special character");
+
+        // The button is only enabled if all rules are green
+        sign_button_id.setDisable(!(lengthValid && upperValid && numberValid && specialValid));
+    }
+
+    private void updateRuleLabel(Label label, boolean valid, String text) {
+        if (label == null) return;
+        label.setText((valid ? "✔  " : "✖  ") + text);
+        label.getStyleClass().removeAll("password-rule-valid", "password-rule-invalid");
+        label.getStyleClass().add(valid ? "password-rule-valid" : "password-rule-invalid");
     }
 
     @FXML
@@ -148,6 +235,9 @@ public class Sign_upController {
         }
         if (dobValue == null) {
             showError(dobError, "Date of birth is required");
+            hasError = true;
+        } else if (dobValue.isAfter(LocalDate.now())) {
+            showError(dobError, "Birthday cannot be in the future");
             hasError = true;
         }
         if (password.isEmpty()) {

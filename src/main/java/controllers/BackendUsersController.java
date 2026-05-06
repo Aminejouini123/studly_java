@@ -82,7 +82,10 @@ public class BackendUsersController {
         List<User> allUsers = listUserController.getAllUsers();
         long total = allUsers.size();
         long flagged = allUsers.stream()
-                .filter(u -> "Flagged".equalsIgnoreCase(u.getStatut()))
+                .filter(u -> {
+                    String s = u.getStatut();
+                    return "BANNED".equalsIgnoreCase(s) || "Flagged".equalsIgnoreCase(s);
+                })
                 .count();
         
         totalUsersLabel.setText(String.valueOf(total));

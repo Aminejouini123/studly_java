@@ -14,6 +14,7 @@ public class ProfileController {
 
     @FXML private Label  bigAvatarInitials;
     @FXML private Circle bigAvatarCircle;
+    @FXML private javafx.scene.image.ImageView bigAvatarImage;
     @FXML private Label  profileNameLabel;
     @FXML private Label  profileRoleLabel;
     @FXML private Label  bioLabel;
@@ -65,6 +66,30 @@ public class ProfileController {
         else                       profileRoleLabel.setText("Student");
 
         bigAvatarInitials.setText(user.getInitials());
+
+        // Load profile picture
+        if (bigAvatarImage != null) {
+            String path = user.getProfilePicture();
+            if (path != null && !path.isEmpty()) {
+                try {
+                    if (!path.startsWith("http")) {
+                        java.io.File file = new java.io.File(path);
+                        if (file.exists()) {
+                            bigAvatarImage.setImage(new javafx.scene.image.Image(file.toURI().toString()));
+                            bigAvatarInitials.setVisible(false);
+                        }
+                    } else {
+                        bigAvatarImage.setImage(new javafx.scene.image.Image(path));
+                        bigAvatarInitials.setVisible(false);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Failed to load profile avatar: " + e.getMessage());
+                }
+            } else {
+                bigAvatarImage.setImage(null);
+                bigAvatarInitials.setVisible(true);
+            }
+        }
 
         fullNameValue.setText(user.getFullName());
         emailValue.setText(user.getEmail());
