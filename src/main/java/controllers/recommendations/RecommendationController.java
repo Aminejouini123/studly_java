@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RecommendationController {
 
@@ -96,12 +97,12 @@ public class RecommendationController {
         List<Recommendation> jobs = recommendations.stream()
                 .filter(r -> r.getType() == Recommendation.Type.JOB)
                 .sorted((a, b) -> b.getMatchScore() - a.getMatchScore())
-                .toList();
+                .collect(Collectors.toList());
 
         List<Recommendation> courses = recommendations.stream()
                 .filter(r -> r.getType() == Recommendation.Type.COURSE)
                 .sorted((a, b) -> b.getMatchScore() - a.getMatchScore())
-                .toList();
+                .collect(Collectors.toList());
 
         jobs.stream().map(this::buildCard).filter(n -> n != null).forEach(jobsContainer.getChildren()::add);
         courses.stream().map(this::buildCard).filter(n -> n != null).forEach(coursesContainer.getChildren()::add);

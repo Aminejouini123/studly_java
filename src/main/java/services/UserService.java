@@ -11,9 +11,19 @@ public class UserService implements IService<User> {
     public UserService() {
     }
 
+    /** Thrown by authenticateUser when the user's account is banned. */
+    public static class BannedException extends Exception {
+        private final String reason;
+        public BannedException(String reason) {
+            super("Account banned");
+            this.reason = reason;
+        }
+        public String getReason() { return reason; }
+    }
+
     @Override
     public void ajouter(User entity) throws SQLException {
-        String sql = "insert into `users` (google_id, is_verified, verification_code, email, roles, password, first_name, last_name, date_of_birth, phone_number, address, created_at, updated_at, statut, profile_picture, education_level, job_title, website, bio, skills, score, google_access_token, google_refresh_token, google_token_expires_at) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "insert into `users` (google_id, is_verified, verification_code, email, roles, password, first_name, last_name, date_of_birth, phone_number, address, created_at, updated_at, statut, profile_picture, education_level, job_title, website, bio, skills, score, google_access_token, google_refresh_token, google_token_expires_at, ban_reason, github_id) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql)) {
             ps.setString(1, entity.getGoogleId());
             ps.setInt(2, entity.getIsVerified());
@@ -39,13 +49,15 @@ public class UserService implements IService<User> {
             ps.setString(22, entity.getGoogleAccessToken());
             ps.setString(23, entity.getGoogleRefreshToken());
             ps.setTimestamp(24, entity.getGoogleTokenExpiresAt());
+            ps.setString(25, entity.getBanReason());
+            ps.setString(26, entity.getGithubId());
             ps.executeUpdate();
         }
     }
 
     @Override
     public void modifier(User entity) throws SQLException {
-        String sql = "update `users` set google_id = ?, is_verified = ?, verification_code = ?, email = ?, roles = ?, password = ?, first_name = ?, last_name = ?, date_of_birth = ?, phone_number = ?, address = ?, created_at = ?, updated_at = ?, statut = ?, profile_picture = ?, education_level = ?, job_title = ?, website = ?, bio = ?, skills = ?, score = ?, google_access_token = ?, google_refresh_token = ?, google_token_expires_at = ? where id = ?";
+        String sql = "update `users` set google_id = ?, is_verified = ?, verification_code = ?, email = ?, roles = ?, password = ?, first_name = ?, last_name = ?, date_of_birth = ?, phone_number = ?, address = ?, created_at = ?, updated_at = ?, statut = ?, profile_picture = ?, education_level = ?, job_title = ?, website = ?, bio = ?, skills = ?, score = ?, google_access_token = ?, google_refresh_token = ?, google_token_expires_at = ?, ban_reason = ?, github_id = ? where id = ?";
         try (PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql)) {
             ps.setString(1, entity.getGoogleId());
             ps.setInt(2, entity.getIsVerified());
@@ -71,7 +83,9 @@ public class UserService implements IService<User> {
             ps.setString(22, entity.getGoogleAccessToken());
             ps.setString(23, entity.getGoogleRefreshToken());
             ps.setTimestamp(24, entity.getGoogleTokenExpiresAt());
-            ps.setInt(25, entity.getId());
+            ps.setString(25, entity.getBanReason());
+            ps.setString(26, entity.getGithubId());
+            ps.setInt(27, entity.getId());
             ps.executeUpdate();
         }
     }
@@ -166,13 +180,16 @@ public class UserService implements IService<User> {
         }
     }
 
-    public User authenticateUser(String email, String password) throws SQLException {
+    public User authenticateUser(String email, String password) throws SQLException, BannedException {
         String sql = "select * from `users` where email = ?";
         try (PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     User user = extractUserFromResultSet(rs);
+                    if ("BANNED".equalsIgnoreCase(user.getStatut())) {
+                        throw new BannedException(user.getBanReason());
+                    }
                     if (utils.PasswordUtil.verify(password, user.getPassword())) {
                         return user;
                     }
@@ -209,6 +226,48 @@ public class UserService implements IService<User> {
         entity.setGoogleAccessToken(rs.getString("google_access_token"));
         entity.setGoogleRefreshToken(rs.getString("google_refresh_token"));
         entity.setGoogleTokenExpiresAt(rs.getTimestamp("google_token_expires_at"));
+        entity.setBanReason(rs.getString("ban_reason"));
+        entity.setGithubId(rs.getString("github_id"));
         return entity;
+    }
+
+    public User findByGitHubId(String githubId) throws SQLException {
+        String sql = "SELECT * FROM users WHERE github_id = ?";
+        try (PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql)) {
+            ps.setString(1, githubId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return extractUserFromResultSet(rs);
+            }
+        }
+        return null;
+    }
+
+    public void linkGitHubAccount(int userId, String githubId) throws SQLException {
+        String sql = "UPDATE users SET github_id = ?, updated_at = ? WHERE id = ?";
+        try (PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql)) {
+            ps.setString(1, githubId);
+            ps.setTimestamp(2, new java.sql.Timestamp(System.currentTimeMillis()));
+            ps.setInt(3, userId);
+            ps.executeUpdate();
+        }
+    }
+
+    /** Bans a user: sets statut to BANNED and records the reason. */
+    public void banUser(int userId, String reason) throws SQLException {
+        String sql = "UPDATE users SET statut = 'BANNED', ban_reason = ? WHERE id = ?";
+        try (PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql)) {
+            ps.setString(1, reason);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        }
+    }
+
+    /** Unbans a user: restores Active status and clears the ban reason. */
+    public void unbanUser(int userId) throws SQLException {
+        String sql = "UPDATE users SET statut = 'Active', ban_reason = NULL WHERE id = ?";
+        try (PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.executeUpdate();
+        }
     }
 }

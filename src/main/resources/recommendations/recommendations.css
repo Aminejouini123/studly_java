@@ -5,18 +5,18 @@
 
 /* ── Panel typography ──────────────────────────────────────────────────── */
 .rec-panel-title {
-    -fx-text-fill: #F1F5F9;
+    -fx-text-fill: #0F172A;
     -fx-font-size: 26px;
     -fx-font-weight: bold;
 }
 
 .rec-panel-subtitle {
-    -fx-text-fill: #64748B;
+    -fx-text-fill: #475569;
     -fx-font-size: 13px;
 }
 
 .rec-section-title {
-    -fx-text-fill: #E2E8F0;
+    -fx-text-fill: #1E293B;
     -fx-font-size: 18px;
     -fx-font-weight: bold;
 }
@@ -24,7 +24,7 @@
 /* ── Count badge next to section title ─────────────────────────────────── */
 .rec-count-badge {
     -fx-background-color: rgba(99, 102, 241, 0.18);
-    -fx-text-fill: #818CF8;
+    -fx-text-fill: #4F46E5;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-background-radius: 12;
@@ -34,7 +34,7 @@
 /* ── Skill tag pills ────────────────────────────────────────────────────── */
 .rec-skill-tag {
     -fx-background-color: rgba(99, 102, 241, 0.12);
-    -fx-text-fill: #818CF8;
+    -fx-text-fill: #4F46E5;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-background-radius: 20;

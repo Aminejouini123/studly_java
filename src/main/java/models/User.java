@@ -29,6 +29,8 @@ public class User {
     private String googleAccessToken;
     private String googleRefreshToken;
     private Timestamp googleTokenExpiresAt;
+    private String banReason;
+    private String githubId;
 
     public User() {}
 
@@ -213,6 +215,12 @@ public class User {
 
     public Timestamp getGoogleTokenExpiresAt() { return googleTokenExpiresAt; }
     public void setGoogleTokenExpiresAt(Timestamp googleTokenExpiresAt) { this.googleTokenExpiresAt = googleTokenExpiresAt; }
+
+    public String getBanReason() { return banReason; }
+    public void setBanReason(String banReason) { this.banReason = banReason; }
+
+    public String getGithubId() { return githubId; }
+    public void setGithubId(String githubId) { this.githubId = githubId; }
 
     @Override
     public String toString() {

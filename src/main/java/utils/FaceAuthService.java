@@ -16,7 +16,7 @@ import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 public class FaceAuthService {
 
-    public static final double CONFIDENCE_THRESHOLD = 65.0;
+    public static final double CONFIDENCE_THRESHOLD = 110.0;
     public static final int FACE_IMG_SIZE = 100;
 
     static {

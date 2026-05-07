@@ -16,6 +16,7 @@ public class EditProfileSettingsController {
     @FXML private Label avatarSideLabel;
     @FXML private Label roleSideLabel;
     @FXML private Label avatarInitials;
+    @FXML private javafx.scene.image.ImageView avatarImage;
     @FXML private TextField firstNameField;
     @FXML private TextField lastNameField;
     @FXML private TextField emailField;
@@ -59,6 +60,27 @@ public class EditProfileSettingsController {
         if (currentUser.getDateOfBirth() != null) {
             dobField.setText(currentUser.getDateOfBirth().toString());
         }
+
+        // Load profile picture
+        if (currentUser.getProfilePicture() != null && !currentUser.getProfilePicture().isEmpty()) {
+            try {
+                String path = currentUser.getProfilePicture();
+                if (!path.startsWith("http")) {
+                    // It's a local path
+                    java.io.File file = new java.io.File(path);
+                    if (file.exists()) {
+                        avatarImage.setImage(new javafx.scene.image.Image(file.toURI().toString()));
+                        avatarInitials.setVisible(false);
+                    }
+                } else {
+                    // It's a URL (from Google/GitHub)
+                    avatarImage.setImage(new javafx.scene.image.Image(path));
+                    avatarInitials.setVisible(false);
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to load profile image: " + e.getMessage());
+            }
+        }
     }
 
     @FXML
@@ -99,6 +121,44 @@ public class EditProfileSettingsController {
             handleCancel(); // Return to profile view
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Database Error", "Failed to save changes: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleChoosePhoto() {
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("Choose Profile Picture");
+        fileChooser.getExtensionFilters().addAll(
+            new javafx.stage.FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
+        );
+        
+        java.io.File selectedFile = fileChooser.showOpenDialog(avatarImage.getScene().getWindow());
+        if (selectedFile != null) {
+            try {
+                // Ensure directory exists
+                java.io.File uploadDir = new java.io.File("uploads/profiles");
+                if (!uploadDir.exists()) uploadDir.mkdirs();
+                
+                // Create unique filename
+                String fileName = System.currentTimeMillis() + "_" + selectedFile.getName();
+                java.io.File destFile = new java.io.File(uploadDir, fileName);
+                
+                // Copy file
+                java.nio.file.Files.copy(selectedFile.toPath(), destFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                
+                // Update User model and DB path
+                String finalPath = destFile.getAbsolutePath();
+                currentUser.setProfilePicture(finalPath);
+                
+                // Update UI
+                avatarImage.setImage(new javafx.scene.image.Image(destFile.toURI().toString()));
+                avatarInitials.setVisible(false);
+                
+                System.out.println("Profile picture saved to: " + finalPath);
+                
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Upload Error", "Failed to save profile picture: " + e.getMessage());
+            }
         }
     }
 

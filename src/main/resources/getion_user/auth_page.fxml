@@ -55,7 +55,17 @@
                                 <Insets top="5.0" />
                             </VBox.margin>
                         </Label>
-                        <PasswordField fx:id="passwordInput" promptText="Password" styleClass="text-input-modern" />
+                        <StackPane>
+                            <children>
+                                <PasswordField fx:id="passwordInput" promptText="Password" styleClass="text-input-modern" />
+                                <TextField fx:id="passwordVisibleInput" managed="false" promptText="Password" styleClass="text-input-modern" visible="false" />
+                                <Button fx:id="showPasswordBtn" alignment="CENTER_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="38.0" prefWidth="40.0" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: #64748B;" text="👁" StackPane.alignment="CENTER_RIGHT">
+                                   <StackPane.margin>
+                                      <Insets right="5.0" />
+                                   </StackPane.margin>
+                                </Button>
+                            </children>
+                        </StackPane>
                         
                         <HBox alignment="CENTER_LEFT">
                             <children>

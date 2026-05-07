@@ -42,10 +42,16 @@ public class MainFX extends Application {
         FXMLLoader fxmlloader = new FXMLLoader(dashboardResource);
         Parent root = fxmlloader.load();
         Scene scene = new Scene(root);
+        
         stage.setScene(scene);
-        stage.setWidth(1100);
-        stage.setHeight(800);
         stage.setTitle("Studly");
+        
+        // Set professional default size and allow resizing
+        stage.setWidth(1280);
+        stage.setHeight(850);
+        stage.setResizable(true);
+        stage.centerOnScreen();
+        
         stage.show();
     }
 

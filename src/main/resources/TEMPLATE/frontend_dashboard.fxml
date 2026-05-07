@@ -11,10 +11,10 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<StackPane prefHeight="800.0" prefWidth="1100.0" styleClass="root" stylesheets="@frontend_style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.FrontendController">
+<StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="root" stylesheets="@frontend_style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.FrontendController">
 
     <!-- Main Application Interface -->
-    <BorderPane prefHeight="800.0" prefWidth="1100.0">
+    <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
        <top>
           <HBox alignment="CENTER_LEFT" prefHeight="65.0" styleClass="top-bar" BorderPane.alignment="CENTER">
              <padding>
@@ -50,7 +50,7 @@
                       <!-- Notifications Icon -->
                       <Region fx:id="notificationsIcon" onMouseClicked="#showInvitations" maxHeight="24.0" maxWidth="24.0" minHeight="24.0" minWidth="24.0" prefHeight="24.0" prefWidth="24.0" style="-fx-shape: 'M 12 22 c 1.1 0 2 -0.9 2 -2 h -4 c 0 1.1 0.9 2 2 2 Z m 6 -6 v -5 c 0 -3.07 -1.63 -5.64 -4.5 -6.32 V 4 c 0 -0.83 -0.67 -1.5 -1.5 -1.5 s -1.5 0.67 -1.5 1.5 v 0.68 C 7.64 5.36 6 7.92 6 11 v 5 l -2 2 v 1 h 16 v -1 l -2 -2 Z'; -fx-background-color: #64748B; -fx-cursor: hand;" />
                       
-                      <Button mnemonicParsing="false" styleClass="btn-primary" text="Create New" />
+                      
 
                       <!-- Vertical Divider -->
                       <Region prefHeight="30.0" prefWidth="1.0" style="-fx-background-color: #E2E8F0;" />
@@ -62,7 +62,12 @@
                             <StackPane>
                                <children>
                                   <Circle fx:id="avatarCircle" fill="#004fb0" radius="18.0" stroke="WHITE" strokeWidth="2.0" />
-                                  <Label fx:id="avatarInitials" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px;" text="AR" />
+                                                                     <Label fx:id="avatarInitials" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px;" text="AR" />
+                                   <javafx.scene.image.ImageView fx:id="avatarImage" fitHeight="36.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true">
+                                      <clip>
+                                         <Circle centerX="18.0" centerY="18.0" radius="18.0" />
+                                      </clip>
+                                   </javafx.scene.image.ImageView>
                                </children>
                             </StackPane>
 
@@ -75,6 +80,9 @@
                             </VBox>
                          </children>
                       </HBox>
+                       
+                                               <!-- Logout Icon -->
+                       <Region fx:id="logoutIcon" onMouseClicked="#handleLogout" maxHeight="20.0" maxWidth="20.0" minHeight="20.0" minWidth="20.0" prefHeight="20.0" prefWidth="20.0" style="-fx-shape: 'M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z'; -fx-background-color: #64748B; -fx-cursor: hand;" />
 
                    </children>
                 </HBox>

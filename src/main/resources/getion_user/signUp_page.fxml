@@ -86,7 +86,19 @@
                                  <PasswordField fx:id="pass_s_id" promptText="Confirm" styleClass="text-input-modern" />
                                  <Label fx:id="confirmPasswordError" managed="false" style="-fx-text-fill: #ff6b6b; -fx-font-size: 11px;" visible="false" />
                              </VBox>
-                        </HBox>
+                         </HBox>
+                         
+                                                 <VBox spacing="4.0" styleClass="password-rules-container">
+                            <children>
+                               <Label fx:id="ruleLength" styleClass="password-rule-label" text="✖  At least 8 characters" />
+                               <Label fx:id="ruleUpper" styleClass="password-rule-label" text="✖  At least one uppercase letter" />
+                               <Label fx:id="ruleNumber" styleClass="password-rule-label" text="✖  At least one number" />
+                               <Label fx:id="ruleSpecial" styleClass="password-rule-label" text="✖  At least one special character" />
+                            </children>
+                            <VBox.margin>
+                               <Insets top="10.0" />
+                            </VBox.margin>
+                         </VBox>
 
                         <Button fx:id="sign_button_id" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="signin-button" text="Create Account">
                             <VBox.margin>

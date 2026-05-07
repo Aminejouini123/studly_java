@@ -28,6 +28,7 @@ public class FrontendController extends BaseCourseController {
     @FXML private Label avatarInitials;
     @FXML private Circle avatarCircle; // Linked to Circle in FXML
     @FXML private Circle profileAvatar; // Alias for consistency if needed
+    @FXML private javafx.scene.image.ImageView avatarImage;
 
     private static FrontendController instance;
 
@@ -68,6 +69,30 @@ public class FrontendController extends BaseCourseController {
         if (avatarInitials != null) {
             String initials = user.getInitials();
             avatarInitials.setText(initials.isEmpty() ? "U" : initials);
+        }
+
+        // Load profile picture in header
+        if (avatarImage != null) {
+            String path = user.getProfilePicture();
+            if (path != null && !path.isEmpty()) {
+                try {
+                    if (!path.startsWith("http")) {
+                        java.io.File file = new java.io.File(path);
+                        if (file.exists()) {
+                            avatarImage.setImage(new javafx.scene.image.Image(file.toURI().toString()));
+                            if (avatarInitials != null) avatarInitials.setVisible(false);
+                        }
+                    } else {
+                        avatarImage.setImage(new javafx.scene.image.Image(path));
+                        if (avatarInitials != null) avatarInitials.setVisible(false);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Failed to load header avatar: " + e.getMessage());
+                }
+            } else {
+                avatarImage.setImage(null);
+                if (avatarInitials != null) avatarInitials.setVisible(true);
+            }
         }
         
         // Set profile avatar color based on role
@@ -150,11 +175,26 @@ public class FrontendController extends BaseCourseController {
         setActiveNav(null);
     }
 
+    @FXML
+    private void handleLogout() {
+        SessionManager.clearSession();
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/getion_user/auth_page.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.stage.Stage stage = (javafx.stage.Stage) userNameLabel.getScene().getWindow();
+            stage.setScene(new javafx.scene.Scene(root));
+            stage.setTitle("Login – Studly");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void loadContent(String resourcePath) {
         try {
             URL resource = getClass().getResource(resourcePath);
             if (resource == null) {
                 System.err.println("FXML NOT FOUND: " + resourcePath);
+                showError("Navigation Error", "FXML resource not found: " + resourcePath);
                 return;
             }
 
@@ -162,10 +202,39 @@ public class FrontendController extends BaseCourseController {
             if (contentHost != null) {
                 contentHost.getChildren().setAll(content);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println("Error loading FXML content: " + resourcePath);
             e.printStackTrace();
+            // Walk the full cause chain to find the real error
+            String rootMsg = getRootCauseMessage(e);
+            showError("Loading Error", "Could not load " + resourcePath + "\n\nRoot cause:\n" + rootMsg);
         }
+    }
+
+    private String getRootCauseMessage(Throwable t) {
+        StringBuilder sb = new StringBuilder();
+        Throwable current = t;
+        int depth = 0;
+        while (current != null && depth < 6) {
+            String msg = current.getMessage();
+            if (msg == null) msg = current.getClass().getSimpleName();
+            sb.append(current.getClass().getSimpleName()).append(": ").append(msg).append("\n");
+            current = current.getCause();
+            depth++;
+        }
+        return sb.toString().trim();
+    }
+
+    private void showError(String title, String message) {
+        javafx.application.Platform.runLater(() -> {
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setResizable(true);
+            alert.getDialogPane().setPrefWidth(600);
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
     }
 
     public void loadContentNode(Node content) {
