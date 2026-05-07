@@ -12,13 +12,19 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.StackPane;
 import models.Group;
+import models.Invitation;
 import services.GroupService;
+import services.InvitationService;
+import utils.SessionManager;
 
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class GroupsListController {
     @FXML
@@ -26,6 +32,8 @@ public class GroupsListController {
 
     @FXML
     private Label errorLabel;
+    private final GroupService groupService = new GroupService();
+    private final InvitationService invitationService = new InvitationService();
 
     @FXML
     public void initialize() {
@@ -60,7 +68,20 @@ public class GroupsListController {
 
         List<Group> groups = new ArrayList<>();
         try {
-            groups = new GroupService().recuperer();
+            groups = groupService.recuperer();
+            models.User current = SessionManager.getCurrentUser();
+            if (current != null) {
+                Set<Integer> acceptedGroupIds = invitationService.recuperer().stream()
+                        .filter(i -> i.getReceiver_id() == current.getId())
+                        .filter(GroupsListController::isAccepted)
+                        .map(Invitation::getGroup_id)
+                        .collect(Collectors.toSet());
+
+                groups = groups.stream()
+                        .filter(g -> g != null)
+                        .filter(g -> groupService.isGroupCreator(g, current) || acceptedGroupIds.contains(g.getId()))
+                        .collect(Collectors.toList());
+            }
         } catch (SQLException | RuntimeException e) {
             errorLabel.setText("Unable to load groups from database. Showing sample data.");
             groups = sampleGroups();
@@ -131,5 +152,13 @@ public class GroupsListController {
         list.add(new Group(2, 15, null, "Programming", 1));
         list.add(new Group(3, 30, null, "Physics", 2));
         return list;
+    }
+
+    private static boolean isAccepted(Invitation inv) {
+        if (inv == null || inv.getStatus() == null) {
+            return false;
+        }
+        String s = inv.getStatus().trim().toUpperCase(Locale.ROOT);
+        return s.contains("ACCEPTED");
     }
 }

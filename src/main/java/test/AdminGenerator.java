@@ -2,6 +2,7 @@ package test;
 
 import models.User;
 import services.UserService;
+import utils.PasswordUtil;
 
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -14,7 +15,7 @@ public class AdminGenerator {
             
             User admin = new User();
             admin.setEmail("admin@studly.com");
-            admin.setPassword("admin123");
+            admin.setPassword(PasswordUtil.hash("admin123"));
             admin.setRoles("[\"ROLE_ADMIN\"]");
             admin.setFirstName("System");
             admin.setLastName("Admin");

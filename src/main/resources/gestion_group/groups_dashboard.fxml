@@ -9,8 +9,8 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="700.0" prefWidth="980.0" stylesheets="@groups_dashboard.css"
-            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane prefHeight="1100.0" prefWidth="980.0" stylesheets="@groups_dashboard.css"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.group.GroupsDashboardController">
     <children>
         <VBox spacing="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
@@ -70,7 +70,7 @@
                 </HBox>
 
                 <!-- Content host (Liste / Details / Form) -->
-                <StackPane fx:id="groupContentHost" minHeight="420.0" styleClass="planning-content-card" VBox.vgrow="ALWAYS"/>
+                <StackPane fx:id="groupContentHost" minHeight="780.0" styleClass="planning-content-card" VBox.vgrow="ALWAYS"/>
             </children>
         </VBox>
     </children>

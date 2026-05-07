@@ -74,9 +74,11 @@ public class AddGroupController {
         group.setCapacity(capacity);
         group.setGroupPhoto(groupPhoto.isEmpty() ? null : groupPhoto);
         group.setCategory(category);
-        // Creator id comes from the logged-in user/session.
-        // If session is missing, leave it unset (<= 0) so GroupService can resolve a valid user id (or NULL if allowed).
-        group.setCreatorId(SessionManager.getCurrentUser() != null ? SessionManager.getCurrentUser().getId() : 0);
+        if (SessionManager.getCurrentUser() == null || SessionManager.getCurrentUser().getId() <= 0) {
+            showAlert(Alert.AlertType.ERROR, "Session", "Utilisateur non connecte. Reconnectez-vous puis reessayez.");
+            return;
+        }
+        group.setCreatorId(groupService.resolveCreatorIdForUser(SessionManager.getCurrentUser()));
 
         try {
             groupService.ajouter(group);

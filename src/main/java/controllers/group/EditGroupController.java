@@ -6,7 +6,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import models.Group;
+import models.User;
 import services.GroupService;
+import utils.SessionManager;
 
 import java.sql.SQLException;
 
@@ -64,6 +66,16 @@ public class EditGroupController {
     private void saveChanges() {
         if (group == null) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Aucun groupe selectionne.");
+            return;
+        }
+
+        User current = SessionManager.getCurrentUser();
+        if (current == null) {
+            showAlert(Alert.AlertType.ERROR, "Autorisation", "Veuillez vous connecter.");
+            return;
+        }
+        if (!groupService.isGroupCreator(group, current)) {
+            showAlert(Alert.AlertType.ERROR, "Autorisation", "Seul le createur du groupe peut le modifier.");
             return;
         }
 

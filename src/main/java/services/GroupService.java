@@ -1,6 +1,7 @@
 package services;
 
 import models.Group;
+import models.User;
 import utils.MyDatabase;
 
 import java.sql.Connection;
@@ -23,6 +24,8 @@ import java.util.Locale;
 
 public class GroupService implements IService<Group> {
     private final Connection connection;
+    // Single source of truth: use table `groups`.
+    private final String groupTable = "groups";
     private final Set<String> groupColumns = new HashSet<>();
     private final Map<String, ForeignKeyRef> foreignKeysByColumn = new HashMap<>();
     private final Map<String, Boolean> groupNullableByColumn = new HashMap<>();
@@ -56,7 +59,7 @@ public class GroupService implements IService<Group> {
             values.append(", CURRENT_TIMESTAMP");
         }
 
-        String sql = "insert into `groups` (" + columns + ") values (" + values + ")";
+        String sql = "insert into `" + groupTable + "` (" + columns + ") values (" + values + ")";
         PreparedStatement ps = connection.prepareStatement(sql);
         int i = 1;
         ps.setInt(i++, group.getCapacity());
@@ -74,7 +77,7 @@ public class GroupService implements IService<Group> {
             } else {
                 Integer resolvedCreatorId = resolveDefaultCreatorId();
                 if (resolvedCreatorId == null) {
-                    throw new IllegalStateException("Invalid creator_id: no users exist. Create a user first (or make groups.creator_id nullable).");
+                    throw new IllegalStateException("Invalid creator_id: no users exist. Create a user first (or make `group`.creator_id nullable).");
                 }
                 ps.setInt(i, requireValidForeignKeyId(CREATOR_ID_COL, resolvedCreatorId));
             }
@@ -88,8 +91,8 @@ public class GroupService implements IService<Group> {
 
         boolean hasCreatorId = hasColumn("creator_id");
         String sql = hasCreatorId
-                ? "update `groups` set capacity = ?, group_photo = ?, category = ?, creator_id = ? where id = ?"
-                : "update `groups` set capacity = ?, group_photo = ?, category = ? where id = ?";
+                ? "update `" + groupTable + "` set capacity = ?, group_photo = ?, category = ?, creator_id = ? where id = ?"
+                : "update `" + groupTable + "` set capacity = ?, group_photo = ?, category = ? where id = ?";
         PreparedStatement ps = connection.prepareStatement(sql);
         int i = 1;
         ps.setInt(i++, group.getCapacity());
@@ -107,7 +110,7 @@ public class GroupService implements IService<Group> {
             } else {
                 Integer resolvedCreatorId = resolveDefaultCreatorId();
                 if (resolvedCreatorId == null) {
-                    throw new IllegalStateException("Invalid creator_id: no users exist. Create a user first (or make groups.creator_id nullable).");
+                    throw new IllegalStateException("Invalid creator_id: no users exist. Create a user first (or make `group`.creator_id nullable).");
                 }
                 ps.setInt(i++, requireValidForeignKeyId(CREATOR_ID_COL, resolvedCreatorId));
             }
@@ -119,7 +122,7 @@ public class GroupService implements IService<Group> {
     @Override
     public void supprimer(int id) throws SQLException {
         requireConnection();
-        String sql = "delete from `groups` where id = ?";
+        String sql = "delete from `" + groupTable + "` where id = ?";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setInt(1, id);
         ps.executeUpdate();
@@ -133,13 +136,13 @@ public class GroupService implements IService<Group> {
 
         String sql;
         if (hasCreatorId && hasCreatedAt) {
-            sql = "select id, capacity, group_photo, category, creator_id, created_at from `groups`";
+            sql = "select id, capacity, group_photo, category, creator_id, created_at from `" + groupTable + "`";
         } else if (hasCreatorId) {
-            sql = "select id, capacity, group_photo, category, creator_id from `groups`";
+            sql = "select id, capacity, group_photo, category, creator_id from `" + groupTable + "`";
         } else if (hasCreatedAt) {
-            sql = "select id, capacity, group_photo, category, created_at from `groups`";
+            sql = "select id, capacity, group_photo, category, created_at from `" + groupTable + "`";
         } else {
-            sql = "select id, capacity, group_photo, category from `groups`";
+            sql = "select id, capacity, group_photo, category from `" + groupTable + "`";
         }
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(sql);
@@ -284,7 +287,7 @@ public class GroupService implements IService<Group> {
         }
         try {
             DatabaseMetaData meta = connection.getMetaData();
-            try (ResultSet rs = meta.getColumns(null, null, GROUPS_TABLE, null)) {
+            try (ResultSet rs = meta.getColumns(null, null, groupTable, null)) {
                 while (rs.next()) {
                     String name = rs.getString("COLUMN_NAME");
                     if (name != null) {
@@ -306,7 +309,7 @@ public class GroupService implements IService<Group> {
         }
         try {
             DatabaseMetaData meta = connection.getMetaData();
-            try (ResultSet rs = meta.getImportedKeys(null, null, GROUPS_TABLE)) {
+            try (ResultSet rs = meta.getImportedKeys(null, null, groupTable)) {
                 while (rs.next()) {
                     String fkColumn = rs.getString("FKCOLUMN_NAME");
                     String pkTable = rs.getString("PKTABLE_NAME");
@@ -317,6 +320,23 @@ public class GroupService implements IService<Group> {
                 }
             }
         } catch (SQLException ignored) {
+        }
+    }
+
+    /**
+     * Checks if the given group id exists in the database.
+     */
+    public boolean existsById(int groupId) throws SQLException {
+        requireConnection();
+        if (groupId <= 0) {
+            return false;
+        }
+        String sql = "select 1 from `" + groupTable + "` where id = ? limit 1";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, groupId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
         }
     }
 
@@ -333,6 +353,53 @@ public class GroupService implements IService<Group> {
         return hasColumn("creator_id");
     }
 
+    public int resolveCreatorIdForUser(User currentUser) {
+        if (currentUser == null || currentUser.getId() <= 0) {
+            throw new IllegalStateException("Utilisateur non connecte.");
+        }
+        if (!hasColumn(CREATOR_ID_COL)) {
+            return currentUser.getId();
+        }
+
+        ForeignKeyRef ref = foreignKeysByColumn.get(CREATOR_ID_COL);
+        if (ref == null) {
+            return currentUser.getId();
+        }
+
+        // Fast path: same id exists in the referenced table.
+        if (existsById(ref.pkTable, ref.pkColumn, currentUser.getId())) {
+            return currentUser.getId();
+        }
+
+        // Fallback path: resolve by email in referenced user table (handles users/user table mismatch).
+        String email = currentUser.getEmail() == null ? "" : currentUser.getEmail().trim();
+        if (!email.isEmpty()) {
+            Integer byEmail = findIdByEmail(ref.pkTable, ref.pkColumn, email);
+            if (byEmail != null && byEmail > 0) {
+                return byEmail;
+            }
+        }
+
+        throw new IllegalStateException(
+                "Invalid creator_id: user id " + currentUser.getId() + " does not exist in `" + ref.pkTable + "`."
+        );
+    }
+
+    public boolean isGroupCreator(Group group, User currentUser) {
+        if (group == null || currentUser == null || currentUser.getId() <= 0) {
+            return false;
+        }
+        if (group.getCreatorId() > 0 && currentUser.getId() == group.getCreatorId()) {
+            return true;
+        }
+        try {
+            int resolved = resolveCreatorIdForUser(currentUser);
+            return group.getCreatorId() > 0 && group.getCreatorId() == resolved;
+        } catch (RuntimeException ex) {
+            return false;
+        }
+    }
+
     private int requireValidForeignKeyId(String fkColumn, int id) {
         if (id <= 0) {
             throw new IllegalStateException("Invalid " + fkColumn + " value (must be > 0).");
@@ -344,14 +411,6 @@ public class GroupService implements IService<Group> {
         }
 
         if (!existsById(ref.pkTable, ref.pkColumn, id)) {
-            if (CREATOR_ID_COL.equalsIgnoreCase(fkColumn)) {
-                // If caller gave a bad creator id, try to fall back to an existing (or demo) user.
-                ensureSampleUsers(1);
-                Integer first = firstId(ref.pkTable, ref.pkColumn);
-                if (first != null) {
-                    return first;
-                }
-            }
             throw new IllegalStateException("Invalid " + fkColumn + ": user id " + id + " does not exist.");
         }
 
@@ -364,6 +423,34 @@ public class GroupService implements IService<Group> {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             return rs.next();
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    private Integer findIdByEmail(String table, String idColumn, String email) {
+        if (!hasTableColumn(table, "email")) {
+            return null;
+        }
+        String sql = "select " + idColumn + " from `" + table + "` where lower(email) = lower(?) limit 1";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+        return null;
+    }
+
+    private boolean hasTableColumn(String table, String column) {
+        try {
+            DatabaseMetaData meta = connection.getMetaData();
+            try (ResultSet rs = meta.getColumns(null, null, table, column)) {
+                return rs.next();
+            }
         } catch (SQLException e) {
             return false;
         }

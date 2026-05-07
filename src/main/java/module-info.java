@@ -17,9 +17,9 @@ module studly.java {
     requires jakarta.mail;
     requires org.bytedeco.javacv;
     requires org.bytedeco.opencv;
-    requires org.bytedeco.flandmark;
     requires org.bytedeco.openblas;
     requires jbcrypt;
+    requires twilio;
 
     // Open packages for FXML injection
     opens controllers to javafx.fxml;

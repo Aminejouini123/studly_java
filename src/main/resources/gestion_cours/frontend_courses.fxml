@@ -18,7 +18,7 @@
 <?import javafx.collections.FXCollections?>
 <?import java.lang.String?>
 
-<StackPane fx:id="rootPane" prefHeight="800.0" prefWidth="1100.0" styleClass="root" stylesheets="@../TEMPLATE/frontend_style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.courses.CourseListController">
+<StackPane fx:id="rootPane" prefHeight="800.0" prefWidth="1100.0" styleClass="root" stylesheets="@../TEMPLATE/frontend_style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.courses.CourseListController">
    
    <BorderPane prefHeight="800.0" prefWidth="1100.0">
       <top>

@@ -12,6 +12,14 @@ public class ProjectTaskService implements IService<ProjectTask> {
         connection = MyDatabase.getInstance().getConnection();
     }
 
+    private static void setNullableInt(PreparedStatement ps, int index, int value) throws SQLException {
+        if (value <= 0) {
+            ps.setNull(index, Types.INTEGER);
+        } else {
+            ps.setInt(index, value);
+        }
+    }
+
     @Override
     public void ajouter(ProjectTask entity) throws SQLException {
         String sql = "insert into `project_task` (title, description, status, deadline, completed_at, deliverable, grade, attachment, resource_path, project_id, assigned_user_id) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -26,7 +34,8 @@ public class ProjectTaskService implements IService<ProjectTask> {
         ps.setString(8, entity.getAttachment());
         ps.setString(9, entity.getResource_path());
         ps.setInt(10, entity.getProject_id());
-        ps.setInt(11, entity.getAssigned_user_id());
+        // assigned_user_id is nullable; don't send "0" (breaks FK -> users.id)
+        setNullableInt(ps, 11, entity.getAssigned_user_id());
         ps.executeUpdate();
     }
 
@@ -44,7 +53,8 @@ public class ProjectTaskService implements IService<ProjectTask> {
         ps.setString(8, entity.getAttachment());
         ps.setString(9, entity.getResource_path());
         ps.setInt(10, entity.getProject_id());
-        ps.setInt(11, entity.getAssigned_user_id());
+        // assigned_user_id is nullable; don't send "0" (breaks FK -> users.id)
+        setNullableInt(ps, 11, entity.getAssigned_user_id());
         ps.setInt(12, entity.getId());
         ps.executeUpdate();
     }

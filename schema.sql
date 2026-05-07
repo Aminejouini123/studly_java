@@ -227,6 +227,7 @@ CREATE TABLE `message` (
   KEY `fk_message_group` (`group_id`),
   KEY `fk_message_sender` (`sender_id`),
   CONSTRAINT `fk_message_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
+  -- Important: sender_id must reference `users(id)` (not legacy `user(id)`).
   CONSTRAINT `fk_message_sender` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

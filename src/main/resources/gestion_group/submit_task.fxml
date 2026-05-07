@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="760.0" prefWidth="980.0" stylesheets="@style.css"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.group.SubmitProjectTaskController">
+    <children>
+        <VBox spacing="18.0" AnchorPane.bottomAnchor="18.0" AnchorPane.leftAnchor="18.0" AnchorPane.rightAnchor="18.0"
+              AnchorPane.topAnchor="18.0">
+
+            <VBox spacing="10.0" styleClass="hero">
+                <children>
+                    <Label onMouseClicked="#cancel" styleClass="linkish" text="&lt; Retour au groupe"/>
+                    <Label fx:id="titleLabel" styleClass="hero-title" text="Deposer le Travail"/>
+                    <Label styleClass="hero-subtitle" text="Deposez votre livrable pour cette tache"/>
+                    <Label fx:id="projectHintLabel" styleClass="hero-subtitle hero-subtle" text=""/>
+                    <Label fx:id="taskHintLabel" styleClass="hero-subtitle hero-subtle" text=""/>
+                </children>
+            </VBox>
+
+            <VBox spacing="16.0" styleClass="card" VBox.vgrow="ALWAYS">
+                <padding>
+                    <Insets bottom="18.0" left="18.0" right="18.0" top="18.0"/>
+                </padding>
+
+                <children>
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <children>
+                            <Label styleClass="section-header" text="Depot"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="statusLabel" styleClass="status-hint" text=""/>
+                        </children>
+                    </HBox>
+
+                    <VBox spacing="6.0">
+                        <children>
+                            <Label styleClass="muted" text="Description / Lien / Notes"/>
+                            <TextArea fx:id="deliverableArea" prefRowCount="8" promptText="Ajoutez un lien GitHub, une description, etc." wrapText="true"/>
+                        </children>
+                    </VBox>
+
+                    <VBox spacing="6.0">
+                        <children>
+                            <Label styleClass="muted" text="Fichier (optionnel)"/>
+                            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                <children>
+                                    <TextField fx:id="attachmentField" HBox.hgrow="ALWAYS" promptText="Choisir un fichier..."/>
+                                    <Button fx:id="browseButton" mnemonicParsing="false" onAction="#browseAttachment" styleClass="btn-secondary" text="Parcourir"/>
+                                    <Button fx:id="downloadButton" mnemonicParsing="false" onAction="#downloadAttachment" styleClass="btn-secondary" text="Telecharger"/>
+                                </children>
+                            </HBox>
+                        </children>
+                    </VBox>
+
+                    <Region VBox.vgrow="ALWAYS"/>
+
+                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                        <children>
+                            <Button fx:id="submitButton" mnemonicParsing="false" onAction="#submit" styleClass="btn-primary" text="Deposer"/>
+                            <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancel" styleClass="btn-secondary" text="Fermer"/>
+                        </children>
+                    </HBox>
+                </children>
+            </VBox>
+        </VBox>
+    </children>
+</AnchorPane>
