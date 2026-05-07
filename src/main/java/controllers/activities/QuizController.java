@@ -202,7 +202,7 @@ public class QuizController extends BaseActivityController {
             if ("Easy".equals(v)) d = QuizConfig.Difficulty.EASY;
             else if ("Hard".equals(v)) d = QuizConfig.Difficulty.HARD;
         }
-        String topic = topicField != null ? topicField.getText() : "";
+        String topic = course != null && course.getName() != null ? course.getName() : "";
         return new QuizConfig(name, n, t, d, topic);
     }
 

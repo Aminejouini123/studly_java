@@ -29,6 +29,18 @@ public class TtsService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
+        if (this.apiKey == null || this.apiKey.trim().isEmpty()) {
+            try (InputStream input = getClass().getClassLoader().getResourceAsStream("openrouter.properties.example")) {
+                Properties prop = new Properties();
+                if (input != null) {
+                    prop.load(input);
+                    this.apiKey = prop.getProperty("voicerss.apiKey");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public boolean hasApiKey() {

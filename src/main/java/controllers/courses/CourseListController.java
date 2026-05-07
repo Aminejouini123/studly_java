@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import models.User;
+import utils.SessionManager;
 
 public class CourseListController extends BaseCourseController {
 
@@ -131,11 +133,19 @@ public class CourseListController extends BaseCourseController {
     }
 
     private void loadCourses() {
-        // Load courses on a background thread to avoid blocking the FX thread
-        javafx.concurrent.Task<java.util.List<Course>> task = new javafx.concurrent.Task<>() {
+        javafx.concurrent.Task<List<Course>> task = new javafx.concurrent.Task<>() {
             @Override
             protected java.util.List<Course> call() throws Exception {
-                return new CourseService().recuperer();
+                CourseService courseService = new CourseService();
+                User currentUser = SessionManager.getCurrentUser();
+                if (currentUser == null) {
+                    return new ArrayList<>();
+                }
+                String roles = currentUser.getRoles() != null ? currentUser.getRoles() : "";
+                if (roles.contains("ROLE_ADMIN")) {
+                    return courseService.recuperer();
+                }
+                return courseService.recupererParUser(currentUser.getId());
             }
         };
 
@@ -153,6 +163,22 @@ public class CourseListController extends BaseCourseController {
             }
             updateCourseDisplay();
         });
+
+        task.setOnFailed(ev -> {
+            allCourses = new ArrayList<>();
+            updateCourseDisplay();
+            if (coursesContainer != null) {
+                coursesContainer.setDisable(false);
+            }
+            Throwable error = task.getException();
+            if (error != null) {
+                error.printStackTrace();
+            }
+        });
+
+        Thread loaderThread = new Thread(task, "course-list-loader");
+        loaderThread.setDaemon(true);
+        loaderThread.start();
     }
 
     // --- Core Logic: Search & Filter ---
