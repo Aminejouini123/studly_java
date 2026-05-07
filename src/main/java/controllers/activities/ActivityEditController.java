@@ -2,6 +2,7 @@ package controllers.activities;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.StackPane;
 import models.Activity;
 import models.Course;
 import services.ActivityService;
@@ -18,24 +19,51 @@ public class ActivityEditController extends BaseActivityController {
     private Course currentCourse;
     private Activity currentActivity;
     private final ActivityService activityService = new ActivityService();
+    private boolean fromBackend = false;
+    private controllers.backend.BackendActivityController backendController;
+
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
+    }
+
+    public void setBackendController(controllers.backend.BackendActivityController controller) {
+        this.backendController = controller;
+    }
+
+    public void setActivity(Activity activity) {
+        this.currentActivity = activity;
+        this.currentCourse = null;
+        populateFields(activity);
+    }
 
     public void setActivity(Activity activity, Course course) {
         this.currentActivity = activity;
         this.currentCourse = course;
-        
-        // Populate fields
-        titleField.setText(activity.getTitle());
-        descriptionArea.setText(activity.getDescription());
-        fileField.setText(activity.getFile());
-        linkField.setText(activity.getLink());
+        populateFields(activity);
+    }
+
+    @FXML
+    public void initialize() {
+        typeComboBox.getItems().setAll("Workshop", "Assignment", "Practical Work", "Course Material");
+        statusComboBox.getItems().setAll("To Do", "In Progress", "Completed");
+        difficultyComboBox.getItems().setAll("Easy", "Medium", "Hard");
+        levelComboBox.getItems().setAll("Beginner", "Intermediate", "Advanced");
+    }
+
+    private void populateFields(Activity activity) {
+        if (activity == null) return;
+        titleField.setText(activity.getTitle() != null ? activity.getTitle() : "");
+        descriptionArea.setText(activity.getDescription() != null ? activity.getDescription() : "");
+        fileField.setText(activity.getFile() != null ? activity.getFile() : "");
+        linkField.setText(activity.getLink() != null ? activity.getLink() : "");
         durationField.setText(String.valueOf(activity.getDuration()));
         statusComboBox.setValue(activity.getStatus());
         difficultyComboBox.setValue(activity.getDifficulty());
         levelComboBox.setValue(activity.getLevel());
         typeComboBox.setValue(activity.getType());
-        instructionsArea.setText(activity.getInstructions());
-        outputArea.setText(activity.getExpected_output());
-        hintsArea.setText(activity.getHints());
+        instructionsArea.setText(activity.getInstructions() != null ? activity.getInstructions() : "");
+        outputArea.setText(activity.getExpected_output() != null ? activity.getExpected_output() : "");
+        hintsArea.setText(activity.getHints() != null ? activity.getHints() : "");
     }
 
     @FXML
@@ -57,7 +85,11 @@ public class ActivityEditController extends BaseActivityController {
             currentActivity.setHints(hintsArea.getText());
 
             activityService.modifier(currentActivity);
-            handleBack();
+            if (fromBackend) {
+                returnToDashboard(updateBtn);
+            } else {
+                navigateToActivityList(updateBtn, currentCourse);
+            }
 
         } catch (SQLException | NumberFormatException e) {
             e.printStackTrace();
@@ -67,37 +99,37 @@ public class ActivityEditController extends BaseActivityController {
 
     @FXML
     private void handleBack() {
-        try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_activities.fxml"));
-            javafx.scene.Parent root = loader.load();
-            ActivityListController controller = loader.getController();
-            controller.setCourse(currentCourse);
-            javafx.stage.Stage stage = (javafx.stage.Stage) updateBtn.getScene().getWindow();
-            stage.getScene().setRoot(root);
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
+        if (fromBackend) {
+            returnToDashboard(updateBtn);
+            return;
         }
+        navigateToActivityList(updateBtn, currentCourse);
     }
 
     private void hideErrors() {
-        if (titleError != null) {
-            titleError.setVisible(false); titleError.setManaged(false); titleField.setStyle("");
-            typeError.setVisible(false); typeError.setManaged(false); typeComboBox.setStyle("");
-            statusError.setVisible(false); statusError.setManaged(false); statusComboBox.setStyle("");
-            difficultyError.setVisible(false); difficultyError.setManaged(false); difficultyComboBox.setStyle("");
-            levelError.setVisible(false); levelError.setManaged(false); levelComboBox.setStyle("");
-            descriptionError.setVisible(false); descriptionError.setManaged(false); descriptionArea.setStyle("");
-            instructionsError.setVisible(false); instructionsError.setManaged(false); instructionsArea.setStyle("");
-            outputError.setVisible(false); outputError.setManaged(false); outputArea.setStyle("");
-            hintsError.setVisible(false); hintsError.setManaged(false); hintsArea.setStyle("");
+        Label[] labels = {titleError, typeError, statusError, durationError, difficultyError, levelError, descriptionError, instructionsError, outputError, hintsError};
+        Control[] fields = {titleField, typeComboBox, statusComboBox, durationField, difficultyComboBox, levelComboBox, descriptionArea, instructionsArea, outputArea, hintsArea};
+        
+        for (int i = 0; i < labels.length; i++) {
+            if (labels[i] != null) {
+                labels[i].setVisible(false);
+                labels[i].setManaged(false);
+            }
+            if (fields[i] != null) {
+                fields[i].setStyle("");
+            }
         }
     }
 
     private void showError(Label errorLabel, javafx.scene.control.Control field, String message) {
-        errorLabel.setText(message);
-        errorLabel.setVisible(true);
-        errorLabel.setManaged(true);
-        field.setStyle("-fx-border-color: transparent transparent #ef4444 transparent; -fx-border-width: 0 0 2 0;");
+        if (errorLabel != null) {
+            errorLabel.setText(message);
+            errorLabel.setVisible(true);
+            errorLabel.setManaged(true);
+        }
+        if (field != null) {
+            field.setStyle("-fx-border-color: transparent transparent #ef4444 transparent; -fx-border-width: 0 0 2 0;");
+        }
     }
 
     private boolean validateInput() {
@@ -168,5 +200,4 @@ public class ActivityEditController extends BaseActivityController {
             fileField.setText(selectedFile.getAbsolutePath());
         }
     }
-
 }

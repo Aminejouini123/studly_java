@@ -12,6 +12,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import controllers.user_controller.AddUserController;
+import controllers.user_controller.ListUserController;
 import models.User;
 import java.io.IOException;
 import java.util.List;
@@ -80,7 +82,10 @@ public class BackendUsersController {
         List<User> allUsers = listUserController.getAllUsers();
         long total = allUsers.size();
         long flagged = allUsers.stream()
-                .filter(u -> "Flagged".equalsIgnoreCase(u.getStatut()))
+                .filter(u -> {
+                    String s = u.getStatut();
+                    return "BANNED".equalsIgnoreCase(s) || "Flagged".equalsIgnoreCase(s);
+                })
                 .count();
         
         totalUsersLabel.setText(String.valueOf(total));

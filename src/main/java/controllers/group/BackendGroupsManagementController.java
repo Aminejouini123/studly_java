@@ -448,9 +448,7 @@ public class BackendGroupsManagementController {
     }
 
     private static String displayName(User u) {
-        String first = safe(u.getFirst_name());
-        String last = safe(u.getLast_name());
-        String full = (first + " " + last).trim();
+        String full = u.getFullName().trim();
         if (!full.isEmpty()) return full;
         String email = safe(u.getEmail());
         return email.isEmpty() ? "Utilisateur" : email.toLowerCase(Locale.ROOT);

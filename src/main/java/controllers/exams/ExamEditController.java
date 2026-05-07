@@ -9,10 +9,12 @@ import javafx.scene.layout.StackPane;
 import models.Course;
 import models.Exam;
 import services.ExamService;
-import controllers.backend.BackendExamController;
 
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
+import javafx.fxml.FXMLLoader;
+import javafx.stage.Stage;
 
 public class ExamEditController extends BaseExamController {
 
@@ -26,9 +28,16 @@ public class ExamEditController extends BaseExamController {
     private Course currentCourse;
     private Exam currentExam;
     private final ExamService examService = new ExamService();
+    private boolean fromBackend = false;
+    private controllers.backend.BackendExamController backendController;
 
-    private boolean fromBackend;
-    private BackendExamController backendController;
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
+    }
+
+    public void setBackendController(controllers.backend.BackendExamController controller) {
+        this.backendController = controller;
+    }
 
     @FXML
     public void initialize() {
@@ -36,26 +45,28 @@ public class ExamEditController extends BaseExamController {
         statusCombo.getItems().addAll("Pending", "Passed", "Failed", "Aborted");
     }
 
+    public void setExam(Exam exam) {
+        this.currentExam = exam;
+        this.currentCourse = null;
+        populateFields(exam);
+    }
+
     public void setExam(Exam exam, Course course) {
         this.currentExam = exam;
         this.currentCourse = course;
-        if (course != null) {
-            courseNameLabel.setText(course.getName());
-        }
+        if (courseNameLabel != null) courseNameLabel.setText(course.getName());
+        populateFields(exam);
+    }
 
-        titleField.setText(exam.getTitle());
-        datePicker.setValue(exam.getDate().toLocalDate());
+    private void populateFields(Exam exam) {
+        titleField.setText(exam.getTitle() != null ? exam.getTitle() : "");
+        if (exam.getDate() != null) datePicker.setValue(exam.getDate().toLocalDate());
         durationField.setText(String.valueOf(exam.getDuration()));
         gradeField.setText(String.valueOf(exam.getGrade()));
         difficultyCombo.setValue(exam.getDifficulty());
         statusCombo.setValue(exam.getStatus());
-        fileField.setText(exam.getFile());
-        linkField.setText(exam.getLink());
-    }
-
-    // Compatibility for backend flows that don't pass the course object.
-    public void setExam(Exam exam) {
-        setExam(exam, null);
+        fileField.setText(exam.getFile() != null ? exam.getFile() : "");
+        linkField.setText(exam.getLink() != null ? exam.getLink() : "");
     }
 
     @FXML
@@ -73,7 +84,13 @@ public class ExamEditController extends BaseExamController {
             currentExam.setLink(linkField.getText());
 
             examService.modifier(currentExam);
-            showSuccessNotification(rootPane, "Updated!", "Changes saved successfully.", this::handleCancel);
+            showSuccessNotification(rootPane, "Updated!", "Changes saved successfully.", () -> {
+                if (fromBackend) {
+                    returnToDashboard(rootPane);
+                } else {
+                    navigateToExamList(rootPane, currentCourse);
+                }
+            });
         } catch (SQLException e) {
             e.printStackTrace();
             showErrorNotification(rootPane, "Update Error", "Could not update exam: " + e.getMessage());
@@ -84,29 +101,37 @@ public class ExamEditController extends BaseExamController {
 
     @FXML
     public void handleCancel() {
-        if (fromBackend && backendController != null) {
-            backendController.restoreDashboard();
-            return;
+        if (fromBackend) {
+            returnToDashboard(rootPane);
+        } else {
+            navigateToExamList(titleField, currentCourse);
         }
-        navigateToExamList(titleField, currentCourse);
     }
 
     private void hideErrors() {
-        if (titleError != null) {
-            titleError.setVisible(false); titleError.setManaged(false); titleField.setStyle("");
-            dateError.setVisible(false); dateError.setManaged(false); datePicker.setStyle("");
-            durationError.setVisible(false); durationError.setManaged(false); durationField.setStyle("");
-            difficultyError.setVisible(false); difficultyError.setManaged(false); difficultyCombo.setStyle("");
-            gradeError.setVisible(false); gradeError.setManaged(false); gradeField.setStyle("");
-            statusError.setVisible(false); statusError.setManaged(false); statusCombo.setStyle("");
+        Label[] labels = {titleError, dateError, durationError, difficultyError, gradeError, statusError};
+        javafx.scene.control.Control[] fields = {titleField, datePicker, durationField, difficultyCombo, gradeField, statusCombo};
+        
+        for (int i = 0; i < labels.length; i++) {
+            if (labels[i] != null) {
+                labels[i].setVisible(false);
+                labels[i].setManaged(false);
+            }
+            if (fields[i] != null) {
+                fields[i].setStyle("");
+            }
         }
     }
 
     private void showError(Label errorLabel, javafx.scene.control.Control field, String message) {
-        errorLabel.setText(message);
-        errorLabel.setVisible(true);
-        errorLabel.setManaged(true);
-        field.setStyle("-fx-border-color: transparent transparent #ef4444 transparent; -fx-border-width: 0 0 2 0;");
+        if (errorLabel != null) {
+            errorLabel.setText(message);
+            errorLabel.setVisible(true);
+            errorLabel.setManaged(true);
+        }
+        if (field != null) {
+            field.setStyle("-fx-border-color: transparent transparent #ef4444 transparent; -fx-border-width: 0 0 2 0;");
+        }
     }
 
     private boolean validateFields() {
@@ -166,13 +191,5 @@ public class ExamEditController extends BaseExamController {
         if (selectedFile != null) {
             fileField.setText(selectedFile.getAbsolutePath());
         }
-    }
-
-    public void setFromBackend(boolean fromBackend) {
-        this.fromBackend = fromBackend;
-    }
-
-    public void setBackendController(BackendExamController backendController) {
-        this.backendController = backendController;
     }
 }

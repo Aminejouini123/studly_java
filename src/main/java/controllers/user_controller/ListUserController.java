@@ -1,16 +1,19 @@
-package controllers;
+package controllers.user_controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -20,6 +23,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import models.User;
 import services.UserService;
+import utils.EmailService;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -112,8 +116,8 @@ public class ListUserController {
 
             if (!currentSearchQuery.isEmpty()) {
                 boolean matchesEmail = user.getEmail() != null && user.getEmail().toLowerCase().contains(currentSearchQuery);
-                boolean matchesFirstName = user.getFirst_name() != null && user.getFirst_name().toLowerCase().contains(currentSearchQuery);
-                boolean matchesLastName = user.getLast_name() != null && user.getLast_name().toLowerCase().contains(currentSearchQuery);
+                boolean matchesFirstName = user.getFirstName() != null && user.getFirstName().toLowerCase().contains(currentSearchQuery);
+                boolean matchesLastName = user.getLastName() != null && user.getLastName().toLowerCase().contains(currentSearchQuery);
                 if (!matchesEmail && !matchesFirstName && !matchesLastName) return false;
             }
             return true;
@@ -128,9 +132,9 @@ public class ListUserController {
 
     private void applyDateSort() {
         Comparator<User> comparator = (u1, u2) -> {
-            if (u1.getCreated_at() == null || u2.getCreated_at() == null) return 0;
-            return descending ? u2.getCreated_at().compareTo(u1.getCreated_at()) 
-                              : u1.getCreated_at().compareTo(u2.getCreated_at());
+            if (u1.getCreatedAt() == null || u2.getCreatedAt() == null) return 0;
+            return descending ? u2.getCreatedAt().compareTo(u1.getCreatedAt()) 
+                              : u1.getCreatedAt().compareTo(u2.getCreatedAt());
         };
         sortedList.comparatorProperty().unbind();
         sortedList.setComparator(comparator);
@@ -144,7 +148,7 @@ public class ListUserController {
             TableColumn<User, Object> colLastLogin,
             TableColumn<User, String> colActions
     ) {
-        colAvatar.setCellValueFactory(new PropertyValueFactory<>("first_name"));
+        colAvatar.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         colAvatar.setCellFactory(column -> new TableCell<User, String>() {
             @Override
             protected void updateItem(String name, boolean empty) {
@@ -168,7 +172,7 @@ public class ListUserController {
                 if (empty || user == null) {
                     setGraphic(null);
                 } else {
-                    Label nameLbl = new Label(user.getFirst_name() + " " + user.getLast_name());
+                    Label nameLbl = new Label(user.getFullName());
                     nameLbl.setStyle("-fx-text-fill: #0F172A; -fx-font-weight: bold; -fx-font-size: 13px;");
                     Label emailLbl = new Label(user.getEmail());
                     emailLbl.setStyle("-fx-text-fill: #64748B; -fx-font-size: 11px;");
@@ -210,8 +214,11 @@ public class ListUserController {
                     lbl.setStyle("-fx-text-fill: #0F172A; -fx-font-size: 12px; -fx-font-weight: bold;");
                     if (status.equalsIgnoreCase("Active")) {
                         dot.setFill(Color.web("#4ade80"));
+                    } else if (status.equalsIgnoreCase("BANNED")) {
+                        dot.setFill(Color.web("#dc2626"));
+                        lbl.setStyle("-fx-text-fill: #dc2626; -fx-font-size: 12px; -fx-font-weight: bold;");
                     } else if (status.equalsIgnoreCase("Flagged")) {
-                        dot.setFill(Color.web("#f43f5e")); // Red for flagged
+                        dot.setFill(Color.web("#f43f5e"));
                         lbl.setStyle("-fx-text-fill: #f43f5e; -fx-font-size: 12px; -fx-font-weight: bold;");
                     } else {
                         dot.setFill(Color.web("#8b9bb4"));
@@ -224,7 +231,7 @@ public class ListUserController {
             }
         });
 
-        colLastLogin.setCellValueFactory(new PropertyValueFactory<>("created_at"));
+        colLastLogin.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
         colLastLogin.setCellFactory(column -> new TableCell<User, Object>() {
              @Override
              protected void updateItem(Object date, boolean empty) {
@@ -258,16 +265,16 @@ public class ListUserController {
                     editBtn.getStyleClass().add("btn-edit");
                     editBtn.setOnAction(e -> handleEdit(user));
 
-                    // Flag Button (New)
+                    // Ban / Unban Button
                     Button flagBtn = new Button();
                     SVGPath flagIcon = new SVGPath();
                     flagIcon.setContent("M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6z");
-                    boolean isFlagged = "Flagged".equalsIgnoreCase(user.getStatut());
-                    flagIcon.setFill(isFlagged ? Color.web("#f43f5e") : Color.web("#64748B"));
+                    boolean isBanned = "BANNED".equalsIgnoreCase(user.getStatut());
+                    flagIcon.setFill(isBanned ? Color.web("#dc2626") : Color.web("#64748B"));
                     flagIcon.setScaleX(0.7); flagIcon.setScaleY(0.7);
                     flagBtn.setGraphic(flagIcon);
-                    flagBtn.setTooltip(new Tooltip(isFlagged ? "Unflag User" : "Flag User"));
-                    flagBtn.setOnAction(e -> handleToggleFlag(user));
+                    flagBtn.setTooltip(new Tooltip(isBanned ? "Unban User" : "Ban User"));
+                    flagBtn.setOnAction(e -> handleBanAction(user));
 
                     // Delete Button
                     Button deleteBtn = new Button();
@@ -287,19 +294,146 @@ public class ListUserController {
         });
     }
 
-    private void handleToggleFlag(User user) {
-        try {
-            String currentStatus = user.getStatut();
-            if ("Flagged".equalsIgnoreCase(currentStatus)) {
-                user.setStatut("Active");
-            } else {
-                user.setStatut("Flagged");
-            }
-            userService.modifier(user);
-            refresh();
-        } catch (SQLException e) {
-            e.printStackTrace();
+    private void handleBanAction(User user) {
+        if ("BANNED".equalsIgnoreCase(user.getStatut())) {
+            // Unban: simple confirmation
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Unban User");
+            confirm.setHeaderText("Unban " + user.getFullName() + "?");
+            confirm.setContentText("This will restore the user's access to the platform.");
+            confirm.showAndWait().filter(b -> b == ButtonType.OK).ifPresent(b -> {
+                try {
+                    userService.unbanUser(user.getId());
+                    refresh();
+                } catch (SQLException e) {
+                    showError("Failed to unban user: " + e.getMessage());
+                }
+            });
+        } else {
+            showBanDialog(user);
         }
+    }
+
+    private void showBanDialog(User user) {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Ban User");
+        dialog.setResizable(false);
+
+        // Header
+        Label nameLbl = new Label("Ban " + user.getFullName());
+        nameLbl.setStyle("-fx-text-fill: #F1F5F9; -fx-font-size: 16px; -fx-font-weight: bold;");
+        Label emailLbl = new Label(user.getEmail());
+        emailLbl.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 12px;");
+        VBox header = new VBox(3, nameLbl, emailLbl);
+
+        // Separator
+        Separator sep = new Separator();
+        sep.setStyle("-fx-background-color: rgba(255,255,255,0.1);");
+
+        // Reason input
+        Label reasonLbl = new Label("Reason for ban:");
+        reasonLbl.setStyle("-fx-text-fill: #CBD5E1; -fx-font-size: 13px;");
+        TextArea reasonArea = new TextArea();
+        reasonArea.setPromptText("Describe why this user is being banned…");
+        reasonArea.setPrefRowCount(3);
+        reasonArea.setWrapText(true);
+        reasonArea.setStyle(
+            "-fx-background-color: rgba(30,41,59,0.9);" +
+            "-fx-text-fill: #E2E8F0;" +
+            "-fx-prompt-text-fill: #475569;" +
+            "-fx-border-color: rgba(99,102,241,0.4);" +
+            "-fx-border-radius: 8;" +
+            "-fx-background-radius: 8;" +
+            "-fx-font-size: 13px;"
+        );
+        VBox.setVgrow(reasonArea, Priority.ALWAYS);
+
+        Label errorLbl = new Label("Please provide a reason before confirming.");
+        errorLbl.setStyle("-fx-text-fill: #EF4444; -fx-font-size: 12px;");
+        errorLbl.setVisible(false);
+        errorLbl.setManaged(false);
+
+        // Buttons
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.setStyle(
+            "-fx-background-color: rgba(71,85,105,0.5);" +
+            "-fx-text-fill: #CBD5E1;" +
+            "-fx-background-radius: 8;" +
+            "-fx-padding: 8 20 8 20;" +
+            "-fx-cursor: hand;"
+        );
+        Button confirmBtn = new Button("Confirm Ban");
+        confirmBtn.setStyle(
+            "-fx-background-color: linear-gradient(to right,#dc2626,#b91c1c);" +
+            "-fx-text-fill: white;" +
+            "-fx-font-weight: bold;" +
+            "-fx-background-radius: 8;" +
+            "-fx-padding: 8 20 8 20;" +
+            "-fx-cursor: hand;" +
+            "-fx-effect: dropshadow(gaussian,rgba(220,38,38,0.4),8,0,0,2);"
+        );
+
+        HBox btnRow = new HBox(10, cancelBtn, confirmBtn);
+        btnRow.setAlignment(Pos.CENTER_RIGHT);
+
+        VBox content = new VBox(14, header, sep, reasonLbl, reasonArea, errorLbl, btnRow);
+        content.setPadding(new Insets(24));
+        content.setStyle("-fx-background-color: #1E293B;");
+
+        cancelBtn.setOnAction(e -> dialog.close());
+        confirmBtn.setOnAction(e -> {
+            String reason = reasonArea.getText().trim();
+            if (reason.isEmpty()) {
+                errorLbl.setVisible(true);
+                errorLbl.setManaged(true);
+                return;
+            }
+            dialog.close();
+            executeBan(user, reason);
+        });
+
+        dialog.setScene(new Scene(content, 460, 310));
+        dialog.showAndWait();
+    }
+
+    private void executeBan(User user, String reason) {
+        try {
+            userService.banUser(user.getId(), reason);
+        } catch (SQLException e) {
+            showError("Failed to ban user: " + e.getMessage());
+            return;
+        }
+
+        refresh();
+
+        // Send notification email on a background thread
+        Task<Void> emailTask = new Task<>() {
+            @Override protected Void call() throws Exception {
+                EmailService.sendBanNotification(user.getEmail(), reason);
+                return null;
+            }
+        };
+        emailTask.setOnSucceeded(e -> showInfo(
+            "User " + user.getFullName() + " has been banned and notified by email."));
+        emailTask.setOnFailed(e -> showInfo(
+            "User " + user.getFullName() + " has been banned. (Email notification failed: "
+            + emailTask.getException().getMessage() + ")"));
+        new Thread(emailTask, "ban-email").start();
+    }
+
+    private void showError(String message) {
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setHeaderText("Error");
+        a.setContentText(message);
+        a.showAndWait();
+    }
+
+    private void showInfo(String message) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setHeaderText("Ban Confirmed");
+        a.setContentText(message);
+        a.showAndWait();
     }
 
     private void handleEdit(User user) {
@@ -322,7 +456,7 @@ public class ListUserController {
     private void handleDelete(User user) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Delete User");
-        alert.setHeaderText("Delete " + user.getFirst_name() + " " + user.getLast_name());
+        alert.setHeaderText("Delete " + user.getFullName());
         alert.setContentText("Are you sure?");
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {

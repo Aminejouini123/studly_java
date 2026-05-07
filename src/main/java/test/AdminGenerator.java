@@ -17,13 +17,13 @@ public class AdminGenerator {
             admin.setEmail("admin@studly.com");
             admin.setPassword(PasswordUtil.hash("admin123"));
             admin.setRoles("[\"ROLE_ADMIN\"]");
-            admin.setFirst_name("System");
-            admin.setLast_name("Admin");
+            admin.setFirstName("System");
+            admin.setLastName("Admin");
             admin.setStatut("Active");
-            admin.setIs_verified(1);
-            admin.setDate_of_birth(Date.valueOf(LocalDate.of(2000, 1, 1)));
-            admin.setCreated_at(new Timestamp(System.currentTimeMillis()));
-            admin.setUpdated_at(new Timestamp(System.currentTimeMillis()));
+            admin.setIsVerified(1);
+            admin.setDateOfBirth(Date.valueOf(LocalDate.of(2000, 1, 1)));
+            admin.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+            admin.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             
             userService.ajouter(admin);
             

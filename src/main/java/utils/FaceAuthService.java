@@ -16,7 +16,7 @@ import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 public class FaceAuthService {
 
-    public static final double CONFIDENCE_THRESHOLD = 65.0;
+    public static final double CONFIDENCE_THRESHOLD = 110.0;
     public static final int FACE_IMG_SIZE = 100;
 
     static {
@@ -55,7 +55,7 @@ public class FaceAuthService {
         if (frame == null || frame.empty()) return null;
 
         Mat gray = new Mat();
-        cvtColor(frame, gray, COLOR_BGR2GRAY);
+        cvtColor(frame, gray, org.bytedeco.opencv.global.opencv_imgproc.COLOR_BGR2GRAY);
         equalizeHist(gray, gray);
 
         RectVector faces = new RectVector();
@@ -80,7 +80,7 @@ public class FaceAuthService {
     public void drawFaceRects(Mat frame) {
         if (frame == null || frame.empty()) return;
         Mat gray = new Mat();
-        cvtColor(frame, gray, COLOR_BGR2GRAY);
+        cvtColor(frame, gray, org.bytedeco.opencv.global.opencv_imgproc.COLOR_BGR2GRAY);
         equalizeHist(gray, gray);
 
         RectVector faces = new RectVector();
@@ -101,7 +101,7 @@ public class FaceAuthService {
             throw new IllegalArgumentException("No face images provided");
 
         MatVector images = new MatVector(faceImages.size());
-        Mat labels = new Mat(faceImages.size(), 1, CV_32SC1);
+        Mat labels = new Mat(faceImages.size(), 1, org.bytedeco.opencv.global.opencv_core.CV_32SC1);
         for (int i = 0; i < faceImages.size(); i++) {
             images.put(i, faceImages.get(i));
             labels.ptr(i, 0).putInt(userId);

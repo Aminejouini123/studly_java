@@ -27,6 +27,7 @@
                   <HBox spacing="12.0">
                      <children>
                         <Button mnemonicParsing="false" onAction="#showEventsTable" styleClass="planning-primary-button" text="Voir liste" />
+                        <Button mnemonicParsing="false" onAction="#showCalendarView" styleClass="planning-primary-button" text="Voir calendrier" />
                         <Button mnemonicParsing="false" onAction="#showAddEventForm" styleClass="planning-primary-button" text="Ajouter un événement" />
                      </children>
                   </HBox>
@@ -62,33 +63,13 @@
                </children>
             </HBox>
 
-            <HBox alignment="CENTER_LEFT" styleClass="planning-ai-card">
-               <children>
-                  <Label styleClass="planning-ai-icon" text="/" />
-                  <VBox spacing="5.0">
-                     <children>
-                        <HBox alignment="CENTER_LEFT" spacing="10.0">
-                           <children>
-                              <Label styleClass="planning-ai-title" text="Planification" />
-                              <Label styleClass="planning-ai-badge" text="IA Agent" />
-                           </children>
-                        </HBox>
-                        <Label styleClass="planning-ai-description" text="Laissez l'algorithme organiser votre emploi du temps selon votre humeur." />
-                     </children>
-                  </VBox>
-                  <Region HBox.hgrow="ALWAYS" />
-                  <Button mnemonicParsing="false" onAction="#showOverview" styleClass="planning-ghost-button" text="Afficher" />
-               </children>
-            </HBox>
-
-            <StackPane fx:id="planningContentHost" minHeight="420.0" VBox.vgrow="ALWAYS">
+            <StackPane fx:id="planningContentHost" VBox.vgrow="ALWAYS">
                <children>
                   <VBox spacing="18.0" styleClass="planning-content-card">
                      <padding>
                         <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
                      </padding>
                      <children>
-                        <Label styleClass="planning-section-title" text="Liste des événements" />
                         <Separator />
                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                            <children>

@@ -12,7 +12,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 
-<VBox spacing="20.0" style="-fx-background-color: transparent;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ProfileController">
+<VBox spacing="20.0" style="-fx-background-color: transparent;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.user_controller.ProfileController">
     <children>
         
         <!-- Profile Header Banner Area -->
@@ -32,6 +32,11 @@
                                 <Circle fill="WHITE" radius="65.0" />
                                 <Circle fx:id="bigAvatarCircle" fill="#F8FAFC" radius="61.0" />
                                 <Label fx:id="bigAvatarInitials" alignment="CENTER" prefHeight="100.0" prefWidth="100.0" style="-fx-font-size: 44px; -fx-font-weight: 900; -fx-text-fill: #004fb0;" text="AJ" />
+                                <javafx.scene.image.ImageView fx:id="bigAvatarImage" fitHeight="122.0" fitWidth="122.0" pickOnBounds="true" preserveRatio="true">
+                                   <clip>
+                                      <Circle centerX="61.0" centerY="61.0" radius="61.0" />
+                                   </clip>
+                                </javafx.scene.image.ImageView>
                             </children>
                         </StackPane>
                         
@@ -127,6 +132,29 @@
                                 </VBox>
                             </children>
                         </GridPane>
+                    </children>
+                </VBox>
+
+                <!-- Security & Biometrics Card -->
+                <VBox spacing="16.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 2);">
+                    <children>
+                        <Label style="-fx-font-size: 18px; -fx-font-weight: 800; -fx-text-fill: #1E293B;" text="Security &amp; Biometrics" />
+                        <HBox alignment="CENTER_LEFT" spacing="20.0">
+                            <children>
+                                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                    <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 10px; -fx-font-weight: bold;" text="FACE ID" />
+                                    <Label fx:id="faceIdStatusLabel"
+                                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1E293B;"
+                                           text="Not registered" />
+                                    <Label style="-fx-text-fill: #64748B; -fx-font-size: 12px;"
+                                           text="Use your face to log in without typing a password." wrapText="true" />
+                                </VBox>
+                                <Button fx:id="faceIdActionBtn"
+                                        onAction="#handleFaceIdAction"
+                                        style="-fx-background-color: #004fb0; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 20; -fx-background-radius: 8; -fx-font-size: 13px; -fx-cursor: hand;"
+                                        text="Register Face ID" />
+                            </children>
+                        </HBox>
                     </children>
                 </VBox>
 

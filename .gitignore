@@ -1,14 +1,27 @@
-<<<<<<< HEAD
-/target/
-/.idea/
-/.vscode/
-*.classbuild_run.log
-build_run.log
-=======
+# Build output
 target/
-.idea/
 *.class
 *.log
+build_run.log
 cp.txt
 .DS_Store
->>>>>>> 79052c32a185cf35582507e045808aa98d0c2c0e
+
+# IDE
+.idea/
+.vscode/
+
+# Local API keys (do not commit)
+src/main/resources/openrouter.properties
+src/main/resources/recommendation.properties
+src/main/resources/google-oauth.properties
+src/main/resources/github-oauth.properties
+uploads/
+
+# Python/Other
+studly_api/.env
+**/__pycache__/
+compile_errors.txt
+last_error.txt
+output.log
+full_output.log
+

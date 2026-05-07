@@ -46,6 +46,16 @@ public class EmailService {
         send(toEmail, "Studly – Password Reset Code", body);
     }
 
+    public static void sendBanNotification(String toEmail, String reason) throws MessagingException {
+        String body = "Hello,\n\n"
+            + "We are writing to inform you that your Studly account has been suspended.\n\n"
+            + "Reason:\n"
+            + "    " + (reason != null && !reason.isBlank() ? reason : "Violation of platform terms.") + "\n\n"
+            + "If you believe this is a mistake, please contact our support team.\n\n"
+            + "– The Studly Team";
+        send(toEmail, "Studly – Account Suspended", body);
+    }
+
     // ---- shared SMTP sender ----
 
     private static void send(String toEmail, String subject, String body) throws MessagingException {
@@ -68,8 +78,8 @@ public class EmailService {
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(from, password);
+            protected jakarta.mail.PasswordAuthentication getPasswordAuthentication() {
+                return new jakarta.mail.PasswordAuthentication(from, password);
             }
         });
 

@@ -51,8 +51,8 @@ public class GoogleOAuthService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        clientId     = config.getProperty("google.client.id", "");
-        clientSecret = config.getProperty("google.client.secret", "");
+        clientId     = config.getProperty("google.client.id", "").trim();
+        clientSecret = config.getProperty("google.client.secret", "").trim();
     }
 
     public boolean isConfigured() {

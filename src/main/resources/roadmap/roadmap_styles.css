@@ -1,0 +1,416 @@
+/* ===========================================================================
+   Studly - Smart Skill Roadmaps stylesheet
+   Glassmorphism on dark (#0F172A) background
+   =========================================================================== */
+
+/* -- Panel header -- */
+.roadmap-panel-title {
+    -fx-text-fill: #0F172A;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.roadmap-panel-subtitle {
+    -fx-text-fill: #475569;
+    -fx-font-size: 13px;
+}
+
+/* -- Search field -- */
+.roadmap-search-field {
+    -fx-background-color: white;
+    -fx-text-fill: #1E293B;
+    -fx-prompt-text-fill: #94A3B8;
+    -fx-background-radius: 12;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-font-size: 14px;
+    -fx-padding: 12 16 12 16;
+}
+
+.roadmap-search-field:focused {
+    -fx-border-color: #6366F1;
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.35), 12, 0, 0, 0);
+}
+
+/* -- Change-key link -- */
+.change-key-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-underline: true;
+    -fx-padding: 8 4 8 4;
+    -fx-border-width: 0;
+}
+
+.change-key-btn:hover {
+    -fx-text-fill: #6366F1;
+}
+
+/* -- Generate button -- */
+.roadmap-generate-btn {
+    -fx-background-color: linear-gradient(to right, #6366F1, #A855F7);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-padding: 12 28 12 28;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.2), 8, 0, 0, 2);
+}
+
+.roadmap-generate-btn:hover {
+    -fx-background-color: linear-gradient(to right, #7274f4, #b566f8);
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.65), 18, 0, 0, 6);
+}
+
+.roadmap-generate-btn:disabled {
+    -fx-background-color: rgba(99, 102, 241, 0.3);
+    -fx-effect: none;
+    -fx-cursor: default;
+}
+
+/* -- Loading overlay -- */
+.roadmap-loading-overlay {
+    -fx-background-color: rgba(255, 255, 255, 0.95);
+    -fx-background-radius: 20;
+}
+
+.roadmap-loading-text {
+    -fx-text-fill: #1E293B;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.roadmap-loading-subtext {
+    -fx-text-fill: #475569;
+    -fx-font-size: 12px;
+}
+
+/* -- Step card - glassmorphism effect -- */
+.step-card {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-color: #F1F5F9;
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 15, 0, 0, 4);
+}
+
+.step-card:hover {
+    -fx-border-color: rgba(99, 102, 241, 0.45);
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.2), 24, 0, 0, 8);
+}
+
+/* -- Timeline elements -- */
+.step-circle {
+    -fx-background-color: linear-gradient(to bottom right, #6366F1, #A855F7);
+    -fx-background-radius: 22;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.6), 12, 0, 0, 2);
+}
+
+.step-number {
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.timeline-connector {
+    -fx-background-color: linear-gradient(to bottom, #6366F1, #E2E8F0);
+}
+
+/* -- Step card content -- */
+.step-title {
+    -fx-text-fill: #1E293B;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.step-description {
+    -fx-text-fill: #475569;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 3;
+}
+
+/* -- Resource link buttons -- */
+.resource-btn {
+    -fx-background-color: rgba(99, 102, 241, 0.12);
+    -fx-text-fill: #818CF8;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(99, 102, 241, 0.35);
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-padding: 5 12 5 12;
+}
+
+.resource-btn:hover {
+    -fx-background-color: rgba(99, 102, 241, 0.25);
+    -fx-border-color: #6366F1;
+    -fx-text-fill: #A5B4FC;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.3), 8, 0, 0, 2);
+}
+
+/* -- API Key Setup Card -- */
+.api-setup-card {
+    -fx-background-color: #FFFBEB;
+    -fx-background-radius: 14;
+    -fx-border-color: #F59E0B;
+    -fx-border-radius: 14;
+    -fx-border-width: 1.5;
+    -fx-padding: 20 24 20 24;
+    -fx-effect: dropshadow(gaussian, rgba(245, 158, 11, 0.15), 12, 0, 0, 4);
+}
+
+.api-setup-title {
+    -fx-text-fill: #B45309;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.api-setup-subtitle {
+    -fx-text-fill: #78350F;
+    -fx-font-size: 13px;
+}
+
+.api-setup-note {
+    -fx-text-fill: #A16207;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+}
+
+/* "Get a free key" link button */
+.api-link-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #D97706;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-underline: true;
+    -fx-cursor: hand;
+    -fx-padding: 0 0 0 0;
+    -fx-border-width: 0;
+}
+
+.api-link-btn:hover {
+    -fx-text-fill: #B45309;
+}
+
+/* API key text field */
+.api-key-field {
+    -fx-background-color: white;
+    -fx-text-fill: #1E293B;
+    -fx-prompt-text-fill: #94A3B8;
+    -fx-background-radius: 10;
+    -fx-border-color: #F59E0B;
+    -fx-border-radius: 10;
+    -fx-border-width: 1.5;
+    -fx-font-size: 13px;
+    -fx-padding: 10 14 10 14;
+}
+
+.api-key-field:focused {
+    -fx-border-color: #D97706;
+    -fx-effect: dropshadow(gaussian, rgba(245, 158, 11, 0.3), 8, 0, 0, 0);
+}
+
+/* Save Key button */
+.api-save-btn {
+    -fx-background-color: linear-gradient(to right, #F59E0B, #D97706);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-padding: 10 22 10 22;
+    -fx-effect: dropshadow(gaussian, rgba(217, 119, 6, 0.35), 10, 0, 0, 3);
+}
+
+.api-save-btn:hover {
+    -fx-background-color: linear-gradient(to right, #FBBF24, #F59E0B);
+}
+
+/* -- Section label ("Your Roadmap") -- */
+.roadmap-section-label {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* -- Save Roadmap button (green) -- */
+.roadmap-save-btn {
+    -fx-background-color: linear-gradient(to right, #10B981, #059669);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-padding: 8 18 8 18;
+    -fx-effect: dropshadow(gaussian, rgba(16, 185, 129, 0.4), 10, 0, 0, 3);
+}
+
+.roadmap-save-btn:hover {
+    -fx-background-color: linear-gradient(to right, #34D399, #10B981);
+    -fx-effect: dropshadow(gaussian, rgba(16, 185, 129, 0.55), 14, 0, 0, 4);
+}
+
+.roadmap-save-btn:disabled {
+    -fx-background-color: rgba(16, 185, 129, 0.3);
+    -fx-text-fill: rgba(255,255,255,0.7);
+    -fx-effect: none;
+    -fx-cursor: default;
+}
+
+/* -- My Saved Roadmaps toggle button -- */
+.saved-roadmaps-toggle-btn {
+    -fx-background-color: rgba(99, 102, 241, 0.1);
+    -fx-text-fill: #818CF8;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(99, 102, 241, 0.3);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-padding: 8 14 8 14;
+}
+
+.saved-roadmaps-toggle-btn:hover {
+    -fx-background-color: rgba(99, 102, 241, 0.2);
+    -fx-border-color: #6366F1;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.25), 8, 0, 0, 2);
+}
+
+/* -- Saved roadmaps panel -- */
+.saved-roadmaps-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 16, 0, 0, 4);
+}
+
+.saved-roadmaps-heading {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* -- Saved roadmap list item buttons -- */
+.saved-roadmap-item {
+    -fx-background-color: #F8FAFC;
+    -fx-text-fill: #334155;
+    -fx-font-size: 13px;
+    -fx-background-radius: 10;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-padding: 10 16 10 16;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.saved-roadmap-item:hover {
+    -fx-background-color: rgba(99, 102, 241, 0.18);
+    -fx-border-color: rgba(99, 102, 241, 0.5);
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.15), 8, 0, 0, 2);
+}
+
+/* -- Step completion checkbox -- */
+.step-checkbox .box {
+    -fx-background-color: rgba(99, 102, 241, 0.15);
+    -fx-border-color: rgba(99, 102, 241, 0.5);
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-border-width: 1.5;
+}
+
+.step-checkbox:selected .box {
+    -fx-background-color: #6366F1;
+    -fx-border-color: #6366F1;
+}
+
+.step-checkbox:selected .mark {
+    -fx-background-color: white;
+}
+
+.step-checkbox:hover .box {
+    -fx-border-color: #818CF8;
+}
+
+/* -- Completed step title -- */
+.step-title-done {
+    -fx-strikethrough: true;
+    -fx-text-fill: #475569;
+}
+
+/* -- Map Styles -- */
+.map-container-wrapper {
+    -fx-background-color: linear-gradient(to bottom right, #0B1120, #0F172A);
+    -fx-background-radius: 16;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 5);
+}
+
+.map-pane {
+    -fx-background-color: transparent;
+}
+
+.map-line {
+    -fx-stroke: #4F46E5;
+    -fx-stroke-width: 3;
+    -fx-stroke-dash-array: 8 6;
+    -fx-opacity: 0.8;
+}
+
+.map-node {
+    -fx-fill: #1E293B;
+    -fx-stroke: #6366F1;
+    -fx-stroke-width: 2.5;
+    -fx-cursor: hand;
+}
+.map-node:hover {
+    -fx-fill: #334155;
+    -fx-stroke: #818CF8;
+}
+
+.map-node-selected {
+    -fx-fill: #6366F1;
+    -fx-stroke: #A855F7;
+    -fx-stroke-width: 3;
+    -fx-effect: dropshadow(gaussian, rgba(168, 85, 247, 0.6), 15, 0, 0, 0);
+    -fx-cursor: hand;
+}
+
+.map-node-completed {
+    -fx-fill: #10B981;
+    -fx-stroke: #059669;
+    -fx-stroke-width: 2.5;
+}
+
+.map-node-text {
+    -fx-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.map-node-label {
+    -fx-text-fill: #CBD5E1;
+    -fx-font-size: 11px;
+    -fx-alignment: top-center;
+    -fx-text-alignment: center;
+    -fx-cursor: hand;
+}
+.map-node-label-selected {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.detail-card-container {
+    -fx-background-color: transparent;
+}

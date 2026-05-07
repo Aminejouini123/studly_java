@@ -16,7 +16,7 @@ public class ActivityService implements IService<Activity> {
     @Override
     public void ajouter(Activity entity) throws SQLException {
         String sql = "insert into `activity` (title, description, file, link, duration, status, difficulty, level, type, instructions, expected_output, hints, completed_at, course_id, assigned_user_id) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        PreparedStatement ps = connection.prepareStatement(sql);
+        PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         ps.setString(1, entity.getTitle());
         ps.setString(2, entity.getDescription());
         ps.setString(3, entity.getFile());
@@ -33,6 +33,11 @@ public class ActivityService implements IService<Activity> {
         ps.setInt(14, entity.getCourse_id());
         ps.setInt(15, entity.getAssigned_user_id());
         ps.executeUpdate();
+        
+        ResultSet rs = ps.getGeneratedKeys();
+        if (rs.next()) {
+            entity.setId(rs.getInt(1));
+        }
     }
 
     @Override

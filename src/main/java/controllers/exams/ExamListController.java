@@ -53,7 +53,11 @@ public class ExamListController extends BaseExamController {
     private List<Exam> allExams = new ArrayList<>();
     private final ExamService examService = new ExamService();
 
-    private boolean fromBackend;
+    private boolean fromBackend = false;
+
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
+    }
 
     @FXML
     public void initialize() {
@@ -66,6 +70,7 @@ public class ExamListController extends BaseExamController {
             searchField.textProperty().addListener((obs, oldVal, newVal) -> updateDisplay());
         }
         if (sortComboBox != null) {
+            sortComboBox.getItems().setAll("Newest First", "Title (A-Z)", "Grade (High-Low)", "Date (Soonest)");
             sortComboBox.setValue("Newest First");
             sortComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateDisplay());
         }
@@ -75,10 +80,6 @@ public class ExamListController extends BaseExamController {
         this.currentCourse = course;
         courseTitleLabel.setText(course.getName());
         loadExams();
-    }
-
-    public void setFromBackend(boolean fromBackend) {
-        this.fromBackend = fromBackend;
     }
 
     private void loadExams() {
@@ -92,30 +93,35 @@ public class ExamListController extends BaseExamController {
     }
 
     private void updateDisplay() {
-        if (searchField == null || statusFilter == null || sortComboBox == null) return;
-        
-        String searchText = searchField.getText().toLowerCase().trim();
-        String selectedStatus = statusFilter.getValue();
-        String selectedSort = sortComboBox.getValue();
+        if (examsContainer == null) return;
+
+        String searchText = searchField != null ? searchField.getText().toLowerCase().trim() : "";
+        String selectedStatus = statusFilter != null ? statusFilter.getValue() : "All statuses";
+        String selectedSort = sortComboBox != null ? sortComboBox.getValue() : "Newest First";
 
         List<Exam> filtered = allExams.stream()
                 .filter(e -> searchText.isEmpty() || (e.getTitle() != null && e.getTitle().toLowerCase().contains(searchText)))
                 .filter(e -> selectedStatus == null || selectedStatus.equals("All statuses") || (e.getStatus() != null && e.getStatus().equalsIgnoreCase(selectedStatus)))
                 .collect(Collectors.toList());
 
-        // Sorting
         if (selectedSort != null) {
             switch (selectedSort) {
                 case "Title (A-Z)":
-                    filtered.sort((e1, e2) -> e1.getTitle().compareToIgnoreCase(e2.getTitle()));
+                    filtered.sort(java.util.Comparator.comparing(e -> e.getTitle() != null ? e.getTitle().toLowerCase() : "", String.CASE_INSENSITIVE_ORDER));
                     break;
                 case "Grade (High-Low)":
                     filtered.sort((e1, e2) -> Double.compare(e2.getGrade(), e1.getGrade()));
                     break;
                 case "Date (Soonest)":
-                    filtered.sort((e1, e2) -> e1.getDate().compareTo(e2.getDate()));
+                    filtered.sort((e1, e2) -> {
+                        if (e1.getDate() == null && e2.getDate() == null) return 0;
+                        if (e1.getDate() == null) return 1;
+                        if (e2.getDate() == null) return -1;
+                        return e1.getDate().compareTo(e2.getDate());
+                    });
                     break;
                 case "Newest First":
+                default:
                     filtered.sort((e1, e2) -> Integer.compare(e2.getId(), e1.getId()));
                     break;
             }
@@ -145,12 +151,15 @@ public class ExamListController extends BaseExamController {
         long total = allExams.size();
         long passed = allExams.stream().filter(e -> e.getGrade() >= 10).count();
         double avg = allExams.stream().mapToDouble(Exam::getGrade).average().orElse(0.0);
-        long upcoming = allExams.stream().filter(e -> e.getDate().after(new java.util.Date())).count();
+        java.util.Date now = new java.util.Date();
+        long upcoming = allExams.stream()
+                .filter(e -> e.getDate() != null && e.getDate().after(now))
+                .count();
 
-        statTotal.setText(String.valueOf(total));
-        statSuccessRate.setText(total == 0 ? "0%" : (int)((passed * 100.0) / total) + "%");
-        statAvgGrade.setText(String.format("%.2f", avg));
-        statUpcoming.setText(String.valueOf(upcoming));
+        if (statTotal != null) statTotal.setText(String.valueOf(total));
+        if (statSuccessRate != null) statSuccessRate.setText(total == 0 ? "0%" : (int)((passed * 100.0) / total) + "%");
+        if (statAvgGrade != null) statAvgGrade.setText(String.format("%.2f", avg));
+        if (statUpcoming != null) statUpcoming.setText(String.valueOf(upcoming));
     }
 
     private VBox createExamCard(Exam exam) {
@@ -162,7 +171,8 @@ public class ExamListController extends BaseExamController {
         HBox header = new HBox(12);
         header.setAlignment(Pos.CENTER_LEFT);
         
-        Label title = new Label(exam.getTitle().toLowerCase());
+        String examTitleText = exam.getTitle() != null ? exam.getTitle().toLowerCase() : "untitled";
+        Label title = new Label(examTitleText);
         title.getStyleClass().add("course-card-title");
         
         Region spacer = new Region();
@@ -174,7 +184,7 @@ public class ExamListController extends BaseExamController {
         HBox dateRow = new HBox(8);
         dateRow.setAlignment(Pos.CENTER_LEFT);
         SVGPath calendarIcon = createIcon("M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z", "#64748B", 14);
-        Label dateLabel = new Label(exam.getDate().toString());
+        Label dateLabel = new Label(exam.getDate() != null ? exam.getDate().toString() : "—");
         dateLabel.getStyleClass().add("course-card-teacher");
         dateRow.getChildren().addAll(calendarIcon, dateLabel);
 
@@ -266,16 +276,28 @@ public class ExamListController extends BaseExamController {
         );
     }
 
+    private void showInMainOrShell(Parent root) {
+        if (controllers.FrontendController.getInstance() != null) {
+            controllers.FrontendController.getInstance().loadContentNode(root);
+        } else {
+            Stage stage = (Stage) examsContainer.getScene().getWindow();
+            stage.getScene().setRoot(root);
+        }
+    }
+
     private void handleViewExam(Exam exam) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestion_examen/frontend_exam_detail.fxml"));
             Parent root = loader.load();
             ExamDetailController controller = loader.getController();
             controller.setExam(exam, currentCourse);
-            Stage stage = (Stage) examsContainer.getScene().getWindow();
-            stage.getScene().setRoot(root);
-        } catch (IOException e) {
+            showInMainOrShell(root);
+        } catch (Exception e) {
+            System.err.println("ERROR opening exam detail view");
             e.printStackTrace();
+            if (rootPane != null) {
+                showErrorNotification(rootPane, "Can't open exam details", e.getMessage() != null ? e.getMessage() : e.toString());
+            }
         }
     }
 
@@ -285,8 +307,7 @@ public class ExamListController extends BaseExamController {
             Parent root = loader.load();
             ExamEditController controller = loader.getController();
             controller.setExam(exam, currentCourse);
-            Stage stage = (Stage) examsContainer.getScene().getWindow();
-            stage.getScene().setRoot(root);
+            showInMainOrShell(root);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -310,8 +331,7 @@ public class ExamListController extends BaseExamController {
             ExamAddController controller = loader.getController();
             controller.setCourse(currentCourse);
             
-            Stage stage = (Stage) examsContainer.getScene().getWindow();
-            stage.getScene().setRoot(root);
+            showInMainOrShell(root);
         } catch (IOException e) {
             System.err.println("ERROR loading Add Exam FXML");
             e.printStackTrace();
@@ -320,6 +340,17 @@ public class ExamListController extends BaseExamController {
 
     @FXML
     public void handleBackToCourses() {
-        loadScene("/gestion_cours/frontend_courses.fxml", null, courseTitleLabel);
+        if (fromBackend) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/TEMPLATE/backend_courses.fxml"));
+                Parent root = loader.load();
+                Stage stage = (Stage) examsContainer.getScene().getWindow();
+                stage.getScene().setRoot(root);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            navigateToFrontendCourseList(courseTitleLabel);
+        }
     }
 }

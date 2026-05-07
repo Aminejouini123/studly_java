@@ -1,5 +1,6 @@
 package controllers.user_controller;
 
+import controllers.FrontendController;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import controllers.FrontendController;
@@ -16,6 +17,7 @@ public class EditProfileSettingsController {
     @FXML private Label avatarSideLabel;
     @FXML private Label roleSideLabel;
     @FXML private Label avatarInitials;
+    @FXML private javafx.scene.image.ImageView avatarImage;
     @FXML private TextField firstNameField;
     @FXML private TextField lastNameField;
     @FXML private TextField emailField;
@@ -40,81 +42,68 @@ public class EditProfileSettingsController {
     }
 
     private void loadUserData() {
-        String firstName = currentUser.getFirst_name() != null ? currentUser.getFirst_name() : "";
-        String lastName = currentUser.getLast_name() != null ? currentUser.getLast_name() : "";
+        avatarSideLabel.setText(currentUser.getFullName());
+        avatarInitials.setText(currentUser.getInitials());
         
-        avatarSideLabel.setText(firstName + " " + lastName);
-        avatarInitials.setText(getInitials(firstName, lastName));
-        
-        String roles = currentUser.getRoles() != null ? currentUser.getRoles() : "Member";
-        roleSideLabel.setText(roles.contains("ROLE_ADMIN") ? "Administrator" : "Student");
+        roleSideLabel.setText(currentUser.isAdmin() ? "Administrator" : "Student");
 
-        firstNameField.setText(firstName);
-        lastNameField.setText(lastName);
+        firstNameField.setText(currentUser.getFirstName());
+        lastNameField.setText(currentUser.getLastName());
         emailField.setText(currentUser.getEmail());
         bioArea.setText(currentUser.getBio());
-        jobTitleField.setText(currentUser.getJob_title());
-        educationField.setText(currentUser.getEducation_level());
-        
-        // Format skills for display: ["a","b"] -> a, b
-        String rawSkills = currentUser.getSkills();
-        if (rawSkills != null && rawSkills.startsWith("[") && rawSkills.endsWith("]")) {
-            skillsField.setText(rawSkills.replace("[", "").replace("]", "").replace("\"", "").replace(",", ", "));
-        } else {
-            skillsField.setText(rawSkills);
-        }
-
-        phoneField.setText(currentUser.getPhone_number());
+        jobTitleField.setText(currentUser.getJobTitle());
+        educationField.setText(currentUser.getEducationLevel());
+        skillsField.setText(currentUser.getFormattedSkills());
+        phoneField.setText(currentUser.getPhoneNumber());
         addressField.setText(currentUser.getAddress());
         websiteField.setText(currentUser.getWebsite());
         
-        if (currentUser.getDate_of_birth() != null) {
-            dobField.setText(currentUser.getDate_of_birth().toString());
+        if (currentUser.getDateOfBirth() != null) {
+            dobField.setText(currentUser.getDateOfBirth().toString());
         }
-    }
 
-    private String getInitials(String first, String last) {
-        String initials = "";
-        if (!first.isEmpty()) initials += first.substring(0, 1).toUpperCase();
-        if (!last.isEmpty()) initials += last.substring(0, 1).toUpperCase();
-        return initials;
+        // Load profile picture
+        if (currentUser.getProfilePicture() != null && !currentUser.getProfilePicture().isEmpty()) {
+            try {
+                String path = currentUser.getProfilePicture();
+                if (!path.startsWith("http")) {
+                    // It's a local path
+                    java.io.File file = new java.io.File(path);
+                    if (file.exists()) {
+                        avatarImage.setImage(new javafx.scene.image.Image(file.toURI().toString()));
+                        avatarInitials.setVisible(false);
+                    }
+                } else {
+                    // It's a URL (from Google/GitHub)
+                    avatarImage.setImage(new javafx.scene.image.Image(path));
+                    avatarInitials.setVisible(false);
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to load profile image: " + e.getMessage());
+            }
+        }
     }
 
     @FXML
     private void handleSaveChanges() {
         try {
-            currentUser.setFirst_name(firstNameField.getText());
-            currentUser.setLast_name(lastNameField.getText());
+            currentUser.setFirstName(firstNameField.getText());
+            currentUser.setLastName(lastNameField.getText());
             currentUser.setBio(bioArea.getText());
-            currentUser.setJob_title(jobTitleField.getText());
-            currentUser.setEducation_level(educationField.getText());
-            
-            // Format skills for DB: a, b -> ["a","b"]
-            String inputSkills = skillsField.getText();
-            if (inputSkills != null && !inputSkills.trim().isEmpty()) {
-                String[] parts = inputSkills.split(",");
-                StringBuilder json = new StringBuilder("[");
-                for (int i = 0; i < parts.length; i++) {
-                    json.append("\"").append(parts[i].trim()).append("\"");
-                    if (i < parts.length - 1) json.append(",");
-                }
-                json.append("]");
-                currentUser.setSkills(json.toString());
-            } else {
-                currentUser.setSkills("[]");
-            }
-
-            currentUser.setPhone_number(phoneField.getText());
+            currentUser.setJobTitle(jobTitleField.getText());
+            currentUser.setEducationLevel(educationField.getText());
+            currentUser.setFormattedSkills(skillsField.getText());
+            currentUser.setPhoneNumber(phoneField.getText());
             currentUser.setAddress(addressField.getText());
             currentUser.setWebsite(websiteField.getText());
-            currentUser.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
+            currentUser.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
             String dobText = dobField.getText().trim();
             if (!dobText.isEmpty()) {
                 try {
                     // Strict calendar validation
                     java.time.LocalDate.parse(dobText); 
-                    currentUser.setDate_of_birth(Date.valueOf(dobText));
+                    currentUser.setDateOfBirth(Date.valueOf(dobText));
                 } catch (Exception e) {
                     showAlert(Alert.AlertType.ERROR, "Invalid Date", "The date '" + dobText + "' is not a valid date. Please use YYYY-MM-DD format.");
                     return;
@@ -133,6 +122,44 @@ public class EditProfileSettingsController {
             handleCancel(); // Return to profile view
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Database Error", "Failed to save changes: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleChoosePhoto() {
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("Choose Profile Picture");
+        fileChooser.getExtensionFilters().addAll(
+            new javafx.stage.FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
+        );
+        
+        java.io.File selectedFile = fileChooser.showOpenDialog(avatarImage.getScene().getWindow());
+        if (selectedFile != null) {
+            try {
+                // Ensure directory exists
+                java.io.File uploadDir = new java.io.File("uploads/profiles");
+                if (!uploadDir.exists()) uploadDir.mkdirs();
+                
+                // Create unique filename
+                String fileName = System.currentTimeMillis() + "_" + selectedFile.getName();
+                java.io.File destFile = new java.io.File(uploadDir, fileName);
+                
+                // Copy file
+                java.nio.file.Files.copy(selectedFile.toPath(), destFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                
+                // Update User model and DB path
+                String finalPath = destFile.getAbsolutePath();
+                currentUser.setProfilePicture(finalPath);
+                
+                // Update UI
+                avatarImage.setImage(new javafx.scene.image.Image(destFile.toURI().toString()));
+                avatarInitials.setVisible(false);
+                
+                System.out.println("Profile picture saved to: " + finalPath);
+                
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Upload Error", "Failed to save profile picture: " + e.getMessage());
+            }
         }
     }
 

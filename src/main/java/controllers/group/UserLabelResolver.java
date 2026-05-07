@@ -111,9 +111,7 @@ final class UserLabelResolver {
     }
 
     private static String displayName(User u) {
-        String first = u.getFirst_name() == null ? "" : u.getFirst_name().trim();
-        String last = u.getLast_name() == null ? "" : u.getLast_name().trim();
-        String full = (first + " " + last).trim();
+        String full = u.getFullName().trim();
         if (!full.isEmpty()) {
             return full;
         }

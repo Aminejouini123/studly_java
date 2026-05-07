@@ -9,11 +9,13 @@ import javafx.scene.layout.StackPane;
 import models.Course;
 import models.Exam;
 import services.ExamService;
-import controllers.backend.BackendExamController;
 
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import javafx.fxml.FXMLLoader;
+import javafx.stage.Stage;
 
 public class ExamAddController extends BaseExamController {
 
@@ -26,9 +28,16 @@ public class ExamAddController extends BaseExamController {
 
     private Course currentCourse;
     private final ExamService examService = new ExamService();
+    private boolean fromBackend = false;
+    private controllers.backend.BackendExamController backendController;
 
-    private boolean fromBackend;
-    private BackendExamController backendController;
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
+    }
+
+    public void setBackendController(controllers.backend.BackendExamController controller) {
+        this.backendController = controller;
+    }
 
     @FXML
     public void initialize() {
@@ -61,7 +70,13 @@ public class ExamAddController extends BaseExamController {
             );
 
             examService.ajouter(exam);
-            showSuccessNotification(rootPane, "Perfect!", "Examination scheduled successfully.", this::handleCancel);
+            showSuccessNotification(rootPane, "Perfect!", "Examination scheduled successfully.", () -> {
+                if (fromBackend) {
+                    returnToDashboard(rootPane);
+                } else {
+                    navigateToExamList(rootPane, currentCourse);
+                }
+            });
         } catch (SQLException e) {
             e.printStackTrace();
             showErrorNotification(rootPane, "Oops!", "Could not save exam: " + e.getMessage());
@@ -70,11 +85,11 @@ public class ExamAddController extends BaseExamController {
 
     @FXML
     public void handleCancel() {
-        if (fromBackend && backendController != null) {
-            backendController.restoreDashboard();
-            return;
+        if (fromBackend) {
+            returnToDashboard(rootPane);
+        } else {
+            navigateToExamList(titleField, currentCourse);
         }
-        navigateToExamList(titleField, currentCourse);
     }
 
     private void hideErrors() {
@@ -152,13 +167,5 @@ public class ExamAddController extends BaseExamController {
         if (selectedFile != null) {
             fileField.setText(selectedFile.getAbsolutePath());
         }
-    }
-
-    public void setFromBackend(boolean fromBackend) {
-        this.fromBackend = fromBackend;
-    }
-
-    public void setBackendController(BackendExamController backendController) {
-        this.backendController = backendController;
     }
 }

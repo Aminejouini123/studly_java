@@ -1,6 +1,5 @@
 package controllers.courses;
 
-import controllers.BackendCourseController;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ComboBox;
@@ -18,8 +17,11 @@ import javafx.animation.KeyFrame;
 import javafx.util.Duration;
 import javafx.geometry.Pos;
 import models.Course;
+import models.User;
 import services.CourseService;
-import java.sql.SQLException;
+import utils.SessionManager;
+import utils.MyDatabase;
+import java.sql.*;
 import java.sql.Timestamp;
 import javafx.stage.FileChooser;
 import java.io.File;
@@ -36,13 +38,49 @@ public class CourseAddController extends BaseCourseController {
     // --- Inline Error Labels ---
     @FXML private Label errName, errEmail, errSemester, errDifficulty, errType, errPriority, errStatus, errCoeff, errDuration;
 
-    private boolean fromBackend;
-    private BackendCourseController backendController;
+    private boolean fromBackend = false;
+    private controllers.BackendCourseController backendController;
+
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
+    }
+
+    public void setBackendController(controllers.BackendCourseController controller) {
+        this.backendController = controller;
+    }
 
     @FXML
     public void initialize() {
         if (formTitle != null) formTitle.setText("Add a New Course");
         if (submitBtn != null) submitBtn.setText("💾 Add Course");
+
+        // Populate ComboBoxes if they are empty
+        if (semesterComboBox != null && semesterComboBox.getItems().isEmpty()) {
+            semesterComboBox.getItems().addAll("Semester 1", "Semester 2", "Summer Term");
+        }
+        if (difficultyComboBox != null && difficultyComboBox.getItems().isEmpty()) {
+            difficultyComboBox.getItems().addAll("Beginner (L1)", "Intermediate (L2)", "Advanced (L3)", "Expert (M1/M2)");
+        }
+        if (typeComboBox != null && typeComboBox.getItems().isEmpty()) {
+            typeComboBox.getItems().addAll("In-Person", "Online (Remote)", "Hybrid / Blended");
+        }
+        if (priorityComboBox != null && priorityComboBox.getItems().isEmpty()) {
+            priorityComboBox.getItems().addAll("Low", "Medium", "High", "Urgent");
+        }
+        if (statusComboBox != null) {
+            statusComboBox.getItems().setAll("Active", "Pending");
+            // Après setAll, une ancienne valeur (ex. Archived) peut rester hors liste : forcer une valeur valide.
+            String v = statusComboBox.getValue();
+            if (v == null || v.isBlank()) {
+                statusComboBox.setValue("Active");
+            } else if (v.equalsIgnoreCase("pending")) {
+                statusComboBox.setValue("Pending");
+            } else if (v.equalsIgnoreCase("active")) {
+                statusComboBox.setValue("Active");
+            } else {
+                statusComboBox.setValue("Active");
+            }
+        }
 
         // Real-time validation listeners
         addClearOnType(courseNameField, errName);
@@ -188,16 +226,20 @@ public class CourseAddController extends BaseCourseController {
         if (!validateForm()) return;
 
         try {
-            Course course = buildCourse();
+            User currentUser = SessionManager.getCurrentUser();
+            Course course = buildCourse(currentUser);
             new CourseService().ajouter(course);
             showSuccessNotification();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showErrorNotification("Database Error: " + e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
-            showErrorNotification("Error saving course: " + e.getMessage());
+            showErrorNotification("System Error: " + e.getMessage());
         }
     }
 
-    private Course buildCourse() {
+    private Course buildCourse(User currentUser) {
         Course course = new Course();
         course.setName(courseNameField.getText().trim());
         course.setTeacher_email(teacherEmailField.getText().trim());
@@ -205,14 +247,18 @@ public class CourseAddController extends BaseCourseController {
         course.setDifficulty_level(difficultyComboBox.getValue());
         course.setType(typeComboBox.getValue());
         course.setPriority(priorityComboBox.getValue());
-        course.setStatus(statusComboBox.getValue());
+        course.setStatus(normalizeCourseStatus(statusComboBox.getValue()));
         course.setCourse_file(courseFileField.getText().isEmpty() ? "" : courseFileField.getText());
         course.setCourse_link(courseLinkField.getText().isEmpty() ? "" : courseLinkField.getText());
         course.setComment(commentArea.getText() == null ? "" : commentArea.getText());
         course.setCoefficient(parseCoefficient());
         course.setDuration(parseDuration());
         course.setCreated_at(new Timestamp(System.currentTimeMillis()));
-        course.setUser_id(1);
+        
+        if (currentUser != null) {
+            course.setUser_id(currentUser.getId());
+        }
+        
         return course;
     }
 
@@ -250,8 +296,16 @@ public class CourseAddController extends BaseCourseController {
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1.5), e -> {
             if (fromBackend && backendController != null) {
                 backendController.restoreDashboard();
+            } else if (fromBackend) {
+                loadScene("/gestion_cours/backend_courses.fxml", null, rootPane);
             } else {
-                goToCourses(null);
+                // Frontend : recharger la liste dans le shell + onglet Cours actif.
+                controllers.FrontendController fc = controllers.FrontendController.getInstance();
+                if (fc != null) {
+                    fc.goToCourses((javafx.event.Event) null);
+                } else {
+                    returnToDashboard(rootPane);
+                }
             }
         }));
         timeline.play();
@@ -295,6 +349,16 @@ public class CourseAddController extends BaseCourseController {
         try { return Integer.parseInt(durationField.getText()); } catch (Exception e) { return 0; }
     }
 
+    private static String normalizeCourseStatus(String v) {
+        if (v == null || v.isBlank()) {
+            return "Active";
+        }
+        if (v.equalsIgnoreCase("pending")) {
+            return "Pending";
+        }
+        return "Active";
+    }
+
     @FXML
     public void handleBrowseFile(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
@@ -310,18 +374,6 @@ public class CourseAddController extends BaseCourseController {
 
     @FXML
     public void handleBack(javafx.scene.input.MouseEvent event) {
-        if (fromBackend && backendController != null) {
-            backendController.restoreDashboard();
-        } else {
-            goToCourses(event);
-        }
-    }
-
-    public void setFromBackend(boolean fromBackend) {
-        this.fromBackend = fromBackend;
-    }
-
-    public void setBackendController(BackendCourseController backendController) {
-        this.backendController = backendController;
+        returnToCourses(event);
     }
 }

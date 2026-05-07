@@ -74,6 +74,27 @@
     -fx-background-color: #021636;
 }
 
+.send-code-button {
+    -fx-background-color: #377df0;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 8 14;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.send-code-button:hover {
+    -fx-background-color: #1d5cc9;
+}
+
+.send-code-button:disabled {
+    -fx-opacity: 0.6;
+}
+
 .continue-with-text {
     -fx-text-fill: rgba(255, 255, 255, 0.8);
     -fx-font-size: 12px;
@@ -110,10 +131,81 @@
     -fx-underline: true;
 }
 
+.face-id-button {
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255,255,255,0.35);
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.face-id-button:hover {
+    -fx-background-color: rgba(255,255,255,0.22);
+    -fx-border-color: rgba(255,255,255,0.6);
+}
+
+.face-id-button:disabled {
+    -fx-opacity: 0.5;
+}
+
+.remember-me-checkbox {
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.remember-me-checkbox .box {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-border-color: rgba(255, 255, 255, 0.55);
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+
+.remember-me-checkbox:selected .box {
+    -fx-background-color: #377df0;
+    -fx-border-color: #377df0;
+}
+
+.remember-me-checkbox .mark {
+    -fx-background-color: white;
+}
+
 .error-label {
     -fx-text-fill: #ff4d4d;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-padding: 2 0 0 5;
 }
+
+.password-rules-container {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+}
+
+.password-rule-label {
+    -fx-text-fill: rgba(255, 255, 255, 0.6);
+    -fx-font-size: 11px;
+}
+
+.password-rule-valid {
+    -fx-text-fill: #4ade80;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(three-pass-box, rgba(74, 222, 128, 0.4), 5, 0, 0, 0);
+}
+
+.password-rule-invalid {
+    -fx-text-fill: rgba(255, 255, 255, 0.4);
+}
+
 

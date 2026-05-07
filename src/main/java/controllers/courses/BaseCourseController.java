@@ -6,24 +6,52 @@ import javafx.scene.Parent;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+import java.io.IOException;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Label;
 import javafx.geometry.Pos;
+import models.User;
+import services.CourseService;
+import utils.SessionManager;
 import java.io.IOException;
 import java.net.URL;
 
+import controllers.BackendCourseController;
+
 public abstract class BaseCourseController {
+
+    protected boolean fromBackend = false;
+    protected BackendCourseController backendController;
+
+    public void setFromBackend(boolean fromBackend) {
+        this.fromBackend = fromBackend;
+    }
+
+    public void setBackendController(BackendCourseController backendController) {
+        this.backendController = backendController;
+    }
+
+    public void returnToCourses(MouseEvent event) {
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+        } else {
+            goToCourses(event);
+        }
+    }
+
+    public void returnToDashboard(Node fallbackNode) {
+        if (fromBackend && backendController != null) {
+            backendController.restoreDashboard();
+        } else {
+            loadScene("/TEMPLATE/frontend_dashboard.fxml", null, fallbackNode);
+        }
+    }
 
     protected void loadScene(String fxmlPath, javafx.event.Event event, Node fallbackNode) {
         try {
-            URL resource = getClass().getResource(fxmlPath);
-            System.out.println("BaseCourseController: loadScene -> " + fxmlPath + " (url=" + resource + ")");
-            if (resource == null) {
-                throw new IOException("Missing FXML resource: " + fxmlPath);
-            }
-            FXMLLoader loader = new FXMLLoader(resource);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
             Stage stage;
             if (event != null) {
@@ -34,33 +62,33 @@ public abstract class BaseCourseController {
             stage.getScene().setRoot(root);
         } catch (IOException e) {
             e.printStackTrace();
-            // Show alert since this is usually called from an event handler
-            javafx.application.Platform.runLater(() -> {
-                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-                alert.setTitle("Navigation Error");
-                alert.setHeaderText("Unable to load page");
-                alert.setContentText("Resource: " + fxmlPath + "\nError: " + e.getMessage());
-                alert.showAndWait();
-            });
         }
     }
 
-    @FXML
     public void goToDashboard(javafx.event.Event event) {
-        if (controllers.FrontendController.getInstance() != null) {
-            controllers.FrontendController.getInstance().goToDashboard(event);
-        } else {
-            loadScene("/TEMPLATE/frontend_dashboard.fxml", event, null);
-        }
+        loadScene("/TEMPLATE/frontend_dashboard.fxml", event, null);
     }
 
     @FXML
     public void goToCourses(MouseEvent event) {
-        if (controllers.FrontendController.getInstance() != null) {
-            controllers.FrontendController.getInstance().loadContent("/gestion_cours/courses_body.fxml");
-        } else {
-            loadScene("/gestion_cours/frontend_courses.fxml", event, null);
+        if (event == null) {
+            goToCourses((javafx.event.Event) null);
+            return;
         }
+        try {
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Node contentHost = stage.getScene().getRoot().lookup("#contentHost");
+            java.net.URL res = getClass().getResource("/gestion_cours/frontend_courses.fxml");
+            if (contentHost instanceof javafx.scene.layout.Pane && res != null) {
+                Parent content = FXMLLoader.load(res);
+                ((javafx.scene.layout.Pane) contentHost).getChildren().setAll(content);
+                return;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        loadScene("/gestion_cours/frontend_courses.fxml", event, null);
     }
 
     @FXML
@@ -103,14 +131,58 @@ public abstract class BaseCourseController {
         }
     }
 
-    @FXML
-    public void goToAddCourse(MouseEvent event) {
+    public void goToCourses(javafx.event.Event event) {
+        if (controllers.FrontendController.getInstance() != null) {
+            controllers.FrontendController.getInstance().loadContent("/gestion_cours/courses_body.fxml");
+        } else {
+            loadScene("/gestion_cours/frontend_courses.fxml", event, null);
+        }
+    }
+
+    /** Planning from embedded course pages (same shell as dashboard when available). */
+    public void goToPlanning(javafx.event.Event event) {
+        controllers.FrontendController fc = controllers.FrontendController.getInstance();
+        if (fc != null) {
+            fc.showPlanning();
+            return;
+        }
+        openDashboardThen(event, controllers.FrontendController::showPlanning);
+    }
+
+    public void goToGroups(javafx.event.Event event) {
+        controllers.FrontendController fc = controllers.FrontendController.getInstance();
+        if (fc != null) {
+            fc.showGroups();
+            return;
+        }
+        openDashboardThen(event, controllers.FrontendController::showGroups);
+    }
+
+    private void openDashboardThen(javafx.event.Event event, java.util.function.Consumer<controllers.FrontendController> action) {
+        Node source = event != null ? (Node) event.getSource() : null;
+        if (source == null || source.getScene() == null) {
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/TEMPLATE/frontend_dashboard.fxml"));
+            Parent root = loader.load();
+            controllers.FrontendController shell = loader.getController();
+            Stage stage = (Stage) source.getScene().getWindow();
+            stage.getScene().setRoot(root);
+            action.accept(shell);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void goToAddCourse(javafx.event.Event event) {
         if (controllers.FrontendController.getInstance() != null) {
             controllers.FrontendController.getInstance().loadContent("/gestion_cours/add_course_body.fxml");
         } else {
-            loadScene("/gestion_cours/frontend_add_course.fxml", event, null);
+            loadScene("/gestion_cours/add_course_body.fxml", event, null);
         }
     }
+
 
     protected SVGPath createIcon(String path, String color, double size) {
         SVGPath svg = new SVGPath();
@@ -129,5 +201,9 @@ public abstract class BaseCourseController {
         valLabel.getStyleClass().add("stat-item-label");
         item.getChildren().addAll(icon, valLabel);
         return item;
+    }
+
+    protected void navigateToFrontendCourseList(Node source) {
+        controllers.FrontendController.getInstance().loadContent("/gestion_cours/courses_body.fxml");
     }
 }

@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<VBox spacing="30.0" style="-fx-background-color: transparent;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.user_controller.EditProfileSettingsController">
+<VBox spacing="30.0" style="-fx-background-color: transparent;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.user_controller.EditProfileSettingsController">
     <children>
         
         <!-- Header with Title and Global Actions -->
@@ -64,15 +64,20 @@
                                     <children>
                                         <HBox alignment="CENTER_LEFT" spacing="20.0">
                                             <children>
-                                                <StackPane>
+                                                <StackPane fx:id="avatarContainer">
                                                     <children>
                                                         <Circle fill="#EFF6FF" radius="50.0" />
                                                         <Label fx:id="avatarInitials" style="-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: #004fb0;" text="AR" />
+                                                        <javafx.scene.image.ImageView fx:id="avatarImage" fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
+                                                           <clip>
+                                                              <Circle centerX="50.0" centerY="50.0" radius="50.0" />
+                                                           </clip>
+                                                        </javafx.scene.image.ImageView>
                                                     </children>
                                                 </StackPane>
                                                 <VBox spacing="8.0">
                                                     <children>
-                                                        <Button style="-fx-background-color: #F1F5F9; -fx-text-fill: #1E293B; -fx-background-radius: 8; -fx-padding: 8 15; -fx-font-weight: bold; -fx-font-size: 12px;" text="Change Photo" />
+                                                        <Button onAction="#handleChoosePhoto" style="-fx-background-color: #F1F5F9; -fx-text-fill: #1E293B; -fx-background-radius: 8; -fx-padding: 8 15; -fx-font-weight: bold; -fx-font-size: 12px;" text="Change Photo" />
                                                         <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 10px;" text="JPG, GIF or PNG. Max 5MB." />
                                                     </children>
                                                 </VBox>

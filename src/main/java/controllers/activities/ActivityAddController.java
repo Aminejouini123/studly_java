@@ -18,14 +18,27 @@ public class ActivityAddController extends BaseActivityController {
 
     private Course currentCourse;
     private final ActivityService activityService = new ActivityService();
+    private boolean fromBackend = false;
+    private controllers.backend.BackendActivityController backendController;
 
     @FXML
     public void initialize() {
-        // Validation could be added here
+        typeComboBox.getItems().setAll("Workshop", "Assignment", "Practical Work", "Course Material");
+        statusComboBox.getItems().setAll("To Do", "In Progress", "Completed");
+        difficultyComboBox.getItems().setAll("Easy", "Medium", "Hard");
+        levelComboBox.getItems().setAll("Beginner", "Intermediate", "Advanced");
     }
 
     public void setCourse(Course course) {
         this.currentCourse = course;
+    }
+
+    public void setFromBackend(boolean value) {
+        this.fromBackend = value;
+    }
+
+    public void setBackendController(controllers.backend.BackendActivityController controller) {
+        this.backendController = controller;
     }
 
     @FXML
@@ -57,7 +70,11 @@ public class ActivityAddController extends BaseActivityController {
             );
 
             activityService.ajouter(activity);
-            handleBack(); 
+            if (fromBackend) {
+                returnToDashboard(addBtn);
+            } else {
+                navigateToActivityList(addBtn, currentCourse);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -67,17 +84,13 @@ public class ActivityAddController extends BaseActivityController {
 
     @FXML
     private void handleBack() {
-        try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/gestion_activites/frontend_activities.fxml"));
-            javafx.scene.Parent root = loader.load();
-            ActivityListController controller = loader.getController();
-            controller.setCourse(currentCourse);
-            javafx.stage.Stage stage = (javafx.stage.Stage) addBtn.getScene().getWindow();
-            stage.getScene().setRoot(root);
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
+        if (fromBackend) {
+            returnToDashboard(addBtn);
+            return;
         }
+        navigateToActivityList(addBtn, currentCourse);
     }
+
 
     private void hideErrors() {
         if (titleError != null) {

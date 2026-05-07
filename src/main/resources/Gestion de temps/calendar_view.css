@@ -1,0 +1,8 @@
+.calendar-container {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.calendar-container .web-view {
+    -fx-background-color: transparent;
+}

@@ -1,189 +1,141 @@
 package controllers;
 
-import controllers.user_controller.AddUserController;
-import controllers.user_controller.ListUserController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.SVGPath;
 import models.User;
+import utils.SessionManager;
 
 import java.io.IOException;
 
 public class BackendController {
 
-    // Search / sort
-    @FXML public TextField searchField;
-    @FXML public Button sortDateBtn;
-
-    // Sidebar nav
-    @FXML public Button navOverviewBtn;
-    @FXML public Button navUsersBtn;
-    @FXML public Button navGroupsBtn;
-
-    // Views
-    @FXML public VBox usersView;
-    @FXML public VBox groupsView;
-
-    // Filter labels
-    @FXML public Label filterAll;
-    @FXML public Label filterAdmins;
-    @FXML public Label filterUsers;
-
-    // Dashboard stat labels
-    @FXML public Label totalUsersLabel;
-    @FXML public Label flaggedUsersLabel;
-
-    // Users table
-    @FXML public TableView<User> usersTable;
-    @FXML public TableColumn<User, String> colAvatar;
-    @FXML public TableColumn<User, User> colUser;
-    @FXML public TableColumn<User, String> colRole;
-    @FXML public TableColumn<User, String> colStatus;
-    @FXML public TableColumn<User, Object> colLastLogin;
-    @FXML public TableColumn<User, String> colActions;
-
-    private ListUserController listUserController;
+    @FXML private StackPane mainContentHost;
+    
+    @FXML private Button overviewBtn;
+    @FXML private Button usersBtn;
+    @FXML private Button groupsBtn;
+    @FXML private Button timeBtn;
+    @FXML private Button coursesBtn;
+    
+    @FXML private Label adminNameLabel;
+    @FXML private Label adminRoleLabel;
+    @FXML private Circle adminAvatar;
 
     @FXML
     public void initialize() {
-        // Default view: Users
         showUsers();
-
-        listUserController = new ListUserController(usersTable);
-        listUserController.initializeTable(colAvatar, colUser, colRole, colStatus, colLastLogin, colActions);
-        listUserController.setOnDataChanged(this::updateDashboardStats);
-
-        if (searchField != null) {
-            searchField.textProperty().addListener((obs, oldV, newV) -> listUserController.applyTextFilter(newV));
+        
+        // Update profile header
+        User currentUser = SessionManager.getCurrentUser();
+        if (currentUser != null) {
+            if (adminNameLabel != null) {
+                adminNameLabel.setText(currentUser.getFullName());
+            }
+            if (adminRoleLabel != null) {
+                adminRoleLabel.setText(currentUser.getRoles() != null && currentUser.getRoles().contains("ADMIN") ? "ADMINISTRATOR" : "MODERATOR");
+            }
         }
-
-        if (sortDateBtn != null) {
-            sortDateBtn.setOnAction(e -> {
-                boolean desc = listUserController.toggleSortByDate();
-                sortDateBtn.setText(desc ? "Sort: Newest First" : "Sort: Oldest First");
-            });
-        }
-
-        // Filters (labels act like buttons in the FXML)
-        if (filterAll != null) {
-            filterAll.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> applyRoleFilter("ALL"));
-        }
-        if (filterAdmins != null) {
-            filterAdmins.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> applyRoleFilter("ADMIN"));
-        }
-        if (filterUsers != null) {
-            filterUsers.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> applyRoleFilter("USER"));
-        }
-
-        updateDashboardStats();
-    }
-
-    @FXML
-    public void showUsers() {
-        if (usersView != null) {
-            usersView.setVisible(true);
-            usersView.setManaged(true);
-        }
-        if (groupsView != null) {
-            groupsView.setVisible(false);
-            groupsView.setManaged(false);
-        }
-        setActiveNav(navUsersBtn);
-    }
-
-    @FXML
-    public void showGroups() {
-        if (usersView != null) {
-            usersView.setVisible(false);
-            usersView.setManaged(false);
-        }
-        if (groupsView != null) {
-            groupsView.setVisible(true);
-            groupsView.setManaged(true);
-        }
-        setActiveNav(navGroupsBtn);
     }
 
     @FXML
     public void showOverview() {
-        // Not wired yet in the template; keep Users as the default page.
-        showUsers();
+        setActiveButton(overviewBtn);
+        if (mainContentHost != null) {
+            mainContentHost.getChildren().clear();
+        }
     }
 
     @FXML
-    public void handleExportExcel() {
-        // Export is handled by dedicated sub-controllers/screens when needed.
+    public void showUsers() {
+        setActiveButton(usersBtn);
+        loadContent("/TEMPLATE/backend_users.fxml");
     }
 
     @FXML
-    public void handleCreateNewUser() {
+    public void showGroups() {
+        setActiveButton(groupsBtn);
+        loadContent("/gestion_group/backend_groups_management.fxml");
+    }
+
+    @FXML
+    public void showTimeManagement() {
+        setActiveButton(timeBtn);
+        loadContent("/TEMPLATE/backend_time.fxml");
+    }
+
+    @FXML
+    public void handleShowCourses() {
+        setActiveButton(coursesBtn);
+        loadContent("/gestion_cours/backend_courses.fxml");
+    }
+
+    private void loadContent(String fxmlPath) {
+        if (mainContentHost == null) {
+            return;
+        }
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/getion_user/add_user.fxml"));
-            VBox form = loader.load();
-            AddUserController controller = loader.getController();
-            controller.setListUserController(listUserController);
-
-            Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Add User");
-            stage.setScene(new Scene(form));
-            stage.showAndWait();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Node content = loader.load();
+            mainContentHost.getChildren().setAll(content);
         } catch (IOException e) {
+            System.err.println("Error loading FXML content: " + fxmlPath);
             e.printStackTrace();
         }
     }
 
-    private void applyRoleFilter(String role) {
-        if (listUserController != null) {
-            listUserController.applyRoleFilter(role);
-        }
-
-        setActiveFilter(filterAll, "ALL".equalsIgnoreCase(role));
-        setActiveFilter(filterAdmins, "ADMIN".equalsIgnoreCase(role));
-        setActiveFilter(filterUsers, "USER".equalsIgnoreCase(role));
-    }
-
-    private void setActiveFilter(Label label, boolean active) {
-        if (label == null) return;
-        label.getStyleClass().removeAll("filter-text", "filter-text-active");
-        label.getStyleClass().add(active ? "filter-text-active" : "filter-text");
-    }
-
-    private void setActiveNav(Button active) {
-        Button[] btns = {navOverviewBtn, navUsersBtn, navGroupsBtn};
-        for (Button b : btns) {
-            if (b == null) continue;
-            b.getStyleClass().removeAll("nav-button", "nav-button-active");
-            b.getStyleClass().add(b == active ? "nav-button-active" : "nav-button");
-        }
-    }
-
-    private void updateDashboardStats() {
-        if (totalUsersLabel == null || flaggedUsersLabel == null || listUserController == null) {
-            return;
-        }
-
-        int total = 0;
-        int flagged = 0;
-        for (User u : listUserController.getAllUsers()) {
-            total++;
-            String st = u.getStatut();
-            if (st != null && st.equalsIgnoreCase("Flagged")) {
-                flagged++;
+    private void setActiveButton(Button activeBtn) {
+        Button[] buttons = {overviewBtn, usersBtn, groupsBtn, timeBtn, coursesBtn};
+        for (Button btn : buttons) {
+            if (btn == null) continue;
+            btn.getStyleClass().remove("nav-button-active");
+            if (!btn.getStyleClass().contains("nav-button")) {
+                btn.getStyleClass().add("nav-button");
+            }
+            if (btn.getGraphic() instanceof SVGPath) {
+                SVGPath svg = (SVGPath) btn.getGraphic();
+                if (svg.getStroke() != null && svg.getStroke() != Color.TRANSPARENT) {
+                    svg.setStroke(Color.web("#64748B"));
+                } else {
+                    svg.setFill(Color.web("#64748B"));
+                }
             }
         }
+        
+        if (activeBtn == null) return;
+        activeBtn.getStyleClass().remove("nav-button");
+        activeBtn.getStyleClass().add("nav-button-active");
+        if (activeBtn.getGraphic() instanceof SVGPath) {
+            SVGPath svg = (SVGPath) activeBtn.getGraphic();
+            if (svg.getStroke() != null && svg.getStroke() != Color.TRANSPARENT) {
+                svg.setStroke(Color.web("#004fb0"));
+            } else {
+                svg.setFill(Color.web("#38bdf8"));
+            }
+        }
+    }
 
-        totalUsersLabel.setText(String.valueOf(total));
-        flaggedUsersLabel.setText(String.valueOf(flagged));
+    @FXML
+    public void handleExportExcel() {
+        System.out.println("Export logic should be handled by sub-controllers.");
+    }
+    @FXML
+    private void handleLogout() {
+        utils.SessionManager.clearSession();
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/getion_user/auth_page.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.stage.Stage stage = (javafx.stage.Stage) mainContentHost.getScene().getWindow();
+            stage.setScene(new javafx.scene.Scene(root));
+            stage.setTitle("Login – Studly");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
-

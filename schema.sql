@@ -1,6 +1,37 @@
--- Database Schema for Studly Project
+-- Studly Database Setup Script
+-- This script recreates the entire database schema and inserts sample data.
 
-CREATE TABLE IF NOT EXISTS `personne` (
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- 1. Create Database
+CREATE DATABASE IF NOT EXISTS `projet_db`;
+USE `projet_db`;
+
+-- 2. Drop existing tables to ensure a clean start
+DROP TABLE IF EXISTS `project_task`;
+DROP TABLE IF EXISTS `project`;
+DROP TABLE IF EXISTS `pomodoro_session`;
+DROP TABLE IF EXISTS `password_reset_token`;
+DROP TABLE IF EXISTS `notification`;
+DROP TABLE IF EXISTS `motivation`;
+DROP TABLE IF EXISTS `message`;
+DROP TABLE IF EXISTS `invitation`;
+DROP TABLE IF EXISTS `groups`;
+DROP TABLE IF EXISTS `task`;
+DROP TABLE IF EXISTS `objective`;
+DROP TABLE IF EXISTS `exam`;
+DROP TABLE IF EXISTS `activity`;
+DROP TABLE IF EXISTS `course`;
+DROP TABLE IF EXISTS `roadmap_step`;
+DROP TABLE IF EXISTS `roadmap`;
+DROP TABLE IF EXISTS `event`;
+DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `personne`;
+
+-- 3. Create Tables
+
+CREATE TABLE `personne` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nom` varchar(255) NOT NULL,
   `prenom` varchar(255) NOT NULL,
@@ -8,13 +39,13 @@ CREATE TABLE IF NOT EXISTS `personne` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `users` (
+CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `google_id` varchar(255) DEFAULT NULL,
   `is_verified` tinyint(1) DEFAULT 0,
   `verification_code` varchar(255) DEFAULT NULL,
   `email` varchar(255) NOT NULL,
-  `roles` varchar(255) DEFAULT NULL,
+  `roles` varchar(255) DEFAULT 'ROLE_STUDENT',
   `password` varchar(255) NOT NULL,
   `first_name` varchar(255) DEFAULT NULL,
   `last_name` varchar(255) DEFAULT NULL,
@@ -34,11 +65,13 @@ CREATE TABLE IF NOT EXISTS `users` (
   `google_access_token` varchar(255) DEFAULT NULL,
   `google_refresh_token` varchar(255) DEFAULT NULL,
   `google_token_expires_at` timestamp NULL DEFAULT NULL,
+  `ban_reason` varchar(500) DEFAULT NULL,
+  `github_id` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `event` (
+CREATE TABLE `event` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `description` text,
@@ -64,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `event` (
   CONSTRAINT `fk_event_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `course` (
+CREATE TABLE `course` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `course_file` varchar(255) DEFAULT NULL,
@@ -85,7 +118,7 @@ CREATE TABLE IF NOT EXISTS `course` (
   CONSTRAINT `fk_course_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `activity` (
+CREATE TABLE `activity` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `description` text,
@@ -109,7 +142,7 @@ CREATE TABLE IF NOT EXISTS `activity` (
   CONSTRAINT `fk_activity_user` FOREIGN KEY (`assigned_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `exam` (
+CREATE TABLE `exam` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `date` date DEFAULT NULL,
@@ -125,7 +158,7 @@ CREATE TABLE IF NOT EXISTS `exam` (
   CONSTRAINT `fk_exam_course` FOREIGN KEY (`course_id`) REFERENCES `course` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `objective` (
+CREATE TABLE `objective` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `description` text,
@@ -137,7 +170,7 @@ CREATE TABLE IF NOT EXISTS `objective` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `task` (
+CREATE TABLE `task` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `description` text,
@@ -156,7 +189,7 @@ CREATE TABLE IF NOT EXISTS `task` (
   CONSTRAINT `fk_task_user` FOREIGN KEY (`assigned_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `group` (
+CREATE TABLE `groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `capacity` int(11) DEFAULT NULL,
   `group_photo` varchar(255) DEFAULT NULL,
@@ -168,7 +201,7 @@ CREATE TABLE IF NOT EXISTS `group` (
   CONSTRAINT `fk_group_creator` FOREIGN KEY (`creator_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `invitation` (
+CREATE TABLE `invitation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `status` varchar(50) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -179,12 +212,12 @@ CREATE TABLE IF NOT EXISTS `invitation` (
   KEY `fk_invitation_sender` (`sender_id`),
   KEY `fk_invitation_receiver` (`receiver_id`),
   KEY `fk_invitation_group` (`group_id`),
-  CONSTRAINT `fk_invitation_group` FOREIGN KEY (`group_id`) REFERENCES `group` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_invitation_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_invitation_receiver` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_invitation_sender` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `message` (
+CREATE TABLE `message` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `content` text NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -193,12 +226,12 @@ CREATE TABLE IF NOT EXISTS `message` (
   PRIMARY KEY (`id`),
   KEY `fk_message_group` (`group_id`),
   KEY `fk_message_sender` (`sender_id`),
-  CONSTRAINT `fk_message_group` FOREIGN KEY (`group_id`) REFERENCES `group` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_message_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
   -- Important: sender_id must reference `users(id)` (not legacy `user(id)`).
   CONSTRAINT `fk_message_sender` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `motivation` (
+CREATE TABLE `motivation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `motivation_level` int(11) DEFAULT NULL,
   `emotion` varchar(100) DEFAULT NULL,
@@ -210,7 +243,7 @@ CREATE TABLE IF NOT EXISTS `motivation` (
   CONSTRAINT `fk_motivation_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `notification` (
+CREATE TABLE `notification` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `content` text NOT NULL,
   `link` varchar(255) DEFAULT NULL,
@@ -222,7 +255,7 @@ CREATE TABLE IF NOT EXISTS `notification` (
   CONSTRAINT `fk_notification_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `password_reset_token` (
+CREATE TABLE `password_reset_token` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `token` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -233,7 +266,7 @@ CREATE TABLE IF NOT EXISTS `password_reset_token` (
   CONSTRAINT `fk_password_reset_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `pomodoro_session` (
+CREATE TABLE `pomodoro_session` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `type` varchar(50) DEFAULT NULL,
   `duration` int(11) DEFAULT NULL,
@@ -248,7 +281,7 @@ CREATE TABLE IF NOT EXISTS `pomodoro_session` (
   CONSTRAINT `fk_pomodoro_event` FOREIGN KEY (`event_id`) REFERENCES `event` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `project` (
+CREATE TABLE `project` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `description` text,
@@ -259,10 +292,10 @@ CREATE TABLE IF NOT EXISTS `project` (
   `group_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_project_group` (`group_id`),
-  CONSTRAINT `fk_project_group` FOREIGN KEY (`group_id`) REFERENCES `group` (`id`) ON DELETE CASCADE
+  CONSTRAINT `fk_project_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `project_task` (
+CREATE TABLE `project_task` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `description` text,
@@ -281,3 +314,57 @@ CREATE TABLE IF NOT EXISTS `project_task` (
   CONSTRAINT `fk_project_task_project` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_project_task_user` FOREIGN KEY (`assigned_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `roadmap` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `skill` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_roadmap_user` (`user_id`),
+  CONSTRAINT `fk_roadmap_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `roadmap_step` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `roadmap_id` int(11) NOT NULL,
+  `step_number` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` text,
+  `resources_json` text,
+  `is_completed` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `fk_step_roadmap` (`roadmap_id`),
+  CONSTRAINT `fk_step_roadmap` FOREIGN KEY (`roadmap_id`) REFERENCES `roadmap` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 4. Insert Sample Data
+
+-- Sample Users (Passwords are hashed for testing)
+INSERT INTO `users` (`email`, `roles`, `password`, `first_name`, `last_name`, `is_verified`) VALUES
+('admin@studly.com', 'ROLE_ADMIN', '$2a$10$8.UnVuG9HHgffUDAlk8Kn.2GYf8IQvO/yXv.o6.a.Z.f.o.6.a.Z.f.', 'Admin', 'Studly', 1),
+('superadmin@studly.com', '["ROLE_ADMIN"]', '$2a$12$uR/haoK2Bq.W21dXBcwdrevnRBW2VACmXnmD9xIvFPl4ZafLolSk2', 'Super', 'Admin', 1),
+('student@studly.com', 'ROLE_STUDENT', '$2a$10$8.UnVuG9HHgffUDAlk8Kn.2GYf8IQvO/yXv.o6.a.Z.f.o.6.a.Z.f.', 'John', 'Doe', 1),
+('teacher@studly.com', 'ROLE_TEACHER', '$2a$10$8.UnVuG9HHgffUDAlk8Kn.2GYf8IQvO/yXv.o6.a.Z.f.o.6.a.Z.f.', 'Jane', 'Smith', 1);
+
+-- Sample Personne
+INSERT INTO `personne` (`nom`, `prenom`, `age`) VALUES
+('Doe', 'John', 25),
+('Smith', 'Jane', 30);
+
+-- Sample Courses
+INSERT INTO `course` (`name`, `teacher_email`, `semester`, `difficulty_level`, `user_id`) VALUES
+('Java Programming', 'teacher@studly.com', 'S2', 'Intermediate', 2),
+('Web Development', 'teacher@studly.com', 'S1', 'Beginner', 2);
+
+-- Sample Objectives
+INSERT INTO `objective` (`title`, `description`, `status`) VALUES
+('Finish Java Project', 'Complete the final project for the Java course', 'IN_PROGRESS'),
+('Prepare for Exams', 'Review all course materials for upcoming exams', 'TODO');
+
+-- Sample Groups
+INSERT INTO `groups` (`capacity`, `category`, `creator_id`) VALUES
+(10, 'Study', 1),
+(5, 'Project', 2);
+
+SET FOREIGN_KEY_CHECKS = 1;
