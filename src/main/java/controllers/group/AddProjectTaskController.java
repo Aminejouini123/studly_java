@@ -447,8 +447,8 @@ public class AddProjectTaskController {
     }
 
     private static String displayUser(User u) {
-        String first = u.getFirst_name() == null ? "" : u.getFirst_name().trim();
-        String last = u.getLast_name() == null ? "" : u.getLast_name().trim();
+        String first = u.getFirstName() == null ? "" : u.getFirstName().trim();
+        String last = u.getLastName() == null ? "" : u.getLastName().trim();
         String full = (first + " " + last).trim();
         if (!full.isEmpty()) {
             return full;

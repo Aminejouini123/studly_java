@@ -866,7 +866,7 @@ public class GroupDetailsController {
             invitationService.ajouter(inv);
 
             SmsService.Result smsResult = smsService.sendGroupInvitationSms(
-                    receiver.getPhone_number(),
+                    receiver.getPhoneNumber(),
                     resolveGroupNameForSms(group)
             );
             inviteEmailField.clear();
